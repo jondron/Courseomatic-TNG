@@ -546,7 +546,7 @@ function populateActivityForm(activity = null) {
         document.getElementById('unitSelect').value = activity.unitId || '';
 
         // Check the corresponding CLOs
-        if (Array.isArray(activity.learningOutcomes) && activity.learningOutcomes.length > 0){
+        if (activity.learningOutcomes.length > 0){
             activity.learningOutcomes.forEach(cloIndex => {
                 const checkbox = document.getElementById(`clo${cloIndex}`);
                 if (checkbox) checkbox.checked = true;
