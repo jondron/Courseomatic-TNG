@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Storyboard Developer</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/5.10.0/tinymce.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+</head>
+<body>
+    <header>
+        <h1>Course Storyboard Developer</h1>
+        <nav>
+            <button id="programInfoBtn" title="Enter program information">Program Info</button>
+            <button id="courseInfoBtn" title="Edit course information">Course Info</button>
+            <button id="newUnitBtn" title="Create a new unit">New Unit</button>
+            <div class="dropdown">
+                <button id="saveLoadBtn" title="Save or load course data">Save/Load</button>
+                <div class="dropdown-content">
+                    <a href="#" id="exportJson" title="Export course to JSON file">Export to JSON</a>
+                    <a href="#" id="importJson" title="Import course from JSON file">Import from JSON</a>
+                    <a href="#" id="printPdf" title="Print to PDF">Print to PDF</a>
+                    <a href="#" id="saveHtml" title="Save to HTML">Save to HTML</a>
+                    <a href="#" id="copyClipboard" title="Copy to clipboard">Copy to Clipboard</a>
+                </div>
+            </div>
+            <button id="clearBtn" title="Clear all data">Clear</button>
+        </nav>
+    </header>
+
+    <main>
+        <section id="courseInfo" class="collapsible">
+            <h2 id="courseInfoHeader" class="course-info-header">Course Information <span id="courseInfoToggleIcon" class="toggle-icon">▼</span></h2>
+            <div id="courseInfoContent" class="course-info-content" style="display: none;">
+                <!-- Content will be populated by JavaScript -->
+            </div>
+        </section>
+        <section id="units"></section>
+    </main>
+    
+
+    <div id="programInfoPopup" class="popup">
+        <div class="popup-content">
+            <h2>Program Information</h2>
+            <form id="programInfoForm">
+                <label for="programName">Program Name:</label>
+                <input type="text" id="programName" name="programName" required>
+                
+                <label for="programLevel">Program Level:</label>
+                <input type="text" id="programLevel" name="programLevel" required>
+                
+                <label for="programDescription">Program Description:</label>
+                <textarea id="programDescription" name="programDescription"></textarea>
+                
+                <h3>Program Learning Outcomes</h3>
+                <div id="programLearningOutcomes"></div>
+                <button type="button" id="addPLO" title="Add a new program learning outcome">Add PLO</button>
+                
+                <div class="button-group">
+                    <button type="submit">Save</button>
+                    <button type="button" class="cancel">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="courseInfoPopup" class="popup">
+        <div class="popup-content">
+            <h2>Course Information</h2>
+            <form id="courseInfoForm">
+                <label for="courseName">Course Name:</label>
+                <input type="text" id="courseName" name="courseName" required>
+                
+                <label for="courseCode">Course Code:</label>
+                <input type="text" id="courseCode" name="courseCode" required pattern="[A-Za-z]{4}\d{3}" title="4 letters followed by 3 numbers">
+                
+                <label for="creditHours">Credit Hours:</label>
+                <input type="number" id="creditHours" name="creditHours" min="0" step="0.5" required>
+                
+                <label for="courseGoal">Course Goal:</label>
+                <textarea id="courseGoal" name="courseGoal"></textarea>
+                
+                <label for="courseDescription">Course Description:</label>
+                <textarea id="courseDescription" name="courseDescription"></textarea>
+                
+                <h3>Course Learning Outcomes</h3>
+                <div id="courseLearningOutcomes"></div>
+                <button type="button" id="addCLO" title="Add a new course learning outcome">Add CLO</button>
+                
+                <div class="button-group">
+                    <button type="submit">Save</button>
+                    <button type="button" class="cancel">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="unitPopup" class="popup">
+        <div class="popup-content">
+            <h2>Unit Information</h2>
+            <form id="unitForm">
+                <label for="unitTitle">Unit Title:</label>
+                <input type="text" id="unitTitle" name="unitTitle" required>
+                
+                <label for="unitDescription">Unit Description:</label>
+                <textarea id="unitDescription" name="unitDescription"></textarea>
+                
+                <div class="button-group">
+                    <button type="submit">Save</button>
+                    <button type="button" class="cancel">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="activityPopup" class="popup">
+        <div class="popup-content">
+            <h2>Activity Information</h2>
+            <form id="activityForm">
+                <label for="activityType">Activity Type:</label>
+                <select id="activityType" name="activityType" required>
+                    <option value="acquisition">Acquisition</option>
+                    <option value="practice">Practice</option>
+                    <option value="investigation">Investigation</option>
+                    <option value="reflection">Reflection</option>
+                    <option value="production">Production</option>
+                    <option value="discussion">Discussion</option>
+                    <option value="cooperation">Cooperation</option>
+                    <option value="collaboration">Collaboration</option>
+                </select>
+                
+                <label for="activityTitle">Activity Title:</label>
+                <input type="text" id="activityTitle" name="activityTitle" required>
+                
+                <label for="activityDescription">Activity Description:</label>
+                <textarea id="activityDescription" name="activityDescription"></textarea>
+                
+                <label for="specificActivity">Specific Activity:</label>
+                <select id="specificActivity" name="specificActivity" required></select>
+                
+                <div id="otherActivityContainer" style="display: none;">
+                    <label for="otherActivity">Other Activity:</label>
+                    <input type="text" id="otherActivity" name="otherActivity">
+                </div>
+                
+                <label for="studyHours">Estimated Study Time (HH:MM or number of minutes) :</label>
+                <input type="text" id="studyHours" name="studyHours" required pattern="^(\d+:\d{2}|\d+)$" title="Enter time as HH:MM or minutes">
+                
+                <h3>Learning Outcomes</h3>
+                <div id="activityLearningOutcomes"></div>
+                
+                <label for="unitSelect">Unit:</label>
+                <select id="unitSelect" name="unitSelect" required></select>
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" id="isAssessed" name="isAssessed">
+                    <label for="isAssessed">Assessed</label>
+                </div>
+                
+                <div id="assessmentDetails" style="display: none;">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="isRequired" name="isRequired">
+                        <label for="isRequired">Required</label>
+                    </div>
+                    
+                    <label for="passMark">Pass Mark (%):</label>
+                    <input type="number" id="passMark" name="passMark" min="0" max="100" value="50">
+                    
+                    <label for="weighting">Weighting (%):</label>
+                    <input type="number" id="weighting" name="weighting" min="0" max="100">
+                    <br />
+                    <label for="markingHours">Marking Hours (HH:MM or number of minutes):</label>
+                    <input type="text" width="5" id="markingHours" name="markingHours" pattern="^(\d+:\d{2}|\d+)$" title="Enter time as HH:MM or minutes">
+                </div>
+                
+                <div class="button-group">
+                    <button type="submit">Save</button>
+                    <button type="button" class="cancel">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>

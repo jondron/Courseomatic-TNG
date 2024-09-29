@@ -1,0 +1,519 @@
+ :root {
+    --primary-color: #333;
+    --secondary-color: #666;
+    --background-color: #f4f4f4;
+    --border-color: #ddd;
+    --highlight-color: #007bff;
+    --error-color: #dc3545;
+    --success-color: #28a745;
+}
+
+
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    color: var(--primary-color);
+    background-color: var(--background-color);
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: var(--primary-color);
+    color: #fff;
+    text-align: center;
+    padding: 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+nav {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+button {
+    background-color: var(--highlight-color);
+    color: #fff;
+    border: none;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+main {
+    padding: 2rem;
+}
+
+.collapsible {
+    background-color: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    margin-bottom: 1rem;
+}
+
+.collapsible h2 {
+    padding: 1rem;
+    margin: 0;
+    cursor: pointer;
+}
+
+.collapsible .content {
+    display: none;
+    padding: 1rem;
+}
+
+.toggle-icon {
+    float: right;
+}
+
+.unit-panel {
+    position: relative;
+    background-color: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    padding: 1rem;
+}
+
+.activity-card {
+    display: inline-block;
+    width: 200px;
+    height: 250px;
+    margin: 0.5rem;
+    border-radius: 8px;
+    vertical-align: top;
+    position: relative;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+    /*overflow: hidden; */
+    z-index: 999;
+}
+
+.activity-card .title {
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    margin: 0 0 5px 0;
+    font-size: 1.1em;
+}
+
+.activity-card-clickable {
+    cursor: pointer;
+}
+
+.activity-card-content {
+    padding: 10px;
+    cursor: pointer;
+}
+
+.activity-card-content:hover {
+    background-color: #f6f92d;
+}
+
+.activity-title {
+    margin: 0 0 5px 0;
+    font-size: 1.1em;
+}
+
+.activity-description {
+    margin: 0;
+    font-size: 0.9em;
+    color: #666;
+}
+
+.assessed-icon {
+    float: right;
+    color: gold;
+    font-size: 2em;
+}
+
+.activity-buttons {
+    display: flex;
+    justify-content: flex-end;
+    padding: 5px;
+    background-color: #f0f0f0;
+}
+
+.activity-buttons button {
+    margin-left: 5px;
+    padding: 3px 6px;
+    font-size: 0.8em;
+}
+
+.activity-card.expanded {
+    z-index: 10100;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.activity-card.expanded .activity-card-content {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    background-color: #f9f9f9;
+}
+
+.activity-type-acquisition { background-color: salmon; }
+.activity-type-practice { background-color: pink; }
+.activity-type-investigation { background-color: orange; }
+.activity-type-reflection { background-color: gold; }
+.activity-type-production { background-color: thistle; }
+.activity-type-discussion { background-color: lightgreen; }
+.activity-type-cooperation { background-color: lightblue; }
+.activity-type-collaboration { background-color: lightcoral; }
+
+/* Ensure text is readable on all background colors */
+.activity-card h4,
+.activity-card p {
+    color: #333;
+}
+
+.activity-card .delete-btn,
+.activity-card .clone-btn,
+.activity-card .edit-btn {
+    position: absolute;
+    top: 0.5rem;
+    width: 24px;
+    height: 100px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 12px;
+    scroll-behavior: auto;
+}
+
+.activity-card .delete-btn {
+    right: 0.5rem;
+}
+
+.activity-card .clone-btn {
+    right: 2rem;
+}
+
+.activity-card .edit-btn {
+    right: 3.5rem;
+}
+
+.activity-card .assessed {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.5rem;
+    font-size: 18px;
+}
+
+
+.activity-card, .add-activity-button {
+    width: 200px; 
+    height: 250px; 
+    
+}
+
+.add-activity-button {
+    background-color: #4CAF50; /* Green background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+    width: 200px;
+    float: right;
+}
+
+.add-activity-button:hover {
+    background-color: #45a049; /* Darker green on hover */
+}
+
+.plus-icon {
+    color: white;
+    font-size: 48px;
+    font-weight: bold;
+}
+
+.add-activity-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.5); /* Green glow on focus */
+}
+
+.add-activity-btn::before {
+    content: "+";
+    margin-right: 5px;
+    font-weight: bold;
+    font-size: 20px;
+}
+
+
+.collapse-activity {
+    display: block;
+    width: 100%;
+    padding: 5px;
+    background-color: #aca2a2;
+    border: none;
+    text-align: center;
+    cursor: pointer;
+}
+
+.collapse-activity:hover {
+    background-color: #595858;
+}
+
+.popup {
+    display: none;
+    position: fixed;
+    z-index: 1001;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.4);
+    z-index: 9999;
+}
+
+.popup-content {
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    width: 80%;
+    max-width: 600px;
+    border-radius: 4px;
+}
+
+.popup h2 {
+    margin-top: 0;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    margin-top: 1rem;
+}
+
+input[type="text"],
+input[type="number"],
+select,
+textarea {
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+}
+
+.button-group {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+.dropdown-content a:hover {
+    background-color: #f1f1f1;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+
+.activity
+
+.unit-panel {
+    border: 1px solid #ddd;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    min-height: 500px;
+    overflow: hidden;
+}
+
+.unit-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #cec5c5;
+    padding: 10px 15px;
+    cursor: pointer;
+}
+
+.unit-header:hover{
+    background-color: #ebe1e1;
+}
+.unit-title {
+    margin: 0;
+    font-size: 1.2em;
+}
+
+.unit-buttons {
+    display: flex;
+}
+
+.unit-buttons button {
+    margin-left: 5px;
+    width: 30px;
+    height: 30px;
+    border: none;
+    background-color: #676b68;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s;
+}
+
+.unit-buttons button:hover {
+    background-color: #d0d0d0;
+}
+
+.unit-buttons .add-activity-btn {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+}
+
+.unit-buttons .add-activity-btn:hover {
+    background-color: #45a049;
+}
+
+.unit-buttons .move-unit-up,
+.unit-buttons .move-unit-down {
+    background-color: #676b68;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 2px 6px;
+    margin-right: 5px;
+}
+
+.unit-buttons .move-unit-up:hover,
+.unit-buttons .move-unit-down:hover {
+    background-color: #e0e0e0;
+}
+
+.unit-buttons .move-unit-up:focus,
+.unit-buttons .move-unit-down:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+
+.unit-collapsible {
+    padding: 15px;
+    border-top: 1px solid #ddd;
+}
+
+.activities-container {
+    padding: 15px;
+    margin-bottom: 10px;
+
+}
+
+.activities-section {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-top: 1px solid #eee;
+    min-height: 330px;
+}
+
+
+/*
+
+#courseInfo {
+    border: 1px solid #ddd;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.course-info-header {
+    background-color: #f5f5f5;
+    padding: 10px 15px;
+    cursor: pointer;
+    margin: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+.course-info-header:hover {
+    background-color: #e5e5e5;
+}
+
+.course-info-content {
+    padding: 15px;
+}
+
+.toggle-icon {
+    font-size: 0.8em;
+    float: right;
+}
+*/
+
+#courseInfo {
+    border: 1px solid #ddd;
+    margin-bottom: 20px;
+}
+
+.course-info-header {
+    background-color: #f5f5f5;
+    padding: 10px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.course-info-header:hover {
+    background-color: #e5e5e5;
+}
+
+.course-info-content {
+    padding: 15px;
+    display: none; /* Hide by default */
+}
+
+.course-info-content.show {
+    display: block; /* Show when .show class is present */
+}
+
+.toggle-icon {
+    float: right;
+}
