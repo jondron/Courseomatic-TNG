@@ -17,7 +17,7 @@ export function initializeUI() {
 }
 
 export function updateUI() {
-    console.log('Updating UI');
+    //console.log('Updating UI');
     updateCourseInfo();
     updateUnits();
     updateActivityTypePieChart();
@@ -25,17 +25,17 @@ export function updateUI() {
 }
 
 function setupEventListeners() {
-    console.log('Setting up event listeners');
+    //console.log('Setting up event listeners');
         //debug
-        console.log('All elements with id "exportJson":', document.querySelectorAll('#exportJson'));
-        console.log('All elements with id "importJson":', document.querySelectorAll('#importJson'));
-        console.log('All anchor tags:', document.querySelectorAll('a'));
-        console.log('All elements in dropdown-content:', document.querySelectorAll('.dropdown-content > *'));
+        //console.log('All elements with id "exportJson":', document.querySelectorAll('#exportJson'));
+        //console.log('All elements with id "importJson":', document.querySelectorAll('#importJson'));
+        //console.log('All anchor tags:', document.querySelectorAll('a'));
+        //console.log('All elements in dropdown-content:', document.querySelectorAll('.dropdown-content > *'));
     
 
         try {
             document.getElementById('units').addEventListener('click', handleUnitEvents);
-            console.log('Units event listener added successfully');
+            //console.log('Units event listener added successfully');
         } catch (error) {
             console.error('Error setting up units event listener:', error);
         }
@@ -45,7 +45,7 @@ function setupEventListeners() {
                 populateProgramForm();
                 document.getElementById('programInfoPopup').style.display = 'block';
             });
-            console.log('Program info button event listener added successfully');
+            //console.log('Program info button event listener added successfully');
         } catch (error) {
             console.error('Error setting up program info button event listener:', error);
         }
@@ -55,7 +55,7 @@ function setupEventListeners() {
                 populateCourseForm();
                 document.getElementById('courseInfoPopup').style.display = 'block';
             });
-            console.log('Course info button event listener added successfully');
+            //console.log('Course info button event listener added successfully');
         } catch (error) {
             console.error('Error setting up course info button event listener:', error);
         }
@@ -65,7 +65,7 @@ function setupEventListeners() {
                 document.getElementById('unitForm').reset();
                 document.getElementById('unitPopup').style.display = 'block';
             });
-            console.log('New unit button event listener added successfully');
+            //console.log('New unit button event listener added successfully');
         } catch (error) {
             console.error('Error setting up new unit button event listener:', error);
         }
@@ -77,7 +77,7 @@ function setupEventListeners() {
                     updateUI();
                 }
             });
-            console.log('Clear button event listener added successfully');
+            //console.log('Clear button event listener added successfully');
         } catch (error) {
             console.error('Error setting up clear button event listener:', error);
         }
@@ -86,42 +86,29 @@ function setupEventListeners() {
     const exportJsonBtn = document.getElementById('exportJson');
     const importJsonBtn = document.getElementById('importJson');
 
-    console.log('exportJsonBtn:', exportJsonBtn);
-    console.log('importJsonBtn:', importJsonBtn);
+    //console.log('exportJsonBtn:', exportJsonBtn);
+    //console.log('importJsonBtn:', importJsonBtn);
 
 
     if (exportJsonBtn) {
-    //    console.log('Export JSON button found, attaching listener');
+    //    //console.log('Export JSON button found, attaching listener');
         exportJsonBtn.addEventListener('click', handleExportJson);
     } else {
         console.error('Export JSON button not found');
     }
 
     if (importJsonBtn) {
-        console.log('Import JSON button found, attaching listener');
+        //console.log('Import JSON button found, attaching listener');
         importJsonBtn.addEventListener('click', handleImportJson);
     } else {
         console.error('Import JSON button not found');
     }     
 
     // reports
-    document.getElementById('saveHtml').addEventListener('click', function(e) {
-        e.preventDefault(); // Prevent the default action of the button
+    document.getElementById('saveHtml').removeEventListener('click', saveHtmlReport); // Optional, remove existing listeners
+    document.getElementById('saveHtml').addEventListener('click', saveHtmlReport, { once: true });
     
-        const htmlReport = generateHTMLReport();
-    
-        // Open a new window for the HTML report
-        let reportWindow = window.open('', '_blank'); 
-    
-        // Check if the window was successfully opened
-        if (reportWindow) {
-            reportWindow.document.write(htmlReport);  // Write the HTML content to the new window
-            reportWindow.document.close();            // Close the document stream
-            reportWindow.focus();                     // Focus on the new window/tab
-        } else {
-            console.error('Pop-up blocked or window could not be opened');
-        }
-    });
+   
 
     // Form submit listeners
     document.getElementById('programInfoForm').addEventListener('submit', handleProgramFormSubmit);
@@ -225,7 +212,7 @@ function handleActivityEvents(event, activityCard, activityId) {
 }
 
 function handleAddActivity(unitId) {
-    console.log('Opening add activity form for unit:', unitId);
+    //console.log('Opening add activity form for unit:', unitId);
     const form = document.getElementById('activityForm');
     form.reset();
     populateActivityForm();
@@ -242,7 +229,7 @@ function handleAddActivity(unitId) {
 }
 
 function handleEditUnit(unitId) {
-    console.log('Editing unit:', unitId);
+    //console.log('Editing unit:', unitId);
     const courseData = getCourseData();
     const unit = courseData.units.find(u => u.id === unitId);
     if (unit) {
@@ -262,7 +249,7 @@ function handleEditUnit(unitId) {
 }
 
 function handleCloneUnit(unitId) {
-    console.log('Cloning unit:', unitId);
+    //console.log('Cloning unit:', unitId);
     const clonedUnit = cloneUnit(unitId);
     if (clonedUnit) {
         updateUI();
@@ -270,7 +257,7 @@ function handleCloneUnit(unitId) {
 }
 
 function handleDeleteUnit(unitId) {
-    console.log('Deleting unit:', unitId);
+    //console.log('Deleting unit:', unitId);
     if (confirm('Are you sure you want to delete this unit? This action cannot be undone.')) {
         deleteUnit(unitId);
         updateUI();
@@ -278,7 +265,7 @@ function handleDeleteUnit(unitId) {
 }
 
 function handleMoveUnitUp(unitId) {
-    console.log('Moving unit up:', unitId);
+    //console.log('Moving unit up:', unitId);
     const courseData = getCourseData();
     const unitIndex = courseData.units.findIndex(u => u.id === unitId);
     if (unitIndex > 0) {
@@ -290,7 +277,7 @@ function handleMoveUnitUp(unitId) {
 }
 
 function handleMoveUnitDown(unitId) {
-    console.log('Moving unit down:', unitId);
+    //console.log('Moving unit down:', unitId);
     const courseData = getCourseData();
     const unitIndex = courseData.units.findIndex(u => u.id === unitId);
     if (unitIndex < courseData.units.length - 1) {
@@ -309,7 +296,7 @@ function toggleUnitCollapse(unitPanel) {
 }
 
 function handleEditActivity(activityId) {
-    console.log('Editing activity:', activityId);
+    //console.log('Editing activity:', activityId);
     const courseData = getCourseData();
     const activity = courseData.activities.find(a => a.id === activityId);
     if (activity) {
@@ -320,7 +307,7 @@ function handleEditActivity(activityId) {
 }
 
 function handleCloneActivity(activityId) {
-    console.log('Cloning activity:', activityId);
+    //console.log('Cloning activity:', activityId);
     const clonedActivity = cloneActivity(activityId);
     if (clonedActivity) {
         updateUI();
@@ -328,7 +315,7 @@ function handleCloneActivity(activityId) {
 }
 
 function handleDeleteActivity(activityId) {
-    console.log('Deleting activity:', activityId);
+    //console.log('Deleting activity:', activityId);
     if (confirm('Are you sure you want to delete this activity? This action cannot be undone.')) {
         deleteActivity(activityId);
         updateUI();
@@ -336,7 +323,7 @@ function handleDeleteActivity(activityId) {
 }
 
 function handleMoveActivityUp(activityId) {
-    console.log('Moving activity up:', activityId);
+    //console.log('Moving activity up:', activityId);
     const courseData = getCourseData();
     const activities = courseData.activities;
     const currentIndex = activities.findIndex(a => a.id === activityId);
@@ -358,7 +345,7 @@ function handleMoveActivityUp(activityId) {
 }
 
 function handleMoveActivityDown(activityId) {
-    console.log('Moving activity down:', activityId);
+    //console.log('Moving activity down:', activityId);
     const courseData = getCourseData();
     const activities = courseData.activities;
     const currentIndex = activities.findIndex(a => a.id === activityId);
@@ -407,6 +394,7 @@ function handleCourseFormSubmit(event) {
             creditHours: document.getElementById('creditHours').value,
             goal: document.getElementById('courseGoal').value,
             description: document.getElementById('courseDescription').value,
+            productionNotes: document.getElementById('productionNotes').value,
             learningOutcomes: Array.from(document.getElementById('courseLearningOutcomes').children)
                 .map(child => child.querySelector('textarea').value)
                 .filter(value => value.trim() !== '')
@@ -440,7 +428,7 @@ function handleActivityFormSubmit(event) {
     event.preventDefault();
 
     if (isSubmitting) {
-        console.log('Form is already being submitted. Ignoring this submission.');
+        //console.log('Form is already being submitted. Ignoring this submission.');
         return;
     }
 
@@ -467,14 +455,14 @@ function handleActivityFormSubmit(event) {
         activityData.markingHours = document.getElementById('markingHours').value
     }
 
-    console.log('Activity data to save:', activityData);
+    //console.log('Activity data to save:', activityData);
 
     const activityId = form.dataset.activityId;
     if (activityId) {
-        console.log('Editing existing activity:', activityId);
+        //console.log('Editing existing activity:', activityId);
         editActivity(activityId, activityData);
     } else {
-        console.log('Creating new activity');
+        //console.log('Creating new activity');
         createActivity(activityData);
     }
 
@@ -523,6 +511,13 @@ function populateCourseForm() {
         tinymce.get('courseDescription').setContent(courseData.course.description || '');
     } else {
         console.error('TinyMCE editor for courseDescription not found');
+    }
+
+    // Handle TinyMCE editor for production Notes
+    if (tinymce.get('productionNotes')) {
+        tinymce.get('productionNotes').setContent(courseData.course.productionNotes || '');
+    } else {
+        console.error('TinyMCE editor for productionNotes not found');
     }
 
     // Ensure that mappedOutcomes is an array before proceeding
@@ -759,6 +754,7 @@ function updateCourseInfo() {
             <p><strong>Credit Hours:</strong> ${courseData.course.creditHours}</p>
             <p><strong>Course Goal:</strong> ${courseData.course.goal}</p>
             <p><strong>Course Description:</strong> ${courseData.course.description}</p>
+            <p><strong>Production Notes:</strong> ${courseData.course.productionNotes}</p>
             <h4>Learning Outcomes:</h4>
             <ol>
             ${Array.isArray(courseData.course.learningOutcomes) && courseData.course.learningOutcomes.length > 0 
@@ -816,12 +812,12 @@ function setupCourseInfoToggle() {
 }
 
 function toggleCourseInfoAccordion() {
-    console.log('Toggle function called');
+    //console.log('Toggle function called');
     const courseInfoContent = document.getElementById('courseInfoContent');
     const toggleIcon = document.getElementById('courseInfoToggleIcon');
     
-    console.log('Before toggle - display:', courseInfoContent.style.display);
-    console.log('Before toggle - classList:', courseInfoContent.classList);
+    //console.log('Before toggle - display:', courseInfoContent.style.display);
+    //console.log('Before toggle - classList:', courseInfoContent.classList);
 
     courseInfoContent.classList.toggle('show');
     const isVisible = courseInfoContent.classList.contains('show');
@@ -829,9 +825,9 @@ function toggleCourseInfoAccordion() {
     courseInfoContent.style.display = isVisible ? 'block' : 'none';
     toggleIcon.textContent = isVisible ? '▲' : '▼';
 
-    console.log('After toggle - display:', courseInfoContent.style.display);
-    console.log('After toggle - classList:', courseInfoContent.classList);
-    console.log('Toggle icon text:', toggleIcon.textContent);
+    //console.log('After toggle - display:', courseInfoContent.style.display);
+    //console.log('After toggle - classList:', courseInfoContent.classList);
+    //console.log('Toggle icon text:', toggleIcon.textContent);
 }
 
 function updateUnits() {
@@ -964,7 +960,7 @@ function collapseActivityCard(activityId) {
     if (!activity) return;
 
     const truncatedTitle = truncateText(activity.title, 5);
-    //console.log("title", truncatedTitle);
+    ////console.log("title", truncatedTitle);
     const truncatedDescription = truncateText(activity.description, 10);
     const collapsedContent = `
         <h5 class="activity-title">${truncatedTitle}</h5>
@@ -1028,7 +1024,7 @@ function handleExportJson() {
 }
 
 function handleImportJson() {
-    console.log ("importing from JSoN");
+    //console.log ("importing from JSoN");
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.json';
@@ -1053,10 +1049,41 @@ function handleImportJson() {
 
 //report functions
 
+function saveHtmlReport(e) {
+    //console.log ("called saveHTMLReport");
+    e.preventDefault(); // Prevent default form submission or navigation
+
+    const htmlReport = generateHTMLReport(); // Generate the report content
+
+    // Open a new window or reuse an existing one
+    let reportWindow = window.open('', '_blank');
+
+    // Check if the window was successfully opened
+    if (reportWindow) {
+        // Prevent the report window from reloading or duplicating content
+        reportWindow.document.body.innerHTML = ''; // Clear any previous content in the window
+
+        // Write the new content to the window
+        reportWindow.document.write(htmlReport);
+
+        // Close the document to render the content
+        reportWindow.document.close();
+
+        // Focus the new window to bring it to the foreground
+        reportWindow.focus();
+    } else {
+        // Handle pop-up blocker issues
+        console.error('Popup blocked or window could not be opened.');
+        alert('The report could not be opened. Please allow popups for this site.');
+    }
+}
+
+
+
 function generateHTMLReport() {
     const reportData = generateCourseReport();
     const courseData = getCourseData();
-    console.log ("Raw data for report: ", reportData);
+    //console.log ("Raw data for report: ", reportData);
     if (!Array.isArray(reportData.mappedOutcomes)) {
         reportData.mappedOutcomes = [];
     }
@@ -1099,6 +1126,8 @@ function generateHTMLReport() {
         <div>${reportData.course.goal}</div>
         <h2>Course Description</h2>
         <div>${reportData.course.description}</div>
+        <h2>Course Production Notes</h2>
+        <div>${reportData.course.productionNotes}
         <h2>Course Learning Outcomes</h2>
          ${reportData.course.learningOutcomes && reportData.course.learningOutcomes.length > 0 ? `
             <ul>
@@ -1199,15 +1228,16 @@ function generateAssessedActivitiesHTML(activities) {
 
         return `
             <div class="activity activity-${activity.type.toLowerCase()}">
-                <h5>${activity.title} (${activity.type})</h5>
-                <p><strong>Unit:</strong> ${unitTitle}</p> <!-- Display the unit title here -->
-                ${activity.isAssessed ? `
-                    <div>
-                        <br><strong>Required:</strong> ${activity.isRequired ? 'Yes' : 'No'}, 
-                        <br><strong>Pass Mark:</strong> ${activity.passMark}%, 
-                        <br><strong>Weighting:</strong> ${activity.weighting}%, 
-                        <br><strong>Marking Hours:</strong> ${formatTimeForDisplay(activity.markingHours)}</div>
-                ` : ''}
+                <h5>Assessed Activity: ${activity.title} (${activity.type}). 
+                <strong>Unit:</strong> ${unitTitle}</h5> 
+                <div>
+                    ${activity.isAssessed ? `
+                            <strong>Required:</strong> ${activity.isRequired ? 'Yes' : 'No'}, 
+                            <br><strong>Pass Mark:</strong> ${activity.passMark}%, 
+                            <br><strong>Weighting:</strong> ${activity.weighting}%, 
+                            <br><strong>Marking Hours:</strong> ${formatTimeForDisplay(activity.markingHours)}
+                    ` : ''}
+                </div>
             </div>
         `;
     }).join('');
@@ -1328,7 +1358,7 @@ function getActivityLearningOutcomesText(activityId) {
 
 
 function handleActivityReorder(activityId, newUnitId, newIndex) {
-    console.log('Reordering activity:', activityId, 'to unit:', newUnitId, 'at index:', newIndex);
+    //console.log('Reordering activity:', activityId, 'to unit:', newUnitId, 'at index:', newIndex);
     
     const courseData = getCourseData();
     const activityIndex = courseData.activities.findIndex(a => a.id === activityId);

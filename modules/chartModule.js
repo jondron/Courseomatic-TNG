@@ -1,7 +1,7 @@
 // chartModule.js
 
 export function createPieChart(container, data) {
-   // console.log ("data for chart: ",data);
+   // //console.log ("data for chart: ",data);
 
     if (!container) {
         console.error('Chart container is null or undefined');
@@ -44,7 +44,7 @@ export function createPieChart(container, data) {
         const x2 = radius * Math.cos(endAngle);
         const y2 = radius * Math.sin(endAngle);
        
-      //  console.log ("array :",item,index);
+      //  //console.log ("array :",item,index);
        
         const largeArcFlag = sliceAngle > Math.PI ? 1 : 0;
 

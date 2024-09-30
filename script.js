@@ -7,7 +7,7 @@ import { createPieChart } from './modules/chartModule.js';
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('Initializing UI...');
+    //console.log('Initializing UI...');
     //loadSavedCourse();  // Load saved course data
     initializeUI();
     setupEventListeners();
@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loadSavedCourse(savedData);
         updateUI();
     } else {
-        console.log('Initializing course...');
+        //console.log('Initializing course...');
         initializeCourse();
     }
 });
@@ -68,17 +68,17 @@ document.getElementById('importJson').addEventListener('click', () => {
 
 document.getElementById('printPdf').addEventListener('click', () => {
     // Implement PDF printing logic
-    console.log('Print to PDF functionality not yet implemented');
+    //console.log('Print to PDF functionality not yet implemented');
 });
 
 document.getElementById('saveHtml').addEventListener('click', () => {
     // Implement HTML saving logic
-    console.log('Save to HTML functionality not yet implemented');
+    //console.log('Save to HTML functionality not yet implemented');
 });
 
 document.getElementById('copyClipboard').addEventListener('click', () => {
     // Implement clipboard copying logic
-    console.log('Copy to clipboard functionality not yet implemented');
+    //console.log('Copy to clipboard functionality not yet implemented');
 });
 
 // Event listeners for popups
@@ -213,7 +213,7 @@ setInterval(() => {
 
 // Initialize TinyMCE for rich text editors
 tinymce.init({
-    selector: '#programDescription, #courseGoal, #courseDescription, #unitDescription, #activityDescription',
+    selector: '#programDescription, #courseGoal, #courseDescription, #productionNotes, #unitDescription, #activityDescription',
     height: 300,
     menubar: false,
     plugins: [

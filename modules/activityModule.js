@@ -24,7 +24,7 @@ export function getSpecificActivities(type) {
 
 
 export function createActivity(activityData) {
-    console.log('Creating new activity:', activityData);
+    //console.log('Creating new activity:', activityData);
     const courseData = getCourseData();
     if (activityData.otherActivity){
         addCustomActivityType(activityData.type,activityData.otherActivity);
@@ -49,12 +49,12 @@ export function createActivity(activityData) {
      };
     courseData.activities.push(newActivity);
     saveCourse(courseData);
-    console.log('New activity created:', newActivity);
+    //console.log('New activity created:', newActivity);
     return newActivity;
 }
 
 export function editActivity(activityId, updatedData) {
-    console.log('Editing activity:', activityId, updatedData);
+    //console.log('Editing activity:', activityId, updatedData);
     if ('otherActivity' in updatedData){
         addCustomActivityType(updatedData.type,updatedData.otherActivity);
     }
@@ -68,7 +68,7 @@ export function editActivity(activityId, updatedData) {
         markingHours: updatedData.isAssessed ? timeToMinutes(updatedData.markingHours) : 0
               };
         saveCourse(courseData);
-        console.log('Activity updated:', courseData.activities[activityIndex]);
+        //console.log('Activity updated:', courseData.activities[activityIndex]);
         return courseData.activities[activityIndex];
     }
     console.error('Activity not found:', activityId);

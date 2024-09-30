@@ -15,6 +15,7 @@ let courseData = {
         creditHours: 0,
         goal: '',
         description: '',
+        productionNotes: '',
         learningOutcomes: [] // Array of CLOs
     },
     mappedOutcomes: [], // Array where each index represents the mapping of a CLO to a PLO (or none)
@@ -37,6 +38,7 @@ function initializeCourse() {
             creditHours: 0,
             goal: '',
             description: '',
+            productionNotes: '',
             learningOutcomes: [] 
         },
         mappedOutcomes: [], 
@@ -50,7 +52,7 @@ function getCourseData() {
 }
 
 function setCourseData(newData) {
-    console.log('setCourseData called with:', newData);
+    //console.log('setCourseData called with:', newData);
     courseData = newData;
 }
 
@@ -68,7 +70,7 @@ function saveCourse(data) {
         courseData.activities = data.activities;
     }
     localStorage.setItem('courseData', JSON.stringify(courseData));
-    console.log('Course data saved:', courseData);
+    //console.log('Course data saved:', courseData);
 }
 
 function loadSavedCourse() {
@@ -84,14 +86,14 @@ function loadSavedCourse() {
                 mappedPLOs: parsedData.mappedPLOs || [],
                 mappedOutcomes: parsedData.mappedOutcomes || []
             };
-            console.log('Loaded saved course data:', courseData);
+            //console.log('Loaded saved course data:', courseData);
             return courseData;
         } catch (error) {
             console.error('Error parsing saved course data:', error);
             initializeEmptyCourse();
         }
     } else {
-        console.log('No saved course data found. Using default empty course.');
+        //console.log('No saved course data found. Using default empty course.');
         initializeEmptyCourse();
     }
 }
@@ -163,7 +165,7 @@ function getActivityTypeProportions() {
         };
     });
 
-    console.log("proportions: ", result);
+    //console.log("proportions: ", result);
 
     return result;
 }
@@ -223,7 +225,7 @@ function generateCourseReport() {
 //handle marking and study hours
 function getTotalStudyHours() {
     const totalMinutes = courseData.activities.reduce((total, activity) => {
-        // console.log('Activity study hours:', activity.studyHours);
+        // //console.log('Activity study hours:', activity.studyHours);
         return addTimes(total, activity.studyHours);
     }, 0);
     return formatTimeForDisplay(totalMinutes);
@@ -233,7 +235,7 @@ function getTotalMarkingHours() {
     const totalMinutes = courseData.activities
         .filter(activity => activity.isAssessed)
         .reduce((total, activity) => {
-        //    console.log('Activity marking hours:', activity.markingHours);
+        //    //console.log('Activity marking hours:', activity.markingHours);
             return addTimes(total, activity.markingHours || 0);
         }, 0);
     return formatTimeForDisplay(totalMinutes);
@@ -243,7 +245,7 @@ function getUnitStudyHours(unitId) {
     const totalMinutes = courseData.activities
         .filter(activity => activity.unitId === unitId)
         .reduce((total, activity) => {
-       //     console.log('Unit activity study hours:', activity.studyHours);
+       //     //console.log('Unit activity study hours:', activity.studyHours);
             return addTimes(total, activity.studyHours);
         }, 0);
     return formatTimeForDisplay(totalMinutes);
@@ -253,7 +255,7 @@ function getUnitMarkingHours(unitId) {
     const totalMinutes = courseData.activities
         .filter(activity => activity.unitId === unitId && activity.isAssessed)
         .reduce((total, activity) => {
-         //   console.log('Unit activity marking hours:', activity.markingHours);
+         //   //console.log('Unit activity marking hours:', activity.markingHours);
             return addTimes(total, activity.markingHours || 0);
         }, 0);
     return formatTimeForDisplay(totalMinutes);
@@ -275,7 +277,7 @@ function updateUnitHours() {
         unit.totalStudyHours = formatTimeForDisplay(totalStudyMinutes);
         unit.totalMarkingHours = formatTimeForDisplay(totalMarkingMinutes);
 
-      //  console.log(`Unit ${unit.id} hours updated: Study ${unit.totalStudyHours}, Marking ${unit.totalMarkingHours}`);
+      //  //console.log(`Unit ${unit.id} hours updated: Study ${unit.totalStudyHours}, Marking ${unit.totalMarkingHours}`);
     });
 }
 
@@ -286,7 +288,7 @@ function recalculateHours() {
 
 // add unit
 function addUnit(unitData) {
-    console.log('Adding unit:', unitData);
+    //console.log('Adding unit:', unitData);
     const newUnit = {
         id: generateUniqueId(),
         title: unitData.title,
@@ -296,7 +298,7 @@ function addUnit(unitData) {
     };
     courseData.units.push(newUnit);
     saveCourse(courseData);
-//    console.log('Updated units:', courseData.units);
+//    //console.log('Updated units:', courseData.units);
     return newUnit;
 }
 
