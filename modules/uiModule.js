@@ -138,6 +138,16 @@ function setupEventListeners() {
             button.closest('.popup').style.display = 'none';
         });
     });
+    // Add a keydown event listener for the entire document
+    // Get all buttons with the class 'cancel'
+    const cancelButtons = document.querySelectorAll('.cancel');
+
+    // Add a keydown event listener for the entire document
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {  // Check if the 'Escape' key was pressed
+            cancelButtons.forEach(button => button.click()); // Simulate a click on each cancel button
+        }
+    });
    // Course info accordion
    document.querySelector('.course-info-header').addEventListener('click', toggleCourseInfoAccordion);
 
@@ -546,12 +556,8 @@ function populateActivityForm(activity = null) {
             console.error('TinyMCE editor for activityDescription not found');
         }
         document.getElementById('activityType').value = activity.type || '';
-        updateSpecificActivityDropdown();
-        if (activity.otherActivity.value){
-            document.getElementById('specificActivity').value = activity.otherActivity.value;
-        } else {
-            document.getElementById('specificActivity').value = activity.specificActivity || '';
-        }
+        updateSpecificActivityDropdown(activity);
+        document.getElementById('specificActivity').value = activity.specificActivity || '';
         document.getElementById('studyHours').value = activity.studyHours || '';
         document.getElementById('isAssessed').checked = activity.isAssessed || false;
         document.getElementById('unitSelect').value = activity.unitId || '';
@@ -579,18 +585,39 @@ function populateActivityForm(activity = null) {
     }
 
     toggleAssessmentDetails();
-    updateSpecificActivityDropdown();
+   // updateSpecificActivityDropdown();
 }
 
-function updateSpecificActivityDropdown() {
+function updateSpecificActivityDropdown(activity = null) {
+    // const activityType = document.getElementById('activityType').value;
+    // const specificActivitySelect = document.getElementById('specificActivity');
+    // const specificActivities = getSpecificActivities(activityType);
+    // // this only populates with preset specificactivities
+    // specificActivitySelect.innerHTML = specificActivities.map(activity => 
+    //     `<option value="${activity}">${capitalizeFirstLetter(activity)}</option>`
+    // ).join('');
     const activityType = document.getElementById('activityType').value;
     const specificActivitySelect = document.getElementById('specificActivity');
     const specificActivities = getSpecificActivities(activityType);
-    // this only populates with preset specificactivities
+    const currentSpecificActivity = activity.specificActivity; 
+
+    // Check if the current specificActivity exists in the preset list
+    let isCustomActivity = !specificActivities.includes(currentSpecificActivity);
+
+    // Populate the dropdown with preset specific activities
     specificActivitySelect.innerHTML = specificActivities.map(activity => 
-        `<option value="${activity}">${capitalizeFirstLetter(activity)}</option>`
+        `<option value="${activity}" ${activity === currentSpecificActivity ? 'selected' : ''}>
+            ${capitalizeFirstLetter(activity)}
+        </option>`
     ).join('');
-    
+
+    // If the current specific activity is not in the preset list, add it as a custom option
+    if (isCustomActivity && currentSpecificActivity) {
+        specificActivitySelect.innerHTML += `
+            <option value="${currentSpecificActivity}" selected>
+                ${capitalizeFirstLetter(currentSpecificActivity)} (Custom)
+            </option>`;
+    }
     const otherContainer = document.getElementById('otherActivityContainer');
     otherContainer.style.display = specificActivitySelect.value === 'other' ? 'block' : 'none';
 }
@@ -999,29 +1026,31 @@ function generateHTMLReport() {
     return html;
 }
 
-function generateUnitsHTML(units) {
+function generateUnitsHTML(units) {    
     return units.map(unit => `
         <div class="unit">
             <h3>${unit.title}</h3>
             <p>${unit.description}</p>
             <p><strong>Total Study Hours:</strong> ${formatTimeForDisplay(unit.totalStudyHours)} </p>
             <p><strong>Total Marking Hours:</strong> ${formatTimeForDisplay(unit.totalMarkingHours)} </p>
-            <p><strong>Learning Outcomes Covered:</strong> ${unit.learningOutcomes.join(', ')}</p>
+            <p><strong>Learning Outcomes Covered:</strong> ${getUnitLearningOutcomes(unit.id).join(', ')}</p>
             <h4>Activities</h4>
             ${generateActivitiesHTML(unit.activities)}
         </div>
     `).join('');
+
 }
 
 function generateActivitiesHTML(activities) {
     return activities.map(activity => `
         <div class="activity activity-${activity.type.toLowerCase()}">
             <h5>${activity.title} (${activity.type})</h5>
-            <p>${activity.description}</p>
+            <p><strong>Subtype:</strong> ${getActivityType(activity.id,activities).specificActivity}
+            <p><strong>Description: </strong>${activity.description}</p>
             <p><strong>Study Hours:</strong> ${formatTimeForDisplay(activity.studyHours)}</p>
             <p><strong>Learning Outcomes:</strong>
             ${activity.learningOutcomes && activity.learningOutcomes.length > 0 ? `
-                   ${activity.learningOutcomes.join(', ')} </p>
+                   ${getActivityLearningOutcomesText(activity.id).join(', ')} </p>
          ` : '<p>No outcomes defined for this course</p>'}   
   
             
@@ -1109,53 +1138,37 @@ function getUnitLearningOutcomes(unitId) {
     return Array.from(outcomeIndices).map(index => courseData.course.learningOutcomes[index]);
 }
 
-// function handleActivityReorder(activityId, newUnitId, newIndex) {
-// //     console.log('Reordering activity:', activityId, 'to unit:', newUnitId, 'at index:', newIndex);
-// //     const courseData = getCourseData();
-// //     const activityIndex = courseData.activities.findIndex(a => a.id === activityId);
-    
-// //     if (activityIndex !== -1) {
-// //         const activity = courseData.activities[activityIndex];
-        
-// //         // Remove the activity from its current position
-// //         courseData.activities.splice(activityIndex, 1);
-        
-// //         // Find the insertion index in the new unit
-// //         const insertIndex = courseData.activities.filter(a => a.unitId === newUnitId).length;
-        
-// //         // Insert the activity at its new position
-// //         courseData.activities.splice(insertIndex, 0, {...activity, unitId: newUnitId});
-        
-// //         saveCourse(courseData);
-// //         updateUI();
-// //     }
-// // }
-// console.log('Reordering activity:', activityId, 'to unit:', newUnitId, 'at index:', newIndex);
-// const courseData = getCourseData();
-// const activityIndex = courseData.activities.findIndex(a => a.id === activityId);
+function getActivityType(activityId, activities) {
+    // Find the activity with the matching id
+    const activity = activities.find(a => a.id === activityId);
 
-// if (activityIndex !== -1) {
-//     const activity = courseData.activities[activityIndex];
-    
-//     // Remove the activity from its current position
-//     courseData.activities.splice(activityIndex, 1);
-    
-//     // Find all activities in the new unit
-//     const newUnitActivities = courseData.activities.filter(a => a.unitId === newUnitId);
-    
-//     // Adjust newIndex to ensure it is within bounds
-//     const adjustedIndex = Math.min(newIndex, newUnitActivities.length);
+    // Check if activity exists and return the type and specificActivity, or return null if not found
+    if (activity) {
+        return {
+            type: activity.type,
+            specificActivity: activity.specificActivity
+        };
+    } else {
+        return null; // Return null if the activity with the given ID is not found
+    }
+}
 
-//     // Calculate the actual index in the courseData.activities array
-//     const targetIndex = courseData.activities.findIndex(a => a.unitId === newUnitId) + adjustedIndex;
-    
-//     // Insert the activity at its new position
-//     courseData.activities.splice(targetIndex, 0, {...activity, unitId: newUnitId});
-    
-//     saveCourse(courseData);
-//     updateUI();
-// }
-// }
+function getActivityLearningOutcomesText(activityId) {
+    const courseData = getCourseData();
+
+    // Find the activity with the given ID
+    const activity = courseData.activities.find(a => a.id === activityId);
+
+    if (!activity) {
+        return []; // Return an empty array if the activity is not found
+    }
+
+    // Map the numeric learning outcome indices to the corresponding text
+    return activity.learningOutcomes.map(index => courseData.course.learningOutcomes[index]);
+}
+
+
+
 function handleActivityReorder(activityId, newUnitId, newIndex) {
     console.log('Reordering activity:', activityId, 'to unit:', newUnitId, 'at index:', newIndex);
     

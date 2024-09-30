@@ -26,6 +26,9 @@ export function getSpecificActivities(type) {
 export function createActivity(activityData) {
     console.log('Creating new activity:', activityData);
     const courseData = getCourseData();
+    if (activityData.otherActivity){
+        addCustomActivityType(activityData.type,activityData.otherActivity);
+    }
 
     //  // Check if an activity with the same title already exists in the same unit
     //  const existingActivity = courseData.activities.find(a => 
@@ -52,6 +55,9 @@ export function createActivity(activityData) {
 
 export function editActivity(activityId, updatedData) {
     console.log('Editing activity:', activityId, updatedData);
+    if ('otherActivity' in updatedData){
+        addCustomActivityType(updatedData.type,updatedData.otherActivity);
+    }
     const courseData = getCourseData();
     const activityIndex = courseData.activities.findIndex(a => a.id === activityId);
     if (activityIndex !== -1) {
