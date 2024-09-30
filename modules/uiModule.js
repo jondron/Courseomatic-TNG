@@ -402,7 +402,8 @@ function handleCourseFormSubmit(event) {
                 .map(child => child.querySelector('input').value)
                 .filter(value => value.trim() !== '')
         }
-    };
+     };
+     collectCLOPLOMappings();
     saveCourse(courseData);
     updateUI();
     document.getElementById('courseInfoPopup').style.display = 'none';
@@ -511,15 +512,80 @@ function populateCourseForm() {
     } else {
         console.error('TinyMCE editor for courseDescription not found');
     }
+   
+   
+    // Get current mappings between CLOs and PLOs
+    //const cloPLOMappings = getCLOPLOMappings();
+    // Ensure that mappedOutcomes is an array before proceeding
+    if (!Array.isArray(courseData.mappedOutcomes)) {
+        courseData.mappedOutcomes = [];
+    }
+    const cloPLOMappings = courseData.mappedOutcomes;
+
+    // Populate the CLO container with inputs for CLOs and dropdowns for PLO mapping
     const cloContainer = document.getElementById('courseLearningOutcomes');
-    cloContainer.innerHTML = courseData.course.learningOutcomes.map((clo, index) => `
-        <div>
-            <input type="text" id="clo${index}" name="clo${index}" value="${clo}" required>
+    cloContainer.innerHTML = courseData.course.learningOutcomes.map((clo, cloIndex) => {
+        const mappedPLOs = Array.isArray(cloPLOMappings[cloIndex]) ? cloPLOMappings[cloIndex] : [];
+
+        return `
+         <div>
+            <input type="text" id="clo${cloIndex}" name="clo${cloIndex}" value="${clo}" required>
+            <label for="ploMapping${cloIndex}">Map to PLO(s):</label>
+            <select id="ploMapping${cloIndex}" name="ploMapping${cloIndex}" multiple>
+                ${courseData.program.learningOutcomes.map((plo, ploIndex) => `
+                    <option value="${ploIndex}" ${mappedPLOs.includes(ploIndex) ? 'selected' : ''}>
+                        ${plo}
+                    </option>
+                `).join('')}
+            </select>
             <button type="button" class="removeCLO">Remove</button>
         </div>
-    `).join('');
+        `;
+    }).join('');
+
+}
+function getCLOPLOMappings() {
+    const courseData = getCourseData();
+    return courseData.course.learningOutcomes.map((clo, index) => {
+        return courseData.mappedPLOs && courseData.mappedPLOs[index] ? courseData.mappedPLOs[index] : 'none';
+    });
 }
 
+function collectCLOPLOMappings() {
+    const mappings = [];
+    const courseData = getCourseData();
+    courseData.mappedOutcomes = courseData.course.learningOutcomes.map((_, cloIndex) => {
+        const selectedOptions = Array.from(document.getElementById(`ploMapping${cloIndex}`).selectedOptions);
+        return selectedOptions.map(option => parseInt(option.value)); // Convert selected values to integers
+    });
+}
+
+// function populateCourseForm() {
+//     const courseData = getCourseData();
+//     document.getElementById('courseName').value = courseData.course.name || '';
+//     document.getElementById('courseCode').value = courseData.course.code || '';
+//     document.getElementById('creditHours').value = courseData.course.creditHours || '';
+//    // Handle TinyMCE editor for course goal
+//     if (tinymce.get('courseGoal')) {
+//         tinymce.get('courseGoal').setContent(courseData.course.goal || '');
+//     } else {
+//         console.error('TinyMCE editor for courseGoal not found');
+//     }
+
+//     // Handle TinyMCE editor for course description
+//     if (tinymce.get('courseDescription')) {
+//         tinymce.get('courseDescription').setContent(courseData.course.description || '');
+//     } else {
+//         console.error('TinyMCE editor for courseDescription not found');
+//     }
+//     const cloContainer = document.getElementById('courseLearningOutcomes');
+//     cloContainer.innerHTML = courseData.course.learningOutcomes.map((clo, index) => `
+//         <div>
+//             <input type="text" id="clo${index}" name="clo${index}" value="${clo}" required>
+//             <button type="button" class="removeCLO">Remove</button>
+//         </div>
+//     `).join('');
+// }
 function populateActivityForm(activity = null) {
     const form = document.getElementById('activityForm');
     form.reset();
@@ -665,7 +731,9 @@ function updateCourseInfo() {
     const courseInfoContent = document.querySelector('#courseInfo .course-info-content');
     const totalStudyHours = getTotalStudyHours();
     const totalMarkingHours = getTotalMarkingHours();
- 
+    if (!Array.isArray(courseData.mappedOutcomes)) {
+        courseData.mappedOutcomes = [];
+    }
 
         courseInfoContent.innerHTML = `
             <h3>${courseData.course.name} (${courseData.course.code})</h3>
@@ -687,8 +755,19 @@ function updateCourseInfo() {
             <p><strong>Description:</strong> ${courseData.program.description}</p>
             <h5>Program Learning Outcomes:</h5>
             <ol>
-                ${courseData.program.learningOutcomes.map(outcome => `<li>${outcome}</li>`).join('')}
-            </ol>
+                 ${courseData.program.learningOutcomes.map((outcome, ploIndex) => {
+                // Find CLOs that map to the current PLO
+                const mappedCLOs = courseData.mappedOutcomes
+                    .map((cloMappings, cloIndex) => cloMappings.includes(ploIndex) ? cloIndex + 1 : null)
+                    .filter(clo => clo !== null); // Filter out unmapped CLOs
+
+                // If mappedCLOs is not empty, create the "maps to CLO" text
+                const mappingText = mappedCLOs.length > 0 ? `(maps to CLO: ${mappedCLOs.join(', ')})` : '';
+
+                // Return the list item with outcome and the mapping text if applicable
+                return `<li>${outcome} ${mappingText}</li>`;
+                }).join('')} 
+     </ol>
             <div id="activityTypePieChart"></div>
             <div id="unassessedOutcomes"></div>
         `;
@@ -843,7 +922,11 @@ function expandActivityCard(activityId) {
         <p><strong>Type:</strong> ${capitalizeFirstLetter(activity.type)} (${activity.specificActivity})</p>
         <p><strong>Description:</strong> ${activity.description}</p>
         <p><strong>Study Hours:</strong> ${formatTimeForDisplay(activity.studyHours)}</p>
-          ${activity.isAssessed ? `
+        <p><strong>Learning Outcomes:</strong>
+        ${activity.learningOutcomes && activity.learningOutcomes.length > 0 ? `
+            ${getActivityLearningOutcomesText(activity.id).join(', ')} </p>
+         ` : '<p>No outcomes defined for this activity</p>'}          
+         ${activity.isAssessed ? `
             <p><strong>Assessed:</strong> Yes</p>
             <p><strong>Pass Mark:</strong> ${activity.passMark}%</p>
             <p><strong>Weighting:</strong> ${activity.weighting}%</p>
@@ -1051,7 +1134,7 @@ function generateActivitiesHTML(activities) {
             <p><strong>Learning Outcomes:</strong>
             ${activity.learningOutcomes && activity.learningOutcomes.length > 0 ? `
                    ${getActivityLearningOutcomesText(activity.id).join(', ')} </p>
-         ` : '<p>No outcomes defined for this course</p>'}   
+         ` : '<p>No outcomes defined for this activity</p>'}   
   
             
             >

@@ -7,7 +7,7 @@ let courseData = {
         name: '',
         level: '',
         description: '',
-        learningOutcomes: []
+        learningOutcomes: [] // Array of PLOs
     },
     course: {
         name: '',
@@ -15,8 +15,9 @@ let courseData = {
         creditHours: 0,
         goal: '',
         description: '',
-        learningOutcomes: []
+        learningOutcomes: [] // Array of CLOs
     },
+    mappedOutcomes: [], // Array where each index represents the mapping of a CLO to a PLO (or none)
     units: [],
     activities: []
 };
@@ -28,7 +29,7 @@ function initializeCourse() {
             name: '',
             level: '',
             description: '',
-            learningOutcomes: []
+            learningOutcomes: [] 
         },
         course: {
             name: '',
@@ -36,8 +37,9 @@ function initializeCourse() {
             creditHours: 0,
             goal: '',
             description: '',
-            learningOutcomes: []
+            learningOutcomes: [] 
         },
+        mappedOutcomes: [], 
         units: [],
         activities: []
     };
@@ -78,7 +80,9 @@ function loadSavedCourse() {
                 program: parsedData.program || {},
                 course: parsedData.course || {},
                 units: parsedData.units || [],
-                activities: parsedData.activities || []
+                activities: parsedData.activities || [],
+                mappedPLOs: parsedData.mappedPLOs || [],
+                mappedOutcomes: parsedData.mappedOutcomes || []
             };
             console.log('Loaded saved course data:', courseData);
             return courseData;
