@@ -1,7 +1,7 @@
 // chartModule.js
 
 export function createPieChart(container, data) {
-    console.log ("data for chart: ",data);
+   // console.log ("data for chart: ",data);
 
     if (!container) {
         console.error('Chart container is null or undefined');

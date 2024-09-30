@@ -4,7 +4,7 @@ import { getCourseData, saveCourse, addProgramLearningOutcome, addCourseLearning
     getActivityTypeProportions, getUnassessedLearningOutcomes,getUnitStudyHours, getUnitMarkingHours,getTotalStudyHours, getTotalMarkingHours,
      recalculateHours, generateCourseReport} from './courseModule.js';
 import { createUnit, editUnit, deleteUnit, cloneUnit } from './unitModule.js';
-import { createActivity, editActivity, deleteActivity, cloneActivity, getActivityTypes, getSpecificActivities } from './activityModule.js';
+import { createActivity, editActivity, deleteActivity, cloneActivity, getActivityTypes, getSpecificActivities, addCustomActivityType } from './activityModule.js';
 import { createPieChart } from './chartModule.js';
 import { formatTimeForDisplay, timeToMinutes } from './timeUtils.js';
 //import { generateHTMLReport } from './courseReportModule.js';
@@ -127,6 +127,10 @@ function setupEventListeners() {
     document.getElementById('addCLO').addEventListener('click', addNewCLO);
     document.getElementById('activityType').addEventListener('change', updateSpecificActivityDropdown);
     document.getElementById('isAssessed').addEventListener('change', toggleAssessmentDetails);
+    document.getElementById('specificActivity').addEventListener('change', function() {
+        document.getElementById('otherActivityContainer').style.display = this.value === 'other' ? 'block' : 'none';
+    });
+   
 
     // Close buttons for popups
     document.querySelectorAll('.popup .cancel').forEach(button => {
@@ -424,12 +428,15 @@ function handleActivityFormSubmit(event) {
     const form = event.target;
     const activityData = {
         type: document.getElementById('activityType').value,
-        specificActivity: document.getElementById('specificActivity').value,
+        specificActivity: document.getElementById('otherActivity').value 
+                ? document.getElementById('otherActivity').value 
+                : document.getElementById('specificActivity').value,
         title: document.getElementById('activityTitle').value,
         description: tinymce.get('activityDescription').getContent(),
         studyHours: document.getElementById('studyHours').value,
          unitId: document.getElementById('unitSelect').value,
         isAssessed: document.getElementById('isAssessed').checked,
+        otherActivity: document.getElementById('otherActivity').value,
         learningOutcomes: Array.from(document.querySelectorAll('#activityLearningOutcomes input:checked'))
             .map(input => parseInt(input.value))
     };
@@ -540,7 +547,11 @@ function populateActivityForm(activity = null) {
         }
         document.getElementById('activityType').value = activity.type || '';
         updateSpecificActivityDropdown();
-        document.getElementById('specificActivity').value = activity.specificActivity || '';
+        if (activity.otherActivity.value){
+            document.getElementById('specificActivity').value = activity.otherActivity.value;
+        } else {
+            document.getElementById('specificActivity').value = activity.specificActivity || '';
+        }
         document.getElementById('studyHours').value = activity.studyHours || '';
         document.getElementById('isAssessed').checked = activity.isAssessed || false;
         document.getElementById('unitSelect').value = activity.unitId || '';
@@ -575,6 +586,7 @@ function updateSpecificActivityDropdown() {
     const activityType = document.getElementById('activityType').value;
     const specificActivitySelect = document.getElementById('specificActivity');
     const specificActivities = getSpecificActivities(activityType);
+    // this only populates with preset specificactivities
     specificActivitySelect.innerHTML = specificActivities.map(activity => 
         `<option value="${activity}">${capitalizeFirstLetter(activity)}</option>`
     ).join('');
@@ -967,8 +979,8 @@ function generateHTMLReport() {
             `).join('')}
         </ul>
         <h2>Summary Statistics</h2>
-        <p><strong>Total Study Hours:</strong> ${reportData.totalStudyHours} hours</p>
-        <p><strong>Total Marking Hours:</strong> ${reportData.totalMarkingHours} hours</p>
+        <p><strong>Total Study Hours:</strong> ${formatTimeForDisplay(reportData.totalStudyHours)} </p>
+        <p><strong>Total Marking Hours:</strong> ${formatTimeForDisplay(reportData.totalMarkingHours)} </p>
         <h3>Activity Type Distribution</h3>
         ${chartDiv.innerHTML} 
        <h2>Units</h2>
@@ -992,8 +1004,8 @@ function generateUnitsHTML(units) {
         <div class="unit">
             <h3>${unit.title}</h3>
             <p>${unit.description}</p>
-            <p><strong>Total Study Hours:</strong> ${unit.totalStudyHours} hours</p>
-            <p><strong>Total Marking Hours:</strong> ${unit.totalMarkingHours} hours</p>
+            <p><strong>Total Study Hours:</strong> ${formatTimeForDisplay(unit.totalStudyHours)} </p>
+            <p><strong>Total Marking Hours:</strong> ${formatTimeForDisplay(unit.totalMarkingHours)} </p>
             <p><strong>Learning Outcomes Covered:</strong> ${unit.learningOutcomes.join(', ')}</p>
             <h4>Activities</h4>
             ${generateActivitiesHTML(unit.activities)}
@@ -1006,7 +1018,7 @@ function generateActivitiesHTML(activities) {
         <div class="activity activity-${activity.type.toLowerCase()}">
             <h5>${activity.title} (${activity.type})</h5>
             <p>${activity.description}</p>
-            <p><strong>Study Hours:</strong> ${activity.studyHours}</p>
+            <p><strong>Study Hours:</strong> ${formatTimeForDisplay(activity.studyHours)}</p>
             <p><strong>Learning Outcomes:</strong>
             ${activity.learningOutcomes && activity.learningOutcomes.length > 0 ? `
                    ${activity.learningOutcomes.join(', ')} </p>
@@ -1017,7 +1029,7 @@ function generateActivitiesHTML(activities) {
             ${activity.isAssessed ? `
                 <p><strong>Assessment:</strong> Required: ${activity.isRequired ? 'Yes' : 'No'}, 
                    Pass Mark: ${activity.passMark}%, Weighting: ${activity.weighting}%, 
-                   Marking Hours: ${activity.markingHours}</p>
+                   Marking Hours: ${formatTimeForDisplay(activity.markingHours)}</p>
             ` : ''}
         </div>
     `).join('');
@@ -1097,28 +1109,95 @@ function getUnitLearningOutcomes(unitId) {
     return Array.from(outcomeIndices).map(index => courseData.course.learningOutcomes[index]);
 }
 
+// function handleActivityReorder(activityId, newUnitId, newIndex) {
+// //     console.log('Reordering activity:', activityId, 'to unit:', newUnitId, 'at index:', newIndex);
+// //     const courseData = getCourseData();
+// //     const activityIndex = courseData.activities.findIndex(a => a.id === activityId);
+    
+// //     if (activityIndex !== -1) {
+// //         const activity = courseData.activities[activityIndex];
+        
+// //         // Remove the activity from its current position
+// //         courseData.activities.splice(activityIndex, 1);
+        
+// //         // Find the insertion index in the new unit
+// //         const insertIndex = courseData.activities.filter(a => a.unitId === newUnitId).length;
+        
+// //         // Insert the activity at its new position
+// //         courseData.activities.splice(insertIndex, 0, {...activity, unitId: newUnitId});
+        
+// //         saveCourse(courseData);
+// //         updateUI();
+// //     }
+// // }
+// console.log('Reordering activity:', activityId, 'to unit:', newUnitId, 'at index:', newIndex);
+// const courseData = getCourseData();
+// const activityIndex = courseData.activities.findIndex(a => a.id === activityId);
+
+// if (activityIndex !== -1) {
+//     const activity = courseData.activities[activityIndex];
+    
+//     // Remove the activity from its current position
+//     courseData.activities.splice(activityIndex, 1);
+    
+//     // Find all activities in the new unit
+//     const newUnitActivities = courseData.activities.filter(a => a.unitId === newUnitId);
+    
+//     // Adjust newIndex to ensure it is within bounds
+//     const adjustedIndex = Math.min(newIndex, newUnitActivities.length);
+
+//     // Calculate the actual index in the courseData.activities array
+//     const targetIndex = courseData.activities.findIndex(a => a.unitId === newUnitId) + adjustedIndex;
+    
+//     // Insert the activity at its new position
+//     courseData.activities.splice(targetIndex, 0, {...activity, unitId: newUnitId});
+    
+//     saveCourse(courseData);
+//     updateUI();
+// }
+// }
 function handleActivityReorder(activityId, newUnitId, newIndex) {
     console.log('Reordering activity:', activityId, 'to unit:', newUnitId, 'at index:', newIndex);
+    
     const courseData = getCourseData();
     const activityIndex = courseData.activities.findIndex(a => a.id === activityId);
     
     if (activityIndex !== -1) {
         const activity = courseData.activities[activityIndex];
-        
+
         // Remove the activity from its current position
         courseData.activities.splice(activityIndex, 1);
         
-        // Find the insertion index in the new unit
-        const insertIndex = courseData.activities.filter(a => a.unitId === newUnitId).length;
+        // Get the activities for the target unit (newUnitId)
+        const unitActivities = courseData.activities.filter(a => a.unitId === newUnitId);
         
-        // Insert the activity at its new position
-        courseData.activities.splice(insertIndex, 0, {...activity, unitId: newUnitId});
+        // Ensure the newIndex is valid within the unit's boundaries
+        const clampedNewIndex = Math.min(Math.max(0, newIndex), unitActivities.length);
         
+        // Determine the global insertion index based on the clamped position in the unit
+        let targetIndex;
+
+        if (unitActivities.length === 0) {
+            // If no activities in the new unit, insert at the first position
+            targetIndex = courseData.activities.findIndex(a => a.unitId === newUnitId) + clampedNewIndex;
+        } else {
+            // Find the global index where this activity will go
+            const firstInUnitIndex = courseData.activities.findIndex(a => a.unitId === newUnitId);
+            targetIndex = firstInUnitIndex + clampedNewIndex;
+        }
+
+        // If inserting at the start of the unit (empty or not), append it at the end of the activities array
+        if (targetIndex === -1 || targetIndex >= courseData.activities.length) {
+            targetIndex = courseData.activities.length;
+        }
+
+        // Insert the activity at the determined global index with the new unitId
+        courseData.activities.splice(targetIndex, 0, { ...activity, unitId: newUnitId });
+
         saveCourse(courseData);
         updateUI();
     }
 }
-
 
 // Export necessary functions
 export {

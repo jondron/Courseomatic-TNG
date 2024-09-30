@@ -60,7 +60,7 @@ export function editActivity(activityId, updatedData) {
             ...updatedData,
         studyHours: timeToMinutes(updatedData.studyHours),
         markingHours: updatedData.isAssessed ? timeToMinutes(updatedData.markingHours) : 0
-        };
+              };
         saveCourse(courseData);
         console.log('Activity updated:', courseData.activities[activityIndex]);
         return courseData.activities[activityIndex];
