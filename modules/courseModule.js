@@ -208,14 +208,16 @@ function generateCourseReport() {
                 .reduce((total, activity) => total + parseFloat(activity.markingHours || 0), 0),
             learningOutcomes: [...new Set(courseData.activities
                 .filter(activity => activity.unitId === unit.id)
-                .flatMap(activity => activity.learningOutcomes))]
+                .flatMap(activity => activity.learningOutcomes))] // CLOs
         })),
         totalStudyHours: getTotalStudyHours(),
         totalMarkingHours: getTotalMarkingHours(),
         activityTypeProportions: getActivityTypeProportions(),
-        unassessedLearningOutcomes: getUnassessedLearningOutcomes()
+        unassessedLearningOutcomes: getUnassessedLearningOutcomes(),
+        mappedOutcomes: courseData.mappedOutcomes
     };
 }
+
 
 
 //handle marking and study hours
