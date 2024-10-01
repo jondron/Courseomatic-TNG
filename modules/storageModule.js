@@ -52,8 +52,6 @@ export function importFromJSON(jsonString) {
 
         // Update the UI
         updateUI();
-
-        //console.log('Course data imported successfully');
     } catch (error) {
         console.error('Error importing course data:', error);
         alert('There was an error importing the course data. Please check the file and try again.');
@@ -67,7 +65,6 @@ export function copyToClipboard() {
     
     navigator.clipboard.writeText(dataStr).then(
         function() {
-            //console.log('Copying to clipboard was successful!');
             alert('Course data copied to clipboard!');
         },
         function(err) {
@@ -79,7 +76,6 @@ export function copyToClipboard() {
 
 export function saveToPDF() {
     // This is a placeholder function. Actual PDF generation would require a PDF library.
-    //console.log('PDF generation not implemented in this module. Consider using a library like jsPDF.');
     alert('PDF generation is not implemented in this demo. In a full application, this would save the course data as a PDF.');
 }
 

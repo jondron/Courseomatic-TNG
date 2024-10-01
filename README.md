@@ -15,4 +15,7 @@
  The learning activity types are based on ABC Learning Design activity types, with the addition of reflection and cooperation to better support self-paced study 
  (you don't have to use those if you don't like them).
 
- 
+ To do:
+ - add version number to course
+ - add prerequisites field to course
+

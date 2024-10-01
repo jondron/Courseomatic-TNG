@@ -4,14 +4,16 @@ import { getCourseData, saveCourse } from './courseModule.js';
 import { timeToMinutes } from './timeUtils.js';
 
 const activityTypes = {
-    acquisition: ["reading", "watching video", "listening to audio", "other"],
+    acquisition: ["reading", "watching video", "listening to audio", "attending lecture", "other"],
     practice: ["exercises", "tests & quizzes", "exam", "drills", "games", "simulations & role plays", "other"],
-    investigation: ["research project", "fieldwork", "case study", "problem-based learning", "data analysis", "experiment", "lab","other"],
+    investigation: ["research project", "web search", "fieldwork", "case study", 
+                "problem-based learning", "inquiry-based learning", "data analysis", "experiment", "lab","other"],
     reflection: ["journaling", "discussion", "portfolio", "exit takeaway", "reflective essay", "feedback", "survey", "exam","other"],
-    production: ["writing", "presentation", "drawing", "experiment", "coding", "prototyping", "model design", "concept map", "portfolio", "project", "exam","other"],
+    production: ["writing", "presentation", "drawing", "experiment", "coding", "configuration", "prototyping", "model design",
+                "concept map", "portfolio", "project", "exam","other"],
     discussion: ["discussion", "debate", "think-pair-share", "socratic seminar", "peer feedback", "commentary", "other"],
-    cooperation: ["social bookmarking", "blog", "wiki", "image sharing", "podcast", "demo", "document sharing", "other"],
-    collaboration: ["group project", "study group", "discussion", "conference", "wiki", "peer review", "brainstorming", "role playing", "other"]
+    cooperation: ["social bookmarking", "blog", "wiki", "scheduling", "image sharing", "podcast", "demo", "document sharing", "other"],
+    collaboration: ["group project", "study group", "discussion", "conference", "wiki", "peer review", "brainstorming", "role playing","seminar", "other"]
 };
 
 export function getActivityTypes() {
@@ -24,22 +26,10 @@ export function getSpecificActivities(type) {
 
 
 export function createActivity(activityData) {
-    //console.log('Creating new activity:', activityData);
     const courseData = getCourseData();
     if (activityData.otherActivity){
         addCustomActivityType(activityData.type,activityData.otherActivity);
     }
-
-    //  // Check if an activity with the same title already exists in the same unit
-    //  const existingActivity = courseData.activities.find(a => 
-    //     a.title === activityData.title && a.unitId === activityData.unitId
-    // );
-    
-    // if (existingActivity) {
-    //     const fixname = Date.now().toString(6);   
-    //     console.warn('An activity with this title already exists in the unit. renaming to', courseData.title+fixname);
-    //     courseData.activities.title= courseData.title+fixname;
-    // }
 
     const newActivity = {
         id: generateUniqueId(),
@@ -49,12 +39,10 @@ export function createActivity(activityData) {
      };
     courseData.activities.push(newActivity);
     saveCourse(courseData);
-    //console.log('New activity created:', newActivity);
     return newActivity;
 }
 
 export function editActivity(activityId, updatedData) {
-    //console.log('Editing activity:', activityId, updatedData);
     if ('otherActivity' in updatedData){
         addCustomActivityType(updatedData.type,updatedData.otherActivity);
     }
@@ -68,7 +56,6 @@ export function editActivity(activityId, updatedData) {
         markingHours: updatedData.isAssessed ? timeToMinutes(updatedData.markingHours) : 0
               };
         saveCourse(courseData);
-        //console.log('Activity updated:', courseData.activities[activityIndex]);
         return courseData.activities[activityIndex];
     }
     console.error('Activity not found:', activityId);

@@ -2,7 +2,7 @@
 
 import { getCourseData, saveCourse, addProgramLearningOutcome, addCourseLearningOutcome, 
     getActivityTypeProportions, getUnassessedLearningOutcomes,getUnitStudyHours, getUnitMarkingHours,getTotalStudyHours, getTotalMarkingHours,
-     recalculateHours, generateCourseReport} from './courseModule.js';
+     recalculateHours, generateCourseReport, clearCourse} from './courseModule.js';
 import { createUnit, editUnit, deleteUnit, cloneUnit } from './unitModule.js';
 import { createActivity, editActivity, deleteActivity, cloneActivity, getActivityTypes, getSpecificActivities, addCustomActivityType } from './activityModule.js';
 import { createPieChart } from './chartModule.js';
@@ -17,7 +17,6 @@ export function initializeUI() {
 }
 
 export function updateUI() {
-    //console.log('Updating UI');
     updateCourseInfo();
     updateUnits();
     updateActivityTypePieChart();
@@ -25,17 +24,11 @@ export function updateUI() {
 }
 
 function setupEventListeners() {
-    //console.log('Setting up event listeners');
         //debug
-        //console.log('All elements with id "exportJson":', document.querySelectorAll('#exportJson'));
-        //console.log('All elements with id "importJson":', document.querySelectorAll('#importJson'));
-        //console.log('All anchor tags:', document.querySelectorAll('a'));
-        //console.log('All elements in dropdown-content:', document.querySelectorAll('.dropdown-content > *'));
     
 
         try {
             document.getElementById('units').addEventListener('click', handleUnitEvents);
-            //console.log('Units event listener added successfully');
         } catch (error) {
             console.error('Error setting up units event listener:', error);
         }
@@ -45,7 +38,6 @@ function setupEventListeners() {
                 populateProgramForm();
                 document.getElementById('programInfoPopup').style.display = 'block';
             });
-            //console.log('Program info button event listener added successfully');
         } catch (error) {
             console.error('Error setting up program info button event listener:', error);
         }
@@ -55,7 +47,6 @@ function setupEventListeners() {
                 populateCourseForm();
                 document.getElementById('courseInfoPopup').style.display = 'block';
             });
-            //console.log('Course info button event listener added successfully');
         } catch (error) {
             console.error('Error setting up course info button event listener:', error);
         }
@@ -65,10 +56,18 @@ function setupEventListeners() {
                 document.getElementById('unitForm').reset();
                 document.getElementById('unitPopup').style.display = 'block';
             });
-            //console.log('New unit button event listener added successfully');
         } catch (error) {
             console.error('Error setting up new unit button event listener:', error);
         }
+
+        try {
+            document.getElementById('saveHtml').addEventListener('click', () => {
+                saveHtmlReport();
+            });
+        } catch (error) {
+            console.error('Error saving report:', error);
+        }
+    
     
         try {
             document.getElementById('clearBtn').addEventListener('click', () => {
@@ -77,7 +76,6 @@ function setupEventListeners() {
                     updateUI();
                 }
             });
-            //console.log('Clear button event listener added successfully');
         } catch (error) {
             console.error('Error setting up clear button event listener:', error);
         }
@@ -86,29 +84,20 @@ function setupEventListeners() {
     const exportJsonBtn = document.getElementById('exportJson');
     const importJsonBtn = document.getElementById('importJson');
 
-    //console.log('exportJsonBtn:', exportJsonBtn);
-    //console.log('importJsonBtn:', importJsonBtn);
-
 
     if (exportJsonBtn) {
-    //    //console.log('Export JSON button found, attaching listener');
+    //    //('Export JSON button found, attaching listener');
         exportJsonBtn.addEventListener('click', handleExportJson);
     } else {
         console.error('Export JSON button not found');
     }
 
     if (importJsonBtn) {
-        //console.log('Import JSON button found, attaching listener');
         importJsonBtn.addEventListener('click', handleImportJson);
     } else {
         console.error('Import JSON button not found');
     }     
 
-    // reports
-    document.getElementById('saveHtml').removeEventListener('click', saveHtmlReport); // Optional, remove existing listeners
-    document.getElementById('saveHtml').addEventListener('click', saveHtmlReport, { once: true });
-    
-   
 
     // Form submit listeners
     document.getElementById('programInfoForm').addEventListener('submit', handleProgramFormSubmit);
@@ -147,6 +136,70 @@ function setupEventListeners() {
    // Course info accordion
    document.querySelector('.course-info-header').addEventListener('click', toggleCourseInfoAccordion);
 
+   //study hour calculator 
+     // Main form elements
+     const activityForm = document.getElementById('activityForm');
+     const studyHoursInput = document.getElementById('studyHours');
+     const openCalculatorBtn = document.getElementById('openCalculator');
+
+     // Popup elements
+     const calculatorPopup = document.getElementById('calculatorPopup');
+     const closePopupBtn = document.getElementById('closePopup');
+     const calculatorForm = document.getElementById('calculatorForm');
+     const calcActivityTypeSelect = document.getElementById('calcActivityType');
+     const inputTypeSelect = document.getElementById('inputType');
+     const pageTypeContainer = document.getElementById('pageTypeContainer');
+     const pageTypeSelect = document.getElementById('pageType');
+     const inputValueField = document.getElementById('inputValue');
+     const calculatorResultDiv = document.getElementById('calculatorResult');
+
+     // Open calculator popup
+     openCalculatorBtn.addEventListener('click', (e) => {
+         e.preventDefault();
+         calculatorPopup.style.display = 'block';
+     });
+
+     // Close calculator popup
+     closePopupBtn.addEventListener('click', () => {
+         calculatorPopup.style.display = 'none';
+     });
+
+     // Close popup when clicking outside
+     window.addEventListener('click', (e) => {
+         if (e.target === calculatorPopup) {
+             calculatorPopup.style.display = 'none';
+         }
+     });
+
+     // Toggle page type visibility
+     inputTypeSelect.addEventListener('change', function() {
+         pageTypeContainer.style.display = this.value === 'pages' ? 'block' : 'none';
+         inputValueField.placeholder = `Enter number of ${this.value}`;
+     });
+
+     // Calculator form submission
+     calculatorForm.addEventListener('submit', function(e) {
+         e.preventDefault();
+         const activity = calcActivityTypeSelect.value;
+         const inputType = inputTypeSelect.value;
+         const pageType = pageTypeSelect.value;
+         const inputValue = parseFloat(inputValueField.value);
+
+         if (!activity || !inputValue) {
+             calculatorResultDiv.textContent = 'Please select an activity and provide the required input.';
+             return;
+         }
+
+         const wordCount = inputType === 'words' ? inputValue : inputValue * parseFloat(pageType);
+         const studyTimeMinutes = calculateStudyTime(activity, wordCount);
+         const studyTimeHours = Math.floor(studyTimeMinutes / 60);
+         const studyTimeRemainingMinutes = Math.round(studyTimeMinutes % 60);
+
+         const formattedTime = `${studyTimeHours}:${studyTimeRemainingMinutes.toString().padStart(2, '0')}`;
+         
+         calculatorResultDiv.textContent = `Estimated study time: ${formattedTime}`;
+         studyHoursInput.value = formattedTime;
+     });
 
 }
 
@@ -212,7 +265,6 @@ function handleActivityEvents(event, activityCard, activityId) {
 }
 
 function handleAddActivity(unitId) {
-    //console.log('Opening add activity form for unit:', unitId);
     const form = document.getElementById('activityForm');
     form.reset();
     populateActivityForm();
@@ -229,7 +281,6 @@ function handleAddActivity(unitId) {
 }
 
 function handleEditUnit(unitId) {
-    //console.log('Editing unit:', unitId);
     const courseData = getCourseData();
     const unit = courseData.units.find(u => u.id === unitId);
     if (unit) {
@@ -249,7 +300,6 @@ function handleEditUnit(unitId) {
 }
 
 function handleCloneUnit(unitId) {
-    //console.log('Cloning unit:', unitId);
     const clonedUnit = cloneUnit(unitId);
     if (clonedUnit) {
         updateUI();
@@ -257,7 +307,6 @@ function handleCloneUnit(unitId) {
 }
 
 function handleDeleteUnit(unitId) {
-    //console.log('Deleting unit:', unitId);
     if (confirm('Are you sure you want to delete this unit? This action cannot be undone.')) {
         deleteUnit(unitId);
         updateUI();
@@ -265,7 +314,6 @@ function handleDeleteUnit(unitId) {
 }
 
 function handleMoveUnitUp(unitId) {
-    //console.log('Moving unit up:', unitId);
     const courseData = getCourseData();
     const unitIndex = courseData.units.findIndex(u => u.id === unitId);
     if (unitIndex > 0) {
@@ -277,7 +325,6 @@ function handleMoveUnitUp(unitId) {
 }
 
 function handleMoveUnitDown(unitId) {
-    //console.log('Moving unit down:', unitId);
     const courseData = getCourseData();
     const unitIndex = courseData.units.findIndex(u => u.id === unitId);
     if (unitIndex < courseData.units.length - 1) {
@@ -296,7 +343,6 @@ function toggleUnitCollapse(unitPanel) {
 }
 
 function handleEditActivity(activityId) {
-    //console.log('Editing activity:', activityId);
     const courseData = getCourseData();
     const activity = courseData.activities.find(a => a.id === activityId);
     if (activity) {
@@ -307,7 +353,6 @@ function handleEditActivity(activityId) {
 }
 
 function handleCloneActivity(activityId) {
-    //console.log('Cloning activity:', activityId);
     const clonedActivity = cloneActivity(activityId);
     if (clonedActivity) {
         updateUI();
@@ -315,7 +360,6 @@ function handleCloneActivity(activityId) {
 }
 
 function handleDeleteActivity(activityId) {
-    //console.log('Deleting activity:', activityId);
     if (confirm('Are you sure you want to delete this activity? This action cannot be undone.')) {
         deleteActivity(activityId);
         updateUI();
@@ -323,7 +367,6 @@ function handleDeleteActivity(activityId) {
 }
 
 function handleMoveActivityUp(activityId) {
-    //console.log('Moving activity up:', activityId);
     const courseData = getCourseData();
     const activities = courseData.activities;
     const currentIndex = activities.findIndex(a => a.id === activityId);
@@ -345,7 +388,6 @@ function handleMoveActivityUp(activityId) {
 }
 
 function handleMoveActivityDown(activityId) {
-    //console.log('Moving activity down:', activityId);
     const courseData = getCourseData();
     const activities = courseData.activities;
     const currentIndex = activities.findIndex(a => a.id === activityId);
@@ -400,7 +442,7 @@ function handleCourseFormSubmit(event) {
                 .filter(value => value.trim() !== '')
         }
      };
-     collectCLOPLOMappings();
+    collectCLOPLOMappings();
     saveCourse(courseData);
     updateUI();
     document.getElementById('courseInfoPopup').style.display = 'none';
@@ -428,7 +470,6 @@ function handleActivityFormSubmit(event) {
     event.preventDefault();
 
     if (isSubmitting) {
-        //console.log('Form is already being submitted. Ignoring this submission.');
         return;
     }
 
@@ -455,14 +496,10 @@ function handleActivityFormSubmit(event) {
         activityData.markingHours = document.getElementById('markingHours').value
     }
 
-    //console.log('Activity data to save:', activityData);
-
     const activityId = form.dataset.activityId;
     if (activityId) {
-        //console.log('Editing existing activity:', activityId);
         editActivity(activityId, activityData);
     } else {
-        //console.log('Creating new activity');
         createActivity(activityData);
     }
 
@@ -812,22 +849,14 @@ function setupCourseInfoToggle() {
 }
 
 function toggleCourseInfoAccordion() {
-    //console.log('Toggle function called');
     const courseInfoContent = document.getElementById('courseInfoContent');
     const toggleIcon = document.getElementById('courseInfoToggleIcon');
-    
-    //console.log('Before toggle - display:', courseInfoContent.style.display);
-    //console.log('Before toggle - classList:', courseInfoContent.classList);
 
     courseInfoContent.classList.toggle('show');
     const isVisible = courseInfoContent.classList.contains('show');
     
     courseInfoContent.style.display = isVisible ? 'block' : 'none';
     toggleIcon.textContent = isVisible ? '▲' : '▼';
-
-    //console.log('After toggle - display:', courseInfoContent.style.display);
-    //console.log('After toggle - classList:', courseInfoContent.classList);
-    //console.log('Toggle icon text:', toggleIcon.textContent);
 }
 
 function updateUnits() {
@@ -960,7 +989,7 @@ function collapseActivityCard(activityId) {
     if (!activity) return;
 
     const truncatedTitle = truncateText(activity.title, 5);
-    ////console.log("title", truncatedTitle);
+    ////("title", truncatedTitle);
     const truncatedDescription = truncateText(activity.description, 10);
     const collapsedContent = `
         <h5 class="activity-title">${truncatedTitle}</h5>
@@ -1024,7 +1053,6 @@ function handleExportJson() {
 }
 
 function handleImportJson() {
-    //console.log ("importing from JSoN");
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.json';
@@ -1049,10 +1077,7 @@ function handleImportJson() {
 
 //report functions
 
-function saveHtmlReport(e) {
-    //console.log ("called saveHTMLReport");
-    e.preventDefault(); // Prevent default form submission or navigation
-
+function saveHtmlReport() {
     const htmlReport = generateHTMLReport(); // Generate the report content
 
     // Open a new window or reuse an existing one
@@ -1083,7 +1108,6 @@ function saveHtmlReport(e) {
 function generateHTMLReport() {
     const reportData = generateCourseReport();
     const courseData = getCourseData();
-    //console.log ("Raw data for report: ", reportData);
     if (!Array.isArray(reportData.mappedOutcomes)) {
         reportData.mappedOutcomes = [];
     }
@@ -1253,6 +1277,24 @@ function generateAssessedActivitiesHTML(activities) {
     };
 }
 
+function calculateStudyTime(activity, wordCount) {
+    switch (activity) {
+        case 'reading_main':
+            return wordCount / 300;
+        case 'reading_understand':
+            return wordCount / 130;
+        case 'reading_analyze':
+            return wordCount / 70;
+        case 'formative_writing':
+            return wordCount * 1.2;
+        case 'reflection':
+            return wordCount * 0.2;
+        case 'essay':
+            return wordCount * 0.023 * 60;
+        default:
+            return 0;
+    }
+}
 
 // Utility functions
 
@@ -1358,7 +1400,6 @@ function getActivityLearningOutcomesText(activityId) {
 
 
 function handleActivityReorder(activityId, newUnitId, newIndex) {
-    //console.log('Reordering activity:', activityId, 'to unit:', newUnitId, 'at index:', newIndex);
     
     const courseData = getCourseData();
     const activityIndex = courseData.activities.findIndex(a => a.id === activityId);

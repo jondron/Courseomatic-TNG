@@ -9,18 +9,17 @@ export function createUnit(unitData) {
         console.error('Attempted to create unit with invalid data:', unitData);
         return null;
     }
-    //console.log('createUnit called with valid data:', unitData);
     return addUnit(unitData);
 }
 
 // export function createUnit(unitData) {
-//     //console.log('createUnit called with data:', unitData);
+//     //('createUnit called with data:', unitData);
 //     const courseData = getCourseData();
     
 //     // Check if a unit with this title already exists
 //     const existingUnit = courseData.units.find(unit => unit.title === unitData.title);
 //     if (existingUnit) {
-//         //console.log('Unit with this title already exists:', existingUnit);
+//         //('Unit with this title already exists:', existingUnit);
 //         return existingUnit;
 //     }
     
@@ -30,7 +29,7 @@ export function createUnit(unitData) {
 //         description: unitData.description,
 //         order: courseData.units.length
 //     };
-//     //console.log('New unit created:', newUnit);
+//     //('New unit created:', newUnit);
     
 //     const updatedCourseData = {
 //         ...courseData,
@@ -38,13 +37,12 @@ export function createUnit(unitData) {
 //     };
 //     setCourseData(updatedCourseData);
     
-//     //console.log('Updated units:', updatedCourseData.units);
+//     //('Updated units:', updatedCourseData.units);
 //     return newUnit;
 // }
 
 function handleNewUnitClick(event) {
     event.preventDefault(); // Prevent any default button behavior
-    //console.log('New Unit button clicked - only opening form');
     const unitForm = document.getElementById('unitForm');
     unitForm.reset();
     delete unitForm.dataset.unitId;
@@ -60,7 +58,6 @@ export function editUnit(unitId, updatedData) {
             ...updatedData
         };
         saveCourse(courseData);
-        //console.log('Unit updated:', courseData.units[unitIndex]);
          return courseData.units[unitIndex];
     } else {
         console.error('Unit not found:', unitId);

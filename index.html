@@ -15,18 +15,17 @@
 <body>
     <header>
         <h1>Courseomatic Storyboard Developer</h1>
+        <p><a href="studyhourscalculator.html">Study hours calculator</a></p>
         <nav>
             <button id="programInfoBtn" title="Enter program information">Program Info</button>
             <button id="courseInfoBtn" title="Edit course information">Course Info</button>
             <button id="newUnitBtn" title="Create a new unit">New Unit</button>
+            <button id="saveHtml" title="Create a report">Create report</button> 
             <div class="dropdown">
                 <button id="saveLoadBtn" title="Save or load course data">Save/Load</button>
                 <div class="dropdown-content">
                     <a href="#" id="exportJson" title="Export course to JSON file">Export to JSON</a>
                     <a href="#" id="importJson" title="Import course from JSON file">Import from JSON</a>
-                    <a href="#" id="printPdf" title="Print to PDF">Print to PDF</a>
-                    <a href="#" id="saveHtml" title="Save to HTML">Save to HTML</a>
-                    <a href="#" id="copyClipboard" title="Copy to clipboard">Copy to Clipboard</a>
                 </div>
             </div>
             <button id="clearBtn" title="Clear all data">Clear</button>
@@ -77,7 +76,7 @@
                 <input type="text" id="courseName" name="courseName" required>
                 
                 <label for="courseCode">Course Code:</label>
-                <input type="text" id="courseCode" name="courseCode" required pattern="[A-Za-z]{4}\d{3}" title="4 letters followed by 3 numbers">
+                <input type="text" id="courseCode" name="courseCode">
                 
                 <label for="creditHours">Credit Hours:</label>
                 <input type="number" id="creditHours" name="creditHours" min="0" step="0.5" required>
@@ -151,11 +150,12 @@
                     <label for="otherActivity">Other Activity:</label>
                     <input type="text" id="otherActivity" name="otherActivity">
                 </div>
-                
-                <label for="studyHours">Estimated Study Time (HH:MM or number of minutes) :</label>
-                <input type="text" id="studyHours" name="studyHours" required pattern="^(\d+:\d{2}|\d+)$" title="Enter time as HH:MM or minutes">
-                
-                <h3>Learning Outcomes</h3>
+                <div class="study-hours-container">
+                     <label for="studyHours">Estimated Study Time (HH:MM or number of minutes) :</label><br>
+                    <input type="text" id="studyHours" name="studyHours" required pattern="^(\d+:\d{2}|\d+)$" title="Enter time as HH:MM or minutes">
+                    <button type="button" class="calculator-btn" id="openCalculator" title="get help working out study hours">?</button>
+                </div>   
+                    <h3>Learning Outcomes</h3>
                 <div id="activityLearningOutcomes"></div>
                 
                 <label for="unitSelect">Unit:</label>
@@ -189,8 +189,58 @@
             </form>
         </div>
     </div>
-
+ <!-- Study Time Calculator Popup -->
+ <div id="calculatorPopup" class="popup">
+    <div class="popup-content">
+        <span class="close-popup" id="closePopup">&times;</span>
+        <h2>Study Time Calculator</h2>
+        <form id="calculatorForm">
+            <div>
+                <label for="calcActivityType">Activity Type:</label>
+                <select id="calcActivityType" required>
+                    <option value="">Select an activity</option>
+                    <option value="reading_main">Reading (main ideas)</option>
+                    <option value="reading_understand">Reading (understand each sentence)</option>
+                    <option value="reading_analyze">Reading (critical analysis)</option>
+                    <option value="formative_writing">Formative Writing</option>
+                    <option value="reflection">Reflection/Opinion/Discussion</option>
+                    <option value="essay">Essays/Reports</option>
+                </select>
+            </div>
+            <div>
+                <label for="inputType">Input Type:</label>
+                <select id="inputType" required>
+                    <option value="words">Words</option>
+                    <option value="pages">Pages</option>
+                </select>
+            </div>
+            <div id="pageTypeContainer" style="display: none;">
+                <label for="pageType">Page Type:</label>
+                <select id="pageType">
+                    <option value="250">Paperback Novel (250 words/page)</option>
+                    <option value="500">Standard Textbook (500 words/page)</option>
+                    <option value="750">Large Textbook (750 words/page)</option>
+                </select>
+            </div>
+            <div>
+                <label for="inputValue">Number of Words/Pages:</label>
+                <input type="number" id="inputValue" required>
+            </div>
+            <button type="submit">Calculate Study Time</button>
+        </form>
+        <div id="calculatorResult"></div>
+        <p>A few rules of thumb:</p>
+        <ul>
+            <li>Allow double the run time for audio/video;</li>
+            <li>Allow 1 minute per multiple choice question;</li>
+            <li>Allow 20% of the total course study hours for exam revision (divide as applicable if 
+                there is more than one exam), or approximately 30 hours for a standard 3-credit course.
+            </li>
+        </ul>
+    </div>
+</div>
 
     <script type="module" src="script.js"></script>
+
 </body>
 </html>
