@@ -5,15 +5,16 @@ import { timeToMinutes } from './timeUtils.js';
 
 const activityTypes = {
     acquisition: ["reading", "watching video", "listening to audio", "attending lecture", "other"],
-    practice: ["exercises", "tests & quizzes", "exam", "drills", "games", "simulations & role plays", "other"],
+    practice: ["exercises", "tests & quizzes", "exam", "drills", "games", "simulations & role plays", "workshop", "other"],
     investigation: ["research project", "web search", "fieldwork", "case study", 
                 "problem-based learning", "inquiry-based learning", "data analysis", "experiment", "lab","other"],
-    reflection: ["journaling", "discussion", "portfolio", "exit takeaway", "reflective essay", "feedback", "survey", "exam","other"],
-    production: ["writing", "presentation", "drawing", "experiment", "coding", "configuration", "prototyping", "model design",
+    reflection: ["journaling", "discussion", "outcome mapping", "portfolio", "exit takeaway", "reflective essay", "feedback", "survey", "exam","other"],
+    production: ["writing","podcast", "demo", "presentation", "interactive media","design", "diagram","drawing",
+                 "experiment", "coding", "configuration", "prototyping", "model design",
                 "concept map", "portfolio", "project", "exam","other"],
-    discussion: ["discussion", "debate", "think-pair-share", "socratic seminar", "peer feedback", "commentary", "other"],
-    cooperation: ["social bookmarking", "blog", "wiki", "scheduling", "image sharing", "podcast", "demo", "document sharing", "other"],
-    collaboration: ["group project", "study group", "discussion", "conference", "wiki", "peer review", "brainstorming", "role playing","seminar", "other"]
+    discussion: ["discussion", "debate", "think-pair-share", "socratic seminar", "tutorial","peer feedback", "commentary", "other"],
+    cooperation: ["social bookmarking", "tagging", "commenting", "rating", "blog", "wiki", "scheduling", "image sharing", "FAQ contribution", "document sharing", "other"],
+    collaboration: ["group project", "study group", "workshop", "discussion", "conference", "wiki", "peer review", "brainstorming", "role playing","seminar", "other"]
 };
 
 export function getActivityTypes() {
