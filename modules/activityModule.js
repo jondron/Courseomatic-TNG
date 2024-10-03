@@ -80,7 +80,7 @@ export function cloneActivity(activityId) {
         const clonedActivity = {
             ...activity,
             id: generateUniqueId(),
-            title: `${activity.title} (Clone)`
+            title: `${activity.title}`
         };
         courseData.activities.push(clonedActivity);
         return clonedActivity;

@@ -22,4 +22,9 @@ Its purpose is to develop learning designs for courses. You can create courses t
  To do:
  - add version number to course
  - add prerequisites field to course
-
+ - allow different activity models, e.g. R2D2, Lewin,
+ - allow PLOs to be mapped when adding CLOs, not just when editing
+ - make program info a popup in course info. Allow results to update course info form
+- make units drag and drop
+- make multiple select possible to edit multiple activities at once (tricky interface)
+- reorderable CLOs and PLOs
