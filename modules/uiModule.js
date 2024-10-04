@@ -12,7 +12,7 @@ import { formatTimeForDisplay, timeToMinutes } from './timeUtils.js';
 export function initializeUI() {
     setupEventListeners();
     setupFormValidation();
-    setupCourseInfoToggle();
+    //setupCourseInfoToggle();
     updateUI();
 }
 
@@ -134,7 +134,7 @@ function setupEventListeners() {
         }
     });
    // Course info accordion
-   document.querySelector('.course-info-header').addEventListener('click', toggleCourseInfoAccordion);
+   // document.querySelector('.course-info-header').addEventListener('click', toggleCourseInfoAccordion);
 
    //study hour calculator 
      // Main form elements
@@ -775,8 +775,7 @@ function addNewCLO() {
 
 function updateCourseInfo() {
     const courseData = getCourseData();
-    //const courseInfoSection = document.querySelector('#courseInfo .content');
-    const courseInfoContent = document.querySelector('#courseInfo .course-info-content');
+    const courseInfoContent = document.querySelector('.course-info-content');
     const totalStudyHours = getTotalStudyHours();
     const totalMarkingHours = getTotalMarkingHours();
     const assessedActivities = courseData.activities.filter(activity => activity.isAssessed);    
@@ -786,62 +785,80 @@ function updateCourseInfo() {
         courseData.mappedOutcomes = [];
     }
 
-        courseInfoContent.innerHTML = `
-            <h3>${courseData.course.name} (${courseData.course.code})</h3>
-            <p><strong>Credit Hours:</strong> ${courseData.course.creditHours}</p>
-            <p><strong>Course Goal:</strong> ${courseData.course.goal}</p>
-            <p><strong>Course Description:</strong> ${courseData.course.description}</p>
-            <p><strong>Production Notes:</strong> ${courseData.course.productionNotes}</p>
-            <h4>Learning Outcomes:</h4>
-            <ol>
-            ${Array.isArray(courseData.course.learningOutcomes) && courseData.course.learningOutcomes.length > 0 
-                ? courseData.course.learningOutcomes.map(outcome => `<li>${outcome}</li>`).join('') 
-                : ''
-            }
-            </ol>
-            <p><strong>Total Study Hours:</strong> ${formatTimeForDisplay(totalStudyHours)}</p>
-           <p><strong>Total Marking Hours:</strong> ${formatTimeForDisplay(totalMarkingHours)}</p>
-           <p><strong>Sum of weightings for assessments:</strong> ${totalWeighting}%</p> 
-           <div id="unassessedOutcomes"></div>
-            <div id="activityTypePieChart"></div>           
-            <p><strong>Program:</strong> ${courseData.program.name}</p>
-           <h4>Program Learning Outcomes mapped to Course Learning Outcomes:</h4>
-            <ol>
-                 ${courseData.program.learningOutcomes.map((outcome, ploIndex) => {
-                // Find CLOs that map to the current PLO
+    // Create unit number hyperlinks
+    const unitLinks = courseData.units.map((unit, index) => 
+        `<a href="#unit-${unit.id}" class="unit-link">${index + 1} ${unit.title}</a>`
+    ).join(' | ');
+
+    courseInfoContent.innerHTML = `
+        <span id="closeCourseInfoModal" class="close-button">&times;</span>
+        <h3>${courseData.course.name} (${courseData.course.code})</h3>
+        <p><strong>Credit Hours:</strong> ${courseData.course.creditHours}</p>
+        <p><strong>Course Goal:</strong> ${courseData.course.goal}</p>
+        <p><strong>Course Description:</strong> ${courseData.course.description}</p>
+        <p><strong>Production Notes:</strong> ${courseData.course.productionNotes}</p>
+        <h4>Learning Outcomes:</h4>
+        <ol>
+        ${Array.isArray(courseData.course.learningOutcomes) && courseData.course.learningOutcomes.length > 0 
+            ? courseData.course.learningOutcomes.map(outcome => `<li>${outcome}</li>`).join('') 
+            : ''
+        }
+        </ol>
+        <p><strong>Total Study Hours:</strong> ${formatTimeForDisplay(totalStudyHours)}</p>
+        <p><strong>Total Marking Hours:</strong> ${formatTimeForDisplay(totalMarkingHours)}</p>
+        <p><strong>Sum of weightings for assessments:</strong> ${totalWeighting}%</p>
+        <div id="unassessedOutcomes"></div>
+        <div id="activityTypePieChart"></div>
+        <p><strong>Program:</strong> ${courseData.program.name}</p>
+        <h4>Program Learning Outcomes mapped to Course Learning Outcomes:</h4>
+        <ol>
+            ${courseData.program.learningOutcomes.map((outcome, ploIndex) => {
                 const mappedCLOs = courseData.mappedOutcomes
                     .map((cloMappings, cloIndex) => cloMappings.includes(ploIndex) ? cloIndex + 1 : null)
-                    .filter(clo => clo !== null); // Filter out unmapped CLOs
-
-                // If mappedCLOs is not empty, create the "maps to CLO" text
+                    .filter(clo => clo !== null);
                 const mappingText = mappedCLOs.length > 0 ? `(maps to CLO: ${mappedCLOs.join(', ')})` : '(no CLOs mapped)';
-
-                // Return the list item with outcome and the mapping text if applicable
                 return `<li>${outcome} ${mappingText}</li>`;
-                }).join('')} 
-          </ol>
+            }).join('')} 
+        </ol>
 
+        <div class="unit-navigation">
+            Units: ${unitLinks}
+        </div>
 
-        `;
+    `;
+    
+    updateActivityTypePieChart();
+    updateUnassessedLearningOutcomes();
 
-    // Ensure the toggle functionality is set up
-    setupCourseInfoToggle();
-        // Add click event listener for toggling course info
-    //const courseInfoHeader = courseInfoSection.querySelector('.course-info-header');
-   // courseInfoHeader.addEventListener('click', toggleCourseInfoAccordion);
+    // Display the modal (show courseInfo)
+    document.getElementById('courseInfo').style.display = 'block';
+
 }
 
-// function setupCourseInfoToggle() {
-//     const courseInfoHeader = document.querySelector('#courseInfo .course-info-header');
-//     const courseInfoContent = document.querySelector('#courseInfo .course-info-content');
-//     const toggleIcon = courseInfoHeader.querySelector('.toggle-icon');
 
-//     courseInfoHeader.addEventListener('click', () => {
-//         const isHidden = courseInfoContent.style.display === 'none';
-//         courseInfoContent.style.display = isHidden ? 'block' : 'none';
-//         toggleIcon.textContent = isHidden ? '▲' : '▼';
-//     });
-// }
+document.getElementById('courseInfo').addEventListener('click', function(event) {
+    if (event.target.id === 'closeCourseInfoModal') {
+        closeModal();
+    }
+});
+
+// Function to hide the modal
+function closeModal() {
+    document.getElementById('courseInfo').style.display = 'none';
+    console.log("Setting display of courseinfo to none");
+}
+
+// Event listeners to open and close the modal
+document.getElementById('showCourseInfoButton').addEventListener('click', updateCourseInfo);
+
+// Close the modal if the user clicks outside of it
+window.addEventListener('click', function(event) {
+    const modal = document.getElementById('courseInfo');
+    if (event.target == modal) {
+        closeModal();
+    }
+});
+
 
 function setupCourseInfoToggle() {
     const courseInfoHeader = document.getElementById('courseInfoHeader');
@@ -872,7 +889,7 @@ function updateUnits() {
         const studyHours = getUnitStudyHours(unit.id);
         const markingHours = getUnitMarkingHours(unit.id);
         return `
-        <div class="unit-panel" data-unit-id="${unit.id}">
+        <div id="unit-${unit.id}" class="unit-panel" data-unit-id="${unit.id}">
             <div class="unit-header">
                 <h3 class="unit-title">${unit.title} <span class="toggle-icon">▼</span></h3>
                 <div class="unit-buttons">
@@ -1006,24 +1023,31 @@ function collapseActivityCard(activityId) {
 function updateActivityTypePieChart() {
     const chartContainer = document.getElementById('activityTypePieChart');
     const proportions = getActivityTypeProportions();
+    let propHtml = '';
    // Clear any existing chart
     chartContainer.innerHTML = '';
 
     chartContainer.innerHTML += `
     <div id="activity-proportions">
     <h4>Proportions of study hours per activity type</h4>
-    `;
+        `;
     
     createPieChart(chartContainer, proportions);
-    
-    proportions.forEach(type =>{
-        chartContainer.innerHTML += `
-        <p> ${type.type}: ${parseInt(type.totalHours*100)}% </p>
-        `;
-    });
-    chartContainer.innerHTML += `
 
-    </div>`;
+    proportions.forEach(type =>{
+            propHtml += `
+            <p> ${type.type}: ${parseInt(type.totalHours*100)}% </p>
+            `;
+     });
+
+     chartContainer.innerHTML += `
+    
+        <div id ="prop-list">
+            ${propHtml}
+        </div>
+    `;    
+
+  
 }
 
 function updateUnassessedLearningOutcomes() {
@@ -1031,10 +1055,10 @@ function updateUnassessedLearningOutcomes() {
     const container = document.getElementById('unassessedOutcomes');
     if (unassessedOutcomes.length > 0) {
         container.innerHTML = `
-            <h4>Course Learning Outcomes Not Yet Assessed:</h4>
+          <h4>Course Learning Outcomes Not Yet Assessed:</h4>
             <ul>
                 ${unassessedOutcomes.map(outcome => `<li>${outcome}</li>`).join('')}
-            </ul>
+            </ul>   
         `;
     } else {
         container.innerHTML = '<p>All learning outcomes are assessed.</p>';

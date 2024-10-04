@@ -462,30 +462,64 @@ textarea {
 }
 
 
-
-#courseInfo {
-    border: 1px solid #ddd;
-    margin-bottom: 20px;
-}
-
 .course-info-header {
     background-color: #f5f5f5;
     padding: 10px;
     cursor: pointer;
     user-select: none;
+    position: fixed;
+    top: 158px; /* Adjust this value based on where you want the header to stay */
+    width: 95%; /* Make sure it spans the full width */
+    background-color: white;
+    z-index: 1000;
+    border-bottom: 1px solid #ccc;
 }
 
 .course-info-header:hover {
     background-color: #e5e5e5;
 }
 
+#courseInfo {
+    display: none; /* Hidden by default */
+    position: fixed;
+    z-index: 1000; /* Make sure it's on top */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4); /* Semi-transparent background */
+    overflow: hidden; /* Prevent overflow issues */
+}
+
+/* Course info content inside the modal */
 .course-info-content {
-    padding: 15px;
-    display: none; /* Hide by default */
+    background-color: white; /* Ensure content has a solid background */
+    margin: 5% auto;
+    padding: 20px;
+    border-radius: 8px;
+    width: 80%; /* Adjust as necessary */
+    max-height: 80%; /* Allow for scrolling */
+    overflow-y: auto; /* Scroll content if it's too large */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add some depth */
+    position: relative;
+    z-index: 1001; /* Ensure it’s on top of the semi-transparent background */
 }
 
 .course-info-content.show {
     display: block; /* Show when .show class is present */
+}
+
+.close-button {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: black;
 }
 
 .toggle-icon {
@@ -542,4 +576,37 @@ textarea {
     right: 10px;
     font-size: 24px;
     cursor: pointer;
+}
+
+
+/* Unit navigation styling */
+.unit-navigation {
+    margin-top: 10px;
+    font-size: 0.9em;
+}
+
+.unit-link {
+    margin: 0 5px;
+    text-decoration: none;
+    color: #007bff;
+}
+
+.unit-link:hover {
+    text-decoration: underline;
+}
+
+/* The scrollable content after the sticky header */
+.course-info-scrollable {
+    padding-top: 10px;
+}
+
+/* Optional styling for overall layout */
+#courseInfo {
+    margin: 20px;
+}
+
+#activityTypePieChart{
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr /* Two equal-width columns */
+    gap: 10px; /* Optional: space between the columns */
 }

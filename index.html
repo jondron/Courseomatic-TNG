@@ -16,10 +16,11 @@
     <header>
         <h1>Courseomatic Storyboard Developer</h1>
         <nav>
-            <button id="programInfoBtn" title="Enter program information">Program Info</button>
-            <button id="courseInfoBtn" title="Edit course information">Course Info</button>
+            <button id="showCourseInfoButton" class="show-course-info">Show Course Info</button>
+            <button id="programInfoBtn" title="Enter program information">Edit Program</button>
+            <button id="courseInfoBtn" title="Edit course information">Edit course</button>
             <button id="newUnitBtn" title="Create a new unit">New Unit</button>
-            <button id="saveHtml" title="Create a report">Create report</button> 
+            <button id="saveHtml" title="Create a report">Show full report</button> 
             <div class="dropdown">
                 <button id="saveLoadBtn" title="Save or load course data">Save/Load</button>
                 <div class="dropdown-content">
@@ -32,9 +33,10 @@
     </header>
 
     <main>
-        <section id="courseInfo" class="collapsible">
-            <h2 id="courseInfoHeader" class="course-info-header">Course Information <span id="courseInfoToggleIcon" class="toggle-icon">▼</span></h2>
-            <div id="courseInfoContent" class="course-info-content" style="display: none;">
+        <section id="courseInfo" class="" style="display: none">
+
+            <div id="courseInfoContent" class="course-info-content" style="display: block;">
+                <span id="closeCourseInfoModal" class="close-button">&times;</span>
                 <!-- Content will be populated by JavaScript -->
             </div>
         </section>
