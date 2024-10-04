@@ -831,8 +831,12 @@ function updateCourseInfo() {
     updateUnassessedLearningOutcomes();
 
     // Display the modal (show courseInfo)
-    document.getElementById('courseInfo').style.display = 'block';
+   // document.getElementById('courseInfo').style.display = 'block';
 
+}
+
+function unHideCourseInfo(){
+    document.getElementById('courseInfo').style.display = 'block';
 }
 
 
@@ -849,7 +853,7 @@ function closeModal() {
 }
 
 // Event listeners to open and close the modal
-document.getElementById('showCourseInfoButton').addEventListener('click', updateCourseInfo);
+document.getElementById('showCourseInfoButton').addEventListener('click', unHideCourseInfo);
 
 // Close the modal if the user clicks outside of it
 window.addEventListener('click', function(event) {
