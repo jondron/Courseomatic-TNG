@@ -607,6 +607,6 @@ textarea {
 
 #activityTypePieChart{
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr /* Two equal-width columns */
+    grid-template-columns: 1fr 1fr 1fr 1fr; /* Two equal-width columns */
     gap: 10px; /* Optional: space between the columns */
 }

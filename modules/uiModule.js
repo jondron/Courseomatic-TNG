@@ -33,14 +33,14 @@ function setupEventListeners() {
             console.error('Error setting up units event listener:', error);
         }
     
-        try {
-            document.getElementById('programInfoBtn').addEventListener('click', () => {
-                populateProgramForm();
-                document.getElementById('programInfoPopup').style.display = 'block';
-            });
-        } catch (error) {
-            console.error('Error setting up program info button event listener:', error);
-        }
+        //  try {
+        //     document.getElementById('programInfoBtn').addEventListener('click', () => {
+        //         populateProgramForm();
+        //         document.getElementById('programInfoPopup').style.display = 'block';
+        //     });
+        // } catch (error) {
+        //     console.error('Error setting up program info button event listener:', error);
+        // }
     
         try {
             document.getElementById('courseInfoBtn').addEventListener('click', () => {
@@ -100,7 +100,7 @@ function setupEventListeners() {
 
 
     // Form submit listeners
-    document.getElementById('programInfoForm').addEventListener('submit', handleProgramFormSubmit);
+   // document.getElementById('programInfoForm').addEventListener('submit', handleProgramFormSubmit);
     document.getElementById('courseInfoForm').addEventListener('submit', handleCourseFormSubmit);
     document.getElementById('unitForm').addEventListener('submit', handleUnitFormSubmit);
      // Remove existing listeners before adding new ones
@@ -440,6 +440,13 @@ function handleCourseFormSubmit(event) {
             learningOutcomes: Array.from(document.getElementById('courseLearningOutcomes').children)
                 .map(child => child.querySelector('textarea').value)
                 .filter(value => value.trim() !== '')
+        },
+        program: {
+            name: document.getElementById('programName').value,
+            level: document.getElementById('programLevel').value,
+            learningOutcomes: Array.from(document.getElementById('programLearningOutcomes').children)
+                .map(child => child.querySelector('input').value)
+                .filter(value => value.trim() !== '')
         }
      };
     collectCLOPLOMappings();
@@ -531,7 +538,7 @@ function populateProgramForm() {
 
 function populateCourseForm() {
     const courseData = getCourseData();
-    
+
     document.getElementById('courseName').value = courseData.course.name || '';
     document.getElementById('courseCode').value = courseData.course.code || '';
     document.getElementById('creditHours').value = courseData.course.creditHours || '';
@@ -556,6 +563,31 @@ function populateCourseForm() {
     } else {
         console.error('TinyMCE editor for productionNotes not found');
     }
+
+    // Populate program information
+    document.getElementById('programName').value = courseData.program.name || '';
+    document.getElementById('programLevel').value = courseData.program.level || '';
+
+    const ploContainer = document.getElementById('programLearningOutcomes');
+    ploContainer.innerHTML = courseData.program.learningOutcomes.map((plo, index) => `
+        <div class="plo-item" data-plo-index="${index}">
+            <input type="text" id="plo${index}" name="plo${index}" value="${plo}" required>
+            <button type="button" class="removePLO">Remove</button>
+        </div>
+    `).join('');
+
+    // Add event listeners for removing PLOs and updating PLO values
+    document.querySelectorAll('.removePLO').forEach(button => {
+        button.addEventListener('click', function () {
+            const ploItem = button.closest('.plo-item');
+            ploItem.remove();
+            updatePLOInCLOMappings();
+        });
+    });
+
+    document.querySelectorAll('.plo-item input').forEach(input => {
+        input.addEventListener('input', updatePLOInCLOMappings); // Update CLO mappings when PLO content changes
+    });
 
     // Ensure that mappedOutcomes is an array before proceeding
     if (!Array.isArray(courseData.mappedOutcomes)) {
@@ -586,29 +618,84 @@ function populateCourseForm() {
         `;
     }).join('');
 
-    // Add event listeners to the remove buttons
+    // Add event listeners to the remove buttons for CLOs
     document.querySelectorAll('.removeCLO').forEach(button => {
         button.addEventListener('click', function(event) {
             removeCLO(event);
         });
     });
+
+    // Remove previous "Add PLO" event listener, if any, and attach a new one
+    const addPLOButton = document.getElementById('addPLO');
+    addPLOButton.removeEventListener('click', addNewPLO); // Remove any previous listener
+    addPLOButton.addEventListener('click', addNewPLO); // Add the correct listener
 }
 
-// Function to remove the CLO when the "Remove" button is clicked
-function removeCLO(event) {
+// Function to add a new PLO
+function addNewPLO() {
+    const ploContainer = document.getElementById('programLearningOutcomes');
+    const newIndex = ploContainer.children.length;
+
+    // Create a new PLO input element
+    const newPLOInput = document.createElement('div');
+    newPLOInput.className = 'plo-item';
+    newPLOInput.dataset.ploIndex = newIndex;
+    newPLOInput.innerHTML = `
+        <input type="text" id="plo${newIndex}" name="plo${newIndex}" required>
+        <button type="button" class="removePLO">Remove</button>
+    `;
+    ploContainer.appendChild(newPLOInput);
+
+    // Add event listener to remove button for the new PLO
+    newPLOInput.querySelector('.removePLO').addEventListener('click', function () {
+        newPLOInput.remove();
+        updatePLOInCLOMappings();
+    });
+
+    // Add event listener to update CLO mappings when new PLO content changes
+    newPLOInput.querySelector('input').addEventListener('input', updatePLOInCLOMappings);
+
+    // Add the new PLO to each CLO mapping dropdown
+    updatePLOInCLOMappings();
+}
+
+// Function to update CLO mappings when a PLO is removed
+// Function to update CLO mappings when a PLO is removed or its content changes
+function updatePLOInCLOMappings() {
     const courseData = getCourseData();
+    const currentPLOs = Array.from(document.querySelectorAll('.plo-item input')).map(input => input.value);
 
-    // Get the closest parent .clo-item div
-    const cloItem = event.target.closest('.clo-item');
-    const cloIndex = parseInt(cloItem.dataset.cloIndex, 10); // Get the CLO index from the dataset
+    // Update program learning outcomes in the course data
+    courseData.program.learningOutcomes = currentPLOs;
+    saveCourse(courseData);
 
-    // Remove the CLO from the courseData
-    courseData.course.learningOutcomes.splice(cloIndex, 1);
-    courseData.mappedOutcomes.splice(cloIndex, 1);
+    // Update each CLO mapping dropdown to reflect the current PLOs
+    document.querySelectorAll('select[name^="ploMapping"]').forEach(select => {
+        const cloIndex = select.closest('.clo-item').dataset.cloIndex;
+        const selectedValues = Array.from(select.selectedOptions).map(option => option.value);
 
-    // Re-render the form to reflect the changes
-    populateCourseForm();
+        // Clear existing options
+        select.innerHTML = '';
+
+        // Add current PLOs
+        currentPLOs.forEach((plo, ploIndex) => {
+            const option = document.createElement('option');
+            option.value = ploIndex;
+            option.textContent = plo;
+            if (selectedValues.includes(String(ploIndex))) {
+                option.selected = true;
+            }
+            select.appendChild(option);
+        });
+    });
+    updateCourseInfo();
 }
+
+function removeCLO(event) {
+    const cloItem = event.target.closest('.clo-item');
+    cloItem.remove();
+}
+
 
 
 
@@ -741,20 +828,20 @@ function toggleAssessmentDetails() {
     document.getElementById('assessmentDetails').style.display = isAssessed ? 'block' : 'none';
 }
 
-function addNewPLO() {
-    const ploContainer = document.getElementById('programLearningOutcomes');
-    const newIndex = ploContainer.children.length;
-    const newPLOInput = document.createElement('div');
-    newPLOInput.innerHTML = `
-        <input type="text" id="plo${newIndex}" name="plo${newIndex}" required>
-        <button type="button" class="removePLO">Remove</button>
-    `;
-    ploContainer.appendChild(newPLOInput);
+// function addNewPLO() {
+//     const ploContainer = document.getElementById('programLearningOutcomes');
+//     const newIndex = ploContainer.children.length;
+//     const newPLOInput = document.createElement('div');
+//     newPLOInput.innerHTML = `
+//         <input type="text" id="plo${newIndex}" name="plo${newIndex}" required>
+//         <button type="button" class="removePLO">Remove</button>
+//     `;
+//     ploContainer.appendChild(newPLOInput);
 
-    newPLOInput.querySelector('.removePLO').addEventListener('click', function() {
-        ploContainer.removeChild(newPLOInput);
-    });
-}
+//     newPLOInput.querySelector('.removePLO').addEventListener('click', function() {
+//         ploContainer.removeChild(newPLOInput);
+//     });
+// }
 
 function addNewCLO() {
     const cloContainer = document.getElementById('courseLearningOutcomes');
