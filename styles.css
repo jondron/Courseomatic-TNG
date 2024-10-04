@@ -610,3 +610,7 @@ textarea {
     grid-template-columns: 1fr 1fr 1fr 1fr; /* Two equal-width columns */
     gap: 10px; /* Optional: space between the columns */
 }
+.plo-item {
+
+    width: 100%;
+}

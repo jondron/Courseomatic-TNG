@@ -14,13 +14,13 @@
 </head>
 <body>
     <header>
-        <h1>Courseomatic Storyboard Developer</h1>
+        <h1 id="courseHeading">Courseomatic Storyboard Developer</h1>
         <nav>
             <button id="showCourseInfoButton" class="show-course-info">Show Course Info</button>
             <!--<button id="programInfoBtn" title="Enter program information">Edit Program</button>-->
             <button id="courseInfoBtn" title="Edit course information">Edit course</button>
             <button id="newUnitBtn" title="Create a new unit">New Unit</button>
-            <button id="saveHtml" title="Create a report">Show full report</button> 
+            <button id="saveHtml" title="Create a report">Generate full report</button> 
             <div class="dropdown">
                 <button id="saveLoadBtn" title="Save or load course data">Save/Load</button>
                 <div class="dropdown-content">
@@ -78,7 +78,13 @@
                 
                 <label for="courseCode">Course Code:</label>
                 <input type="text" id="courseCode" name="courseCode">
+               
+                <label for="courseRevision">Course Revision:</label>
+                <input type="text" id="courseRevision" name="courseRevision">
                 
+                <label for="coursePrerequisites">Course Prerequisites:</label>
+                <input type="text" id="coursePrerequisites" name="coursePrerequisites">
+
                 <label for="creditHours">Credit Hours:</label>
                 <input type="number" id="creditHours" name="creditHours" min="0" step="0.5" required>
                 
@@ -99,12 +105,12 @@
                 
                 <h3>Program Learning Outcomes</h3>
                 <div id="programLearningOutcomes"></div>
-                <button type="button" id="addPLO" title="Add a new program learning outcome">Add PLO</button>
+                <button type="button" id="addPLO" title="Add a new program learning outcome">Add Program Learning Outcome</button>
  
                 
                 <h3>Course Learning Outcomes</h3>
                 <div id="courseLearningOutcomes"></div>
-                <button type="button" id="addCLO" title="Add a new course learning outcome">Add CLO</button>
+                <button type="button" id="addCLO" title="Add a new course learning outcome">Add Course Learning Outcome</button>
                 
                 <div class="button-group">
                     <button type="submit">Save</button>
