@@ -10,15 +10,16 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/5.10.0/tinymce.min.js"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 </head>
 <body>
     <header>
-        <h1 id="courseHeading">Courseomatic Storyboard Developer</h1>
+        <h3 id="courseHeading">Courseomatic Storyboard Developer</h3>
         <nav>
-            <button id="showCourseInfoButton" class="show-course-info">Show Course Info</button>
+            <button id="showCourseInfoButton" class="show-course-info">Show Summary Info</button>
             <!--<button id="programInfoBtn" title="Enter program information">Edit Program</button>-->
-            <button id="courseInfoBtn" title="Edit course information">Edit course</button>
+            <button id="courseInfoBtn" title="Edit course information">Edit Course Info</button>
             <button id="newUnitBtn" title="Create a new unit">New Unit</button>
             <button id="saveHtml" title="Create a report">Generate full report</button> 
             <div class="dropdown">
@@ -29,7 +30,9 @@
                 </div>
             </div>
             <button id="clearBtn" title="Clear all data">Clear</button>
+
         </nav>
+        <div id="unit-nav"></div>
     </header>
 
     <main>

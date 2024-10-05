@@ -226,6 +226,8 @@ function handleUnitEvents(event) {
         handleMoveUnitDown(unitId);
     } else if (target.classList.contains('unit-title')) {
         toggleUnitCollapse(unitPanel);
+    } else if (target.classList.contains('toggle-icon')) {
+        toggleUnitCollapse(unitPanel);    
     } else {
         const activityCard = target.closest('.activity-card');
         if (activityCard) {
@@ -682,7 +684,7 @@ function populateCourseForm() {
     const ploContainer = document.getElementById('programLearningOutcomes');
     ploContainer.innerHTML = courseData.program.learningOutcomes.map((plo, index) => `
         <div class="plo-item" data-plo-index="${index}">
-            ${index+1}. <input type="text" size="70" id="plo${index}" name="plo${index}" value="${plo}" required>
+            ${index+1}. <input type="text" id="plo${index}" name="plo${index}" value="${plo}" required>
             <button type="button" class="removePLO">Remove</button>
         </div>
     `).join('');
@@ -712,24 +714,25 @@ function populateCourseForm() {
         const mappedPLOs = Array.isArray(cloPLOMappings[cloIndex]) ? cloPLOMappings[cloIndex] : [];
 
         return `
-         <div class="clo-item" data-clo-index="${cloIndex}">
-            <label for="clo${cloIndex}">CLO ${cloIndex + 1}:</label>
-            <textarea id="clo${cloIndex}" name="clo${cloIndex}" rows="2" style="width: 100%;" required>${clo}</textarea>
-            
-            <label>Map to PLO(s):</label>
-            <div class="plo-checkboxes" style="display: flex; flex-wrap: wrap;">
-                ${courseData.program.learningOutcomes.map((_, ploIndex) => `
-                    <label style="margin-right: 10px;">
-                        <input type="checkbox" name="ploMapping${cloIndex}" value="${ploIndex}" ${mappedPLOs.includes(ploIndex) ? 'checked' : ''}>
-                        ${ploIndex + 1}
-                    </label>
-                `).join('')}
-            </div>
-            <button type="button" class="removeCLO" style="margin-top: 10px;">Remove</button>
-            <hr>
-        </div>
-        `;
-    }).join('');
+        <div class="clo-item" data-clo-index="${cloIndex}">
+           <span class="clo-handle" style="cursor: move; margin-right: 10px;">⬍</span>
+           <label for="clo${cloIndex}">CLO ${cloIndex + 1}:</label>
+           <textarea id="clo${cloIndex}" name="clo${cloIndex}" rows="3" style="width: 100%;" required>${clo}</textarea>
+           
+           <label>Map to PLO(s):</label>
+           <div class="plo-checkboxes" style="display: flex; flex-wrap: wrap;">
+               ${courseData.program.learningOutcomes.map((_, ploIndex) => `
+                   <label style="margin-right: 10px;">
+                       <input type="checkbox" name="ploMapping${cloIndex}" value="${ploIndex}" ${mappedPLOs.includes(ploIndex) ? 'checked' : ''}>
+                       ${ploIndex + 1}
+                   </label>
+               `).join('')}
+           </div>
+           <button type="button" class="removeCLO" style="margin-top: 10px;">Remove</button>
+           <hr>
+       </div>
+       `;
+   }).join('');
 
     // Add event listeners to the remove buttons for CLOs
     document.querySelectorAll('.removeCLO').forEach(button => {
@@ -742,6 +745,7 @@ function populateCourseForm() {
     const addPLOButton = document.getElementById('addPLO');
     addPLOButton.removeEventListener('click', addNewPLO); // Remove any previous listener
     addPLOButton.addEventListener('click', addNewPLO); // Add the correct listener
+    initializeCLOReordering();
 }
 
 // Function to add a new PLO
@@ -964,15 +968,61 @@ function toggleAssessmentDetails() {
 //     });
 // }
 
+// Initialize drag-and-drop functionality for CLOs
+function initializeCLOReordering() {
+    const cloContainer = document.getElementById('courseLearningOutcomes');
+    Sortable.create(cloContainer, {
+        animation: 150,
+        handle: '.clo-handle', // Add a handle if needed for better UX
+        onEnd: function () {
+            collectCLOPLOMappings(); // Re-collect CLO-PLO mappings after reordering
+        }
+    });
+}
+
+
+// function addNewCLO() {
+//     const cloContainer = document.getElementById('courseLearningOutcomes');
+//     const newIndex = cloContainer.children.length;
+
+//     // Create a new CLO input element with PLO mapping checkboxes
+//     const newCLOInput = document.createElement('div');
+//     newCLOInput.className = 'clo-item';
+//     newCLOInput.dataset.cloIndex = newIndex;
+//     newCLOInput.innerHTML = `
+//         <label for="clo${newIndex}">CLO ${newIndex + 1}:</label>
+//         <textarea id="clo${newIndex}" name="clo${newIndex}" rows="3" style="width: 100%;" required></textarea>
+        
+//         <label>Map to PLO(s):</label>
+//         <div class="plo-checkboxes" style="display: flex; flex-wrap: wrap;">
+//             ${Array.from(document.querySelectorAll('.plo-item input')).map((_, ploIndex) => `
+//                 <label style="margin-right: 10px;">
+//                     <input type="checkbox" name="ploMapping${newIndex}" value="${ploIndex}">
+//                     ${ploIndex + 1}
+//                 </label>
+//             `).join('')}
+//         </div>
+//         <button type="button" class="removeCLO" style="margin-top: 10px;">Remove</button>
+//     `;
+//     cloContainer.appendChild(newCLOInput);
+
+//     // Add event listener to remove button for the new CLO
+//     newCLOInput.querySelector('.removeCLO').addEventListener('click', function() {
+//         cloContainer.removeChild(newCLOInput);
+//     });
+// }
+
+// Function to add a new CLO with drag handle
 function addNewCLO() {
     const cloContainer = document.getElementById('courseLearningOutcomes');
     const newIndex = cloContainer.children.length;
 
-    // Create a new CLO input element with PLO mapping checkboxes
+    // Create a new CLO input element with PLO mapping checkboxes and a drag handle
     const newCLOInput = document.createElement('div');
     newCLOInput.className = 'clo-item';
     newCLOInput.dataset.cloIndex = newIndex;
     newCLOInput.innerHTML = `
+        <span class="clo-handle" style="cursor: move; margin-right: 10px;">⬍</span>
         <label for="clo${newIndex}">CLO ${newIndex + 1}:</label>
         <textarea id="clo${newIndex}" name="clo${newIndex}" rows="3" style="width: 100%;" required></textarea>
         
@@ -1109,11 +1159,17 @@ function toggleCourseInfoAccordion() {
 function updateUnits() {
     const courseData = getCourseData();
     const unitsContainer = document.getElementById('units');
-    
+
     if (!courseData.units || courseData.units.length === 0) {
         unitsContainer.innerHTML = '<p>No units found. Add a unit to get started.</p>';
         return;
     }
+
+    // Add navigation to the main menu
+    const unitLinks = courseData.units.map((unit, index) =>
+        `<a href="#unit-${unit.id}" class="unit-link">${index + 1} ${unit.title}</a>`
+    );
+    document.getElementById('unit-nav').innerHTML = unitLinks.join(' | ');
 
     unitsContainer.innerHTML = courseData.units.map((unit, index) => {
         const studyHours = getUnitStudyHours(unit.id);
@@ -1121,7 +1177,7 @@ function updateUnits() {
         return `
         <div id="unit-${unit.id}" class="unit-panel" data-unit-id="${unit.id}">
             <div class="unit-header">
-                <h3 class="unit-title">${unit.title} <span class="toggle-icon">▼</span></h3>
+                <h3 class="unit-title">${index + 1}: ${unit.title} (study hours: ${studyHours})<span class="toggle-icon">▼</span></h3>
                 <div class="unit-buttons">
                     ${index > 0 ? '<button class="move-unit-up" title="Move unit up">↑</button>' : ''}
                     ${index < courseData.units.length - 1 ? '<button class="move-unit-down" title="Move unit down">↓</button>' : ''}
@@ -1152,7 +1208,24 @@ function updateUnits() {
                 </div>
             </div>
         </div>
-    `}).join('');
+        `;
+    }).join('');
+
+    // Initialize sortable for units using Sortable.js
+    Sortable.create(unitsContainer, {
+        animation: 150,
+        handle: '.unit-header', // Allow dragging by grabbing the unit header
+        onEnd: function () {
+            // Update unit order after drag-and-drop
+            const updatedUnits = Array.from(unitsContainer.children).map(unitElement => {
+                const unitId = unitElement.dataset.unitId;
+                return courseData.units.find(unit => unit.id === unitId);
+            });
+            courseData.units = updatedUnits;
+            saveCourse(courseData);
+            updateUnits(); // Re-render the units to reflect the new order
+        }
+    });
 
     // Re-initialize sortable for activities
     $('.activities-container').sortable({
@@ -1164,8 +1237,8 @@ function updateUnits() {
             handleActivityReorder(activityId, newUnitId, newIndex);
         }
     });
-    
 }
+
 
 
 function displayUnitHours() {
