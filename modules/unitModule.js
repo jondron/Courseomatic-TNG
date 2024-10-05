@@ -12,34 +12,6 @@ export function createUnit(unitData) {
     return addUnit(unitData);
 }
 
-// export function createUnit(unitData) {
-//     //('createUnit called with data:', unitData);
-//     const courseData = getCourseData();
-    
-//     // Check if a unit with this title already exists
-//     const existingUnit = courseData.units.find(unit => unit.title === unitData.title);
-//     if (existingUnit) {
-//         //('Unit with this title already exists:', existingUnit);
-//         return existingUnit;
-//     }
-    
-//     const newUnit = {
-//         id: generateUniqueId(),
-//         title: unitData.title,
-//         description: unitData.description,
-//         order: courseData.units.length
-//     };
-//     //('New unit created:', newUnit);
-    
-//     const updatedCourseData = {
-//         ...courseData,
-//         units: [...courseData.units, newUnit]
-//     };
-//     setCourseData(updatedCourseData);
-    
-//     //('Updated units:', updatedCourseData.units);
-//     return newUnit;
-// }
 
 function handleNewUnitClick(event) {
     event.preventDefault(); // Prevent any default button behavior

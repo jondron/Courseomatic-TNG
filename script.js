@@ -1,9 +1,6 @@
-import { initializeCourse, saveCourse, loadSavedCourse, clearCourse } from './modules/courseModule.js';
-import { createUnit, editUnit, deleteUnit, cloneUnit } from './modules/unitModule.js';
-import { createActivity, editActivity, deleteActivity, cloneActivity } from './modules/activityModule.js';
+import { initializeCourse, loadSavedCourse } from './modules/courseModule.js';
 import { saveToLocalStorage, loadFromLocalStorage, exportToJSON, importFromJSON } from './modules/storageModule.js';
 import { initializeUI, updateUI, setupEventListeners } from './modules/uiModule.js';
-import { createPieChart } from './modules/chartModule.js';
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', () => {
