@@ -26,6 +26,7 @@ export function getSpecificActivities(type) {
 }
 
 
+
 export function createActivity(activityData) {
     const courseData = getCourseData();
     if (activityData.otherActivity){

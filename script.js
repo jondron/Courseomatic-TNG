@@ -23,7 +23,7 @@ setInterval(() => {
 
 // Initialize TinyMCE for rich text editors
 tinymce.init({
-    selector: '#programDescription, #courseGoal, #courseDescription, #productionNotes, #unitDescription, #activityDescription',
+    selector: '#programDescription, #courseGoal, #courseDescription, #courseNotes, #productionNotes, #unitDescription, #activityDescription',
     height: 300,
     menubar: false,
     plugins: [

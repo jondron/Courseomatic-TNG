@@ -15,12 +15,14 @@ let courseData = {
         creditHours: 0,
         prerequisites: '',
         revision: '',
+        deliveryMode: '',
         goal: '',
         description: '',
+        courseNotes: '',
         productionNotes: '',
         learningOutcomes: [] // Array of CLOs
     },
-    mappedOutcomes: [], // Array where each index represents the mapping of a CLO to a PLO (or none)
+    mappedPLOs: [], // Array where each index represents the mapping of a CLO to a PLO (or none)
     units: [],
     activities: []
 };
@@ -40,12 +42,14 @@ function initializeCourse() {
             creditHours: 0,
             prerequisites: '',
             revision: '',
+            deliveryMode: '',
             goal: '',
             description: '',
+            courseNotes: '',
             productionNotes: '',
             learningOutcomes: [] 
         },
-        mappedOutcomes: [], 
+        mappedPLOs: [], 
         units: [],
         activities: []
     };
@@ -72,6 +76,9 @@ function saveCourse(data) {
     if (data.activities) {
         courseData.activities = data.activities;
     }
+    if (data.mappedPLOs) {
+        courseData.mappedPLOs = data.mappedPLOs;
+    }
     localStorage.setItem('courseData', JSON.stringify(courseData));
 }
 
@@ -85,8 +92,7 @@ function loadSavedCourse() {
                 course: parsedData.course || {},
                 units: parsedData.units || [],
                 activities: parsedData.activities || [],
-                mappedPLOs: parsedData.mappedPLOs || [],
-                mappedOutcomes: parsedData.mappedOutcomes || []
+                mappedPLOs: parsedData.mappedPLOs || []
             };
             return courseData;
         } catch (error) {
@@ -214,7 +220,7 @@ function generateCourseReport() {
         totalMarkingHours: getTotalMarkingHours(),
         activityTypeProportions: getActivityTypeProportions(),
         unassessedLearningOutcomes: getUnassessedLearningOutcomes(),
-        mappedOutcomes: courseData.mappedOutcomes
+        mappedPLOs: courseData.mappedPLOs
     };
 }
 

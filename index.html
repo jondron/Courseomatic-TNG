@@ -21,7 +21,13 @@
             <!--<button id="programInfoBtn" title="Enter program information">Edit Program</button>-->
             <button id="courseInfoBtn" title="Edit course information">Edit Course Info</button>
             <button id="newUnitBtn" title="Create a new unit">New Unit</button>
-            <button id="saveHtml" title="Create a report">Generate full report</button> 
+            <div class="dropdown">
+                <button id="reportButton" title="Save or load course data">Reports</button>
+                <div class="dropdown-content">
+                    <a href="#" id="saveHtml" title="Generate full report">Create a full report</a>
+                    <a href="#" id="saveSyllabus" title="Generate the syllabus">Create a syllabus</a>
+                </div>
+            </div>
             <div class="dropdown">
                 <button id="saveLoadBtn" title="Save or load course data">Save/Load</button>
                 <div class="dropdown-content">
@@ -62,6 +68,10 @@
                 <label for="courseRevision">Course Revision:</label>
                 <input type="text" id="courseRevision" name="courseRevision">
                 
+                <label for"deliveryMode">Delivery Mode:</label>
+                <input type="text" id="deliveryMode" name="deliveryMode">
+               
+
                 <label for="coursePrerequisites">Course Prerequisites:</label>
                 <input type="text" id="coursePrerequisites" name="coursePrerequisites">
 
@@ -74,7 +84,11 @@
                 <label for="courseDescription">Course Description:</label>
                 <textarea id="courseDescription" name="courseDescription"></textarea>
  
-                <label for="productionNotes" title="Use this for stuff like textbooks, resources, copyright, schedules, etc">Production Notes:</label>
+                <label for="courseNotes" title="Use this for additional stuff to tell the students">Course Notes:</label>
+                <textarea id="courseNotes" name="courseNotes"></textarea>
+ 
+
+                <label for="productionNotes" title="Use this for stuff development info like textbooks, resources, copyright, schedules, etc">Production Notes:</label>
                 <textarea id="productionNotes" name="productionNotes"></textarea>
  
                 <label for="programName">Program Name:</label>

@@ -5,7 +5,7 @@ import { getCourseData, saveCourse, addProgramLearningOutcome, addCourseLearning
      recalculateHours, generateCourseReport, clearCourse} from './courseModule.js';
 import { createUnit, editUnit, deleteUnit, cloneUnit } from './unitModule.js';
 import { createActivity, editActivity, deleteActivity, cloneActivity, getActivityTypes, getSpecificActivities, addCustomActivityType } from './activityModule.js';
-import { createPieChart } from './chartModule.js';
+import { createPieChart, getActivityTypesAndColours } from './chartModule.js';
 import { formatTimeForDisplay, timeToMinutes } from './timeUtils.js';
 
 export function initializeUI() {
@@ -58,6 +58,14 @@ function setupEventListeners() {
             });
         } catch (error) {
             console.error('Error saving report:', error);
+        }
+
+        try {
+            document.getElementById('saveSyllabus').addEventListener('click', () => {
+                saveSyllabus();
+            });
+        } catch (error) {
+            console.error('Error saving syllabus:', error);
         }
     
     
@@ -428,8 +436,10 @@ function handleCourseFormSubmit(event) {
             creditHours: document.getElementById('creditHours').value,
             prerequisites: document.getElementById('coursePrerequisites').value,
             revision: document.getElementById('courseRevision').value,
+            deliveryMode: document.getElementById('deliveryMode').value,
             goal: document.getElementById('courseGoal').value,
             description: document.getElementById('courseDescription').value,
+            courseNotes: document.getElementById('courseNotes').value,
             productionNotes: document.getElementById('productionNotes').value,
             learningOutcomes: Array.from(document.getElementById('courseLearningOutcomes').children)
                 .map(child => child.querySelector('textarea').value)
@@ -546,6 +556,7 @@ function populateCourseForm() {
     document.getElementById('creditHours').value = courseData.course.creditHours || '';
    document.getElementById('coursePrerequisites').value = courseData.course.prerequisites || ''; 
     document.getElementById('courseRevision').value = courseData.course.revision || '';
+    document.getElementById('deliveryMode').value = courseData.course.deliveryMode || '';
 
     // Handle TinyMCE editor for course goal
     if (tinymce.get('courseGoal')) {
@@ -559,6 +570,13 @@ function populateCourseForm() {
         tinymce.get('courseDescription').setContent(courseData.course.description || '');
     } else {
         console.error('TinyMCE editor for courseDescription not found');
+    }
+
+    // Handle TinyMCE editor for course Notes
+    if (tinymce.get('courseNotes')) {
+        tinymce.get('courseNotes').setContent(courseData.course.courseNotes || '');
+    } else {
+        console.error('TinyMCE editor for courseNotes not found');
     }
 
     // Handle TinyMCE editor for production Notes
@@ -593,11 +611,11 @@ function populateCourseForm() {
         input.addEventListener('input', updatePLOInCLOMappings); // Update CLO mappings when PLO content changes
     });
 
-    // Ensure that mappedOutcomes is an array before proceeding
-    if (!Array.isArray(courseData.mappedOutcomes)) {
-        courseData.mappedOutcomes = [];
+    // Ensure that mappedPLOs is an array before proceeding
+    if (!Array.isArray(courseData.mappedPLOs)) {
+        courseData.mappedPLOs = [];
     }
-    const cloPLOMappings = courseData.mappedOutcomes;
+    const cloPLOMappings = courseData.mappedPLOs;
 
     // Populate the CLO container with inputs for CLOs and checkboxes for PLO mapping
     const cloContainer = document.getElementById('courseLearningOutcomes');
@@ -722,7 +740,7 @@ function collectCLOPLOMappings() {
     const courseData = getCourseData();
 
     // Collect mappings for each CLO item
-    courseData.mappedOutcomes = Array.from(document.querySelectorAll('.clo-item')).map(cloItem => {
+    courseData.mappedPLOs = Array.from(document.querySelectorAll('.clo-item')).map(cloItem => {
         const cloIndex = cloItem.dataset.cloIndex;
         const checkedOptions = Array.from(document.querySelectorAll(`input[name="ploMapping${cloIndex}"]:checked`));
         return checkedOptions.map(option => parseInt(option.value));
@@ -895,8 +913,8 @@ function updateCourseInfo() {
     const assessedActivities = courseData.activities.filter(activity => activity.isAssessed);    
     const { html: assessedActivitiesHTML, totalWeighting } = generateAssessedActivitiesHTML(assessedActivities);
 
-    if (!Array.isArray(courseData.mappedOutcomes)) {
-        courseData.mappedOutcomes = [];
+    if (!Array.isArray(courseData.mappedPLOs)) {
+        courseData.mappedPLOs = [];
     }
 
     // Create unit number hyperlinks
@@ -908,11 +926,14 @@ function updateCourseInfo() {
         <span id="closeCourseInfoModal" class="close-button">&times;</span>
         <h3>${courseData.course.name} (${courseData.course.code})</h3>
         <p><strong>Revision:</strong> ${courseData.course.revision}</p>
+        <p><strong>Delivery Mode:</strong> ${courseData.course.deliveryMode}</p>
         <p><strong>Prerequisites:</strong> ${courseData.course.prerequisites}</p>
         <p><strong>Credit Hours:</strong> ${courseData.course.creditHours}</p>
         <p><strong>Course Goal:</strong> ${courseData.course.goal}</p>
         <p><strong>Course Description:</strong> ${courseData.course.description}</p>
+        <p><strong>Course Notes:</strong> ${courseData.course.courseNotes}</p>
         <p><strong>Production Notes:</strong> ${courseData.course.productionNotes}</p>
+
         <h4>Learning Outcomes:</h4>
         <ol>
         ${Array.isArray(courseData.course.learningOutcomes) && courseData.course.learningOutcomes.length > 0 
@@ -929,7 +950,7 @@ function updateCourseInfo() {
         <h4>Program Learning Outcomes mapped to Course Learning Outcomes:</h4>
         <ol>
             ${courseData.program.learningOutcomes.map((outcome, ploIndex) => {
-                const mappedCLOs = courseData.mappedOutcomes
+                const mappedCLOs = courseData.mappedPLOs
                     .map((cloMappings, cloIndex) => cloMappings.includes(ploIndex) ? cloIndex + 1 : null)
                     .filter(clo => clo !== null);
                 const mappingText = mappedCLOs.length > 0 ? `(maps to CLO: ${mappedCLOs.join(', ')})` : '(no CLOs mapped)';
@@ -1242,38 +1263,77 @@ function handleImportJson() {
 //report functions
 
 function saveHtmlReport() {
+    const courseData = getCourseData();
     const htmlReport = generateHTMLReport(); // Generate the report content
 
-    // Open a new window or reuse an existing one
+    // Attempt to open a new window
     let reportWindow = window.open('', '_blank');
 
-    // Check if the window was successfully opened
-    if (reportWindow) {
+    // Check if the window opened successfully
+    if (reportWindow && typeof reportWindow === 'object') {
         // Prevent the report window from reloading or duplicating content
-        reportWindow.document.body.innerHTML = ''; // Clear any previous content in the window
-
-        // Write the new content to the window
+        reportWindow.document.open();
         reportWindow.document.write(htmlReport);
-
-        // Close the document to render the content
         reportWindow.document.close();
-
-        // Focus the new window to bring it to the foreground
         reportWindow.focus();
     } else {
-        // Handle pop-up blocker issues
-        console.error('Popup blocked or window could not be opened.');
-        alert('The report could not be opened. Please allow popups for this site.');
+        // If the window failed to open, create a downloadable HTML file instead
+        console.warn('Popup blocked or window could not be opened. Offering a downloadable file instead.');
+
+        // Create a downloadable HTML file
+        const blob = new Blob([htmlReport], { type: 'text/html' });
+        const downloadUrl = URL.createObjectURL(blob);
+
+        const downloadLink = document.createElement('a');
+        downloadLink.href = downloadUrl;
+        downloadLink.download = courseData.course.code+'course_report.html';
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
     }
 }
+
+function saveSyllabus() {
+    const courseData = getCourseData();
+    const syllabus = generateSyllabus(); // Generate the report content
+
+    // Attempt to open a new window
+    let reportWindow = window.open('', '_blank');
+
+    // Check if the window opened successfully
+    if (reportWindow && typeof reportWindow === 'object') {
+        // Prevent the report window from reloading or duplicating content
+        reportWindow.document.open();
+        reportWindow.document.write(syllabus);
+        reportWindow.document.close();
+        reportWindow.focus();
+    } else {
+        // If the window failed to open, create a downloadable HTML file instead
+        console.warn('Popup blocked or window could not be opened. Offering a downloadable file instead.');
+
+        // Create a downloadable HTML file
+        const blob = new Blob([syllabus], { type: 'text/html' });
+        const downloadUrl = URL.createObjectURL(blob);
+
+        const downloadLink = document.createElement('a');
+        downloadLink.href = downloadUrl;
+        downloadLink.download = courseData.course.code+'syllabus.html';
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+    }
+}
+
+
+
 
 
 
 function generateHTMLReport() {
     const reportData = generateCourseReport();
     const courseData = getCourseData();
-    if (!Array.isArray(reportData.mappedOutcomes)) {
-        reportData.mappedOutcomes = [];
+    if (!Array.isArray(reportData.mappedPLOs)) {
+        reportData.mappedPLOs = [];
     }
 
     const chartDiv =document.createElement('div');
@@ -1294,14 +1354,7 @@ function generateHTMLReport() {
             h1, h2, h3 { color: #2c3e50; }
             .unit { background-color: #f4f4f4; padding: 15px; margin-bottom: 20px; border-radius: 5px; }
             .activity { padding: 10px; margin-bottom: 10px; border-radius: 5px; font-size:1em; }
-            .activity-acquisition { background-color: salmon; }
-            .activity-practice { background-color: pink; }
-            .activity-investigation { background-color: orange; }
-            .activity-reflection { background-color: gold; }
-            .activity-production { background-color: thistle; }
-            .activity-discussion { background-color: lightgreen; }
-            .activity-cooperation { background-color: lightblue; }
-            .activity-collaboration { background-color: lightcoral; }
+            ${generateActivityStyles()}
             .pie-chart { width: 300px; height: 300px; }
             p {font-size: 1em;}
         </style>
@@ -1310,12 +1363,15 @@ function generateHTMLReport() {
     <body>
         <h1>${reportData.course.name} (${reportData.course.code})</h1>  
          <p><strong>Revision:</strong> ${reportData.course.revision}</p>
-        <p><strong>Credit Hours:</strong> ${reportData.course.creditHours}</p>
+         <p><strong>Delivery Mode:</strong> ${reportData.course.deliveryMode}</p>
+         <p><strong>Credit Hours:</strong> ${reportData.course.creditHours}</p>
         <p><strong>Prerequisites:</strong> ${reportData.course.prerequisites}</p>
         <h2>Course Goal</h2>
         <div>${reportData.course.goal}</div>
         <h2>Course Description</h2>
         <div>${reportData.course.description}</div>
+         <h2>Course  Notes</h2>
+        <div>${reportData.course.courseNotes}
         <h2>Course Production Notes</h2>
         <div>${reportData.course.productionNotes}
         <h2>Course Learning Outcomes</h2>
@@ -1330,13 +1386,12 @@ function generateHTMLReport() {
         <h2>Program Information</h2>
         <p><strong>Program Name:</strong> ${reportData.program.name}</p>
         <p><strong>Program Level:</strong> ${reportData.program.level}</p>
-        <p><strong>Program Description:</strong> ${reportData.program.description}</p>
         <h3>Program Learning Outcomes</h3>
               <h5>Program Learning Outcomes:</h5>
             <ol>
                  ${reportData.program.learningOutcomes.map((outcome, ploIndex) => {
                 // Find CLOs that map to the current PLO
-                const mappedCLOs = reportData.mappedOutcomes
+                const mappedCLOs = reportData.mappedPLOs
                     .map((cloMappings, cloIndex) => cloMappings.includes(ploIndex) ? cloIndex + 1 : null)
                     .filter(clo => clo !== null); // Filter out unmapped CLOs
 
@@ -1367,6 +1422,89 @@ function generateHTMLReport() {
        <h2>Units</h2>
         ${generateUnitsHTML(reportData.units)}
 
+    </body>
+    </html>
+    `;
+    return html;
+}
+
+function generateSyllabus() {
+    const reportData = generateCourseReport();
+    const courseData = getCourseData();
+    if (!Array.isArray(reportData.mappedPLOs)) {
+        reportData.mappedPLOs = [];
+    }
+
+    const assessedActivities = courseData.activities.filter(activity => activity.isAssessed);
+    const { html: assessedActivitiesHTML, totalWeighting } = generateAssessedActivitiesHTML(assessedActivities);
+    const units = reportData.units.map(unit => `
+        <div class="unit">
+            <h3>${unit.title}</h3>
+            <p>${unit.description}</p>
+            <p><strong>Total Study Hours:</strong> ${formatTimeForDisplay(unit.totalStudyHours)} </p>
+        </div>
+    `).join('');
+
+    let html = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${reportData.course.name} - Course Syllabus</title>
+        <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 1200px; margin: 0 auto; padding: 20px; }
+            h1, h2, h3 { color: #2c3e50; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+            table, th, td { border: 1px solid #333; }
+            th, td { padding: 10px; text-align: left; }
+            th { background-color: #f4f4f4; }
+            .unit { background-color: #f4f4f4; padding: 15px; margin-bottom: 20px; border-radius: 5px; }
+            ${generateActivityStyles()}
+        </style>
+    </head>
+    <body>
+        <h1>${reportData.course.name} (${reportData.course.code})</h1>  
+        <p><strong>Delivery Mode:</strong> ${reportData.course.deliveryMode}</p>
+        <p><strong>Credit Hours:</strong> ${reportData.course.creditHours}</p>
+        <p><strong>Prerequisites:</strong> ${reportData.course.prerequisites}</p>
+        <h2>Course Notes</h2>
+        <div>${reportData.course.courseNotes || 'No course notes available.'}</div>
+        <h2>Overview</h2>
+        <div>${reportData.course.description || 'No description available.'}</div>
+        <h2>Outline</h2>
+        ${units}
+        <h2>Learning Outcomes</h2>
+        ${reportData.course.learningOutcomes && reportData.course.learningOutcomes.length > 0 ? `
+            <ul>
+                ${reportData.course.learningOutcomes.map((outcome, index) => `
+                    <li>${index + 1}. ${outcome}</li>
+                `).join('')}
+            </ul>
+         ` : '<p>No learning outcomes defined for this course.</p>'}
+        <h2>Evaluation</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Activity</th>
+                    <th>Description</th>
+                    <th>Weighting (%)</th>
+                    </tr>
+            </thead>
+            <tbody>
+                ${assessedActivities.map(activity => `
+                    <tr>
+                        <td>${activity.title}</td>
+                        <td>${activity.description}</td>
+                        <td>${activity.weighting || '0'}</td>                        
+                    </tr>
+                `).join('')}
+                <tr>
+                    <td colspan="2"><strong>Total Weighting</strong></td>
+                    <td><strong>${totalWeighting}%</strong></td>
+                </tr>
+            </tbody>
+        </table>
     </body>
     </html>
     `;
@@ -1463,6 +1601,13 @@ function calculateStudyTime(activity, wordCount) {
 }
 
 // Utility functions
+
+export function generateActivityStyles() {
+    const activityColours = getActivityTypesAndColours();
+    return activityColours.map(activity => 
+        `.activity-${activity.type} { background-color: ${activity.color}; }`
+    ).join('\n');
+}
 
 function validateTimeInput(input) {
     const value = input.value.trim();

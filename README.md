@@ -13,7 +13,7 @@ It is intended to scaffold the course design process in a way that focuses on wh
 
 ## Limitations
 
-Courseomatic is a single-user app that, on the bright side, needs no backend application server to run: changes are saved locally and can be exported and imported via JSoN files but only one person can work on a course design. Note that the way it has been built, however, requires it to be run from a webserver: it needs HTTP so it cannot be run directly from the filesystem. It makes the code easier to maintain but I might refactor that at some point so that it is truly standalone.
+Courseomatic is a single-user app that, on the bright side, needs no backend application server to run: changes are saved locally and can be exported and imported via JSoN files but only one person can work on a course design at a time. Note that the way it has been built, however, requires it to be run from a webserver: it needs HTTP so it cannot be run directly from the filesystem. It makes the code easier to maintain but I might refactor that at some point so that it is truly standalone.
 
 A multi-user version may be developed later but, for now, the assumption is that it will be used by a single course designer, ideally in collaboration with a team, but there is one and only one master copy that can be shared but that cannot be edited by multiple users simultaneously.
 
