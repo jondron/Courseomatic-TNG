@@ -88,8 +88,9 @@
                 <textarea id="courseNotes" name="courseNotes"></textarea>
  
 
-                <label for="productionNotes" title="Use this for stuff development info like textbooks, resources, copyright, schedules, etc">Production Notes:</label>
-                <textarea id="productionNotes" name="productionNotes"></textarea>
+                <label for="courseDevelopmentNotes" title="Use this for stuff development info like textbooks, resources, copyright, schedules, etc">
+                    Development Notes:</label>
+                <textarea id="courseDevelopmentNotes" name="courseDevelopmentNotes"></textarea>
  
                 <label for="programName">Program Name:</label>
                 <input type="text" id="programName" name="programName" required>
@@ -148,11 +149,15 @@
                     <option value="collaboration">Collaboration</option>
                 </select>
                 
-                <label for="activityTitle">Activity Title:</label>
+                <label for="activityTitle">Title:</label>
                 <input type="text" id="activityTitle" name="activityTitle" required>
                 
-                <label for="activityDescription">Activity Description:</label>
+                <label for="activityDescription"> Description:</label>
                 <textarea id="activityDescription" name="activityDescription"></textarea>
+
+                <label for="activityDevNotes">Development Notes:</label>
+                <textarea id="activityDevNotes" name="activityDevNotes"></textarea>
+    
                 
                 <label for="specificActivity">Specific Activity:</label>
                 <select id="specificActivity" name="specificActivity" required></select>
@@ -161,6 +166,7 @@
                     <label for="otherActivity">Other Activity:</label>
                     <input type="text" id="otherActivity" name="otherActivity">
                 </div>
+
                 <div class="study-hours-container">
                      <label for="studyHours">Estimated Study Time (HH:MM or number of minutes) :</label><br>
                     <input type="text" id="studyHours" name="studyHours" required pattern="^(\d+:\d{2}|\d+)$" title="Enter time as HH:MM or minutes">
@@ -251,7 +257,10 @@
     </div>
 </div>
 
-    <script type="module" src="script.js"></script>
+<script src="bundle.js">
+    
+</script>
+
 
 </body>
 </html>

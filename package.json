@@ -1,0 +1,17 @@
+{
+  "name": "courseomatic-tng",
+  "version": "1.0.0",
+  "description": "A javascript app to develop course storyboards. Using a drag and drop interface (with buttons as fallback) you can create:  - courses, with learning outcomes that are mappable to program learning outcomes  - units - weeks, or themes, or whatever  - activities - these are the main elements of the system, represented as cards that can be dragged within and between units.  - assessments - these are just activities that have been marked as assessments, with special fields for marking hours, pass marks, percentage of total marks",
+  "main": "script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@rollup/plugin-babel": "^6.0.4",
+    "@rollup/plugin-commonjs": "^28.0.0",
+    "@rollup/plugin-node-resolve": "^15.3.0"
+  }
+}

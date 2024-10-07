@@ -5,10 +5,12 @@ import { timeToMinutes } from './timeUtils.js';
 
 const activityTypes = {
     acquisition: ["reading", "watching video", "listening to audio", "attending lecture", "other"],
-    practice: ["exercises", "tests & quizzes", "exam", "drills", "games", "simulations & role plays", "workshop", "other"],
+    practice: ["exercises", "tests & quizzes", "exam", "drills", "games", "simulations & role plays",
+                 "workshop", "design", "prototyping", "other"],
     investigation: ["research project", "web search", "fieldwork", "case study", 
                 "problem-based learning", "inquiry-based learning", "data analysis", "experiment", "lab","other"],
-    reflection: ["journaling", "discussion", "outcome mapping", "portfolio", "exit takeaway", "reflective essay", "feedback", "survey", "exam","other"],
+    reflection: ["journaling", "discussion", "outcome mapping", "portfolio", "exit takeaway", 
+                "reflective essay", "feedback", "survey", "exam","other"],
     production: ["writing","podcast", "demo", "presentation", "interactive media","design", "diagram","drawing",
                  "experiment", "coding", "configuration", "prototyping", "model design",
                 "concept map", "portfolio", "project", "exam","other"],
@@ -113,20 +115,6 @@ function generateUniqueId() {
     return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
 }
 
-// function convertToHoursMinutes(timeString) {
-//     if (!timeString) return '00:00';
-    
-//     if (timeString.includes(':')) {
-//         return timeString; // Already in HH:MM format
-//     }
-    
-//     const minutes = parseInt(timeString, 10);
-//     if (isNaN(minutes)) return '00:00';
-    
-//     const hours = Math.floor(minutes / 60);
-//     const remainingMinutes = minutes % 60;
-//     return `${hours.toString().padStart(2, '0')}:${remainingMinutes.toString().padStart(2, '0')}`;
-// }
 
 export function validateActivity(activityData) {
     const errors = [];

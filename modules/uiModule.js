@@ -9,11 +9,19 @@ import { createPieChart, getActivityTypesAndColours } from './chartModule.js';
 import { formatTimeForDisplay, timeToMinutes } from './timeUtils.js';
 
 export function initializeUI() {
+      console.log("Initializing UI...");
+        const appContent = document.getElementById('main');
+        if (appContent) {
+            main.style.display = 'block'; // Show content after it's ready
+        }
+    
     setupEventListeners();
     setupFormValidation();
     //setupCourseInfoToggle();
     setTitle();
     updateUI();
+    
+    console.log("UI initialized");
 }
 
 export function updateUI() {
@@ -440,7 +448,7 @@ function handleCourseFormSubmit(event) {
             goal: document.getElementById('courseGoal').value,
             description: document.getElementById('courseDescription').value,
             courseNotes: document.getElementById('courseNotes').value,
-            productionNotes: document.getElementById('productionNotes').value,
+            courseDevelopmentNotes: document.getElementById('courseDevelopmentNotes').value,
             learningOutcomes: Array.from(document.getElementById('courseLearningOutcomes').children)
                 .map(child => child.querySelector('textarea').value)
                 .filter(value => value.trim() !== '')
@@ -493,6 +501,7 @@ function handleActivityFormSubmit(event) {
                 : document.getElementById('specificActivity').value,
         title: document.getElementById('activityTitle').value,
         description: tinymce.get('activityDescription').getContent(),
+        devNotes: tinymce.get('activityDevNotes').getContent(),
         studyHours: document.getElementById('studyHours').value,
          unitId: document.getElementById('unitSelect').value,
         isAssessed: document.getElementById('isAssessed').checked,
@@ -580,10 +589,10 @@ function populateCourseForm() {
     }
 
     // Handle TinyMCE editor for production Notes
-    if (tinymce.get('productionNotes')) {
-        tinymce.get('productionNotes').setContent(courseData.course.productionNotes || '');
+    if (tinymce.get('courseDevelopmentNotes')) {
+        tinymce.get('courseDevelopmentNotes').setContent(courseData.course.courseDevelopmentNotes || '');
     } else {
-        console.error('TinyMCE editor for productionNotes not found');
+        console.error('TinyMCE editor for courseDevelopmentNotes not found');
     }
 
     // Populate program information
@@ -627,21 +636,26 @@ function populateCourseForm() {
            <span class="clo-handle" style="cursor: move; margin-right: 10px;">⬍</span>
            <label for="clo${cloIndex}">CLO ${cloIndex + 1}:</label>
            <textarea id="clo${cloIndex}" name="clo${cloIndex}" rows="3" style="width: 100%;" required>${clo}</textarea>
-           
-           <label>Map to PLO(s):</label>
-           <div class="plo-checkboxes" style="display: flex; flex-wrap: wrap;">
-               ${courseData.program.learningOutcomes.map((_, ploIndex) => `
-                   <label style="margin-right: 10px;">
-                       <input type="checkbox" name="ploMapping${cloIndex}" value="${ploIndex}" ${mappedPLOs.includes(ploIndex) ? 'checked' : ''}>
-                       ${ploIndex + 1}
-                   </label>
-               `).join('')}
+    
+           <div class="map-plo-container" style="display: flex; align-items: center; margin-top: 10px;">
+               <label style="margin-right: 10px;">Map to PLO(s):</label>
+               <div class="plo-checkboxes" style="display: flex; flex-wrap: wrap; gap: 10px; flex: 1;">
+                   ${courseData.program.learningOutcomes.map((_, ploIndex) => `
+                       <label>
+                           <input type="checkbox" name="ploMapping${cloIndex}" value="${ploIndex}" ${mappedPLOs.includes(ploIndex) ? 'checked' : ''}>
+                           ${ploIndex + 1}
+                       </label>
+                   `).join('')}
+               </div>
+               <button type="button" class="removeCLO" style="margin-left: 10px;">Remove CLO</button>
            </div>
-           <button type="button" class="removeCLO" style="margin-top: 10px;">Remove</button>
            <hr>
-       </div>
-       `;
+        </div>
+    `;
+    
    }).join('');
+
+   
 
     // Add event listeners to the remove buttons for CLOs
     document.querySelectorAll('.removeCLO').forEach(button => {
@@ -790,6 +804,11 @@ function populateActivityForm(activity = null) {
         } else {
             console.error('TinyMCE editor for activityDescription not found');
         }
+        if (tinymce.get('activityDevNotes')) {
+            tinymce.get('activityDevNotes').setContent(activity.devNotes || '');
+        } else {
+            console.error('TinyMCE editor for activityDevNotes not found');
+        }
         document.getElementById('activityType').value = activity.type || '';
         updateSpecificActivityDropdown(activity);
         document.getElementById('specificActivity').value = activity.specificActivity || '';
@@ -932,7 +951,7 @@ function updateCourseInfo() {
         <p><strong>Course Goal:</strong> ${courseData.course.goal}</p>
         <p><strong>Course Description:</strong> ${courseData.course.description}</p>
         <p><strong>Course Notes:</strong> ${courseData.course.courseNotes}</p>
-        <p><strong>Production Notes:</strong> ${courseData.course.productionNotes}</p>
+        <p><strong>Production Notes:</strong> ${courseData.course.courseDevelopmentNotes}</p>
 
         <h4>Learning Outcomes:</h4>
         <ol>
@@ -1143,6 +1162,7 @@ function expandActivityCard(activityId) {
         <h5 class="activity-title">${activity.title}</h5>
         <p><strong>Type:</strong> ${capitalizeFirstLetter(activity.type)} (${activity.specificActivity})</p>
         <p><strong>Description:</strong> ${activity.description}</p>
+        <p><strong>Development notes:</strong> ${activity.devNotes?activity.devNotes:''}</p>
         <p><strong>Study Hours:</strong> ${formatTimeForDisplay(activity.studyHours)}</p>
         <p><strong>Learning Outcomes:</strong>
         ${activity.learningOutcomes && activity.learningOutcomes.length > 0 ? `
@@ -1373,7 +1393,7 @@ function generateHTMLReport() {
          <h2>Course  Notes</h2>
         <div>${reportData.course.courseNotes}
         <h2>Course Production Notes</h2>
-        <div>${reportData.course.productionNotes}
+        <div>${reportData.course.courseDevelopmentNotes}
         <h2>Course Learning Outcomes</h2>
          ${reportData.course.learningOutcomes && reportData.course.learningOutcomes.length > 0 ? `
             <ul>
@@ -1532,6 +1552,7 @@ function generateActivitiesHTML(activities) {
             <h4>${activity.title} (${activity.type})</h4>
             <p><strong>Subtype:</strong> ${getActivityType(activity.id,activities).specificActivity}
             <p><strong>Description: </strong>${activity.description}</p>
+             <p><strong>Development Notes: </strong>${activity.devNotes}</p>
             <p><strong>Study Hours:</strong> ${formatTimeForDisplay(activity.studyHours)}</p>
             <p><strong>Learning Outcomes:</strong>
             ${activity.learningOutcomes && activity.learningOutcomes.length > 0 ? `

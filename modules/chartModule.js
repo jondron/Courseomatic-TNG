@@ -8,7 +8,7 @@ export function getActivityTypesAndColours() {
         { type: 'production', color: 'thistle' },
         { type: 'discussion', color: 'lightgreen' },
         { type: 'cooperation', color: 'lightblue' },
-        { type: 'collaboration', color: 'lightcoral' }
+        { type: 'collaboration', color: 'bisque' }
     ];
 }
 

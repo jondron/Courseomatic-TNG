@@ -135,7 +135,7 @@ main {
 
 .assessed-icon {
     float: right;
-    color: gold;
+    color: rgba(255, 0, 157, 0.801);
     font-size: 2em;
 }
 
@@ -155,6 +155,7 @@ main {
 .activity-card.expanded {
     z-index: 10100;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    width: 350px;
 }
 
 .activity-card.expanded .activity-card-content {
@@ -169,7 +170,7 @@ main {
 .activity-type-production { background-color: thistle; }
 .activity-type-discussion { background-color: lightgreen; }
 .activity-type-cooperation { background-color: lightblue; }
-.activity-type-collaboration { background-color: lightcoral; }
+.activity-type-collaboration { background-color: bisque; }
 
 /* Ensure text is readable on all background colors */
 .activity-card h4,
@@ -615,7 +616,7 @@ textarea {
 }
 .plo-item {
 
-    width: 100%;
+    width: 98%;
 }
 
 #unit-nav{
@@ -632,3 +633,57 @@ textarea {
   float:left;
   height:min-content;
 }
+
+#programLearningOutcomes .plo-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+#programLearningOutcomes .plo-item input {
+    margin-left: 10px;
+    margin-right: 10px;
+    flex: 1;
+}
+
+#programLearningOutcomes .plo-item button {
+    margin-left: 10px;
+}
+
+.clo-item {
+    margin-bottom: 15px;
+}
+
+.clo-handle {
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.map-plo-container {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.map-plo-container > label {
+    margin-right: 10px;
+    white-space: nowrap;
+    
+}
+
+.plo-checkboxes {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 10px;
+    margin-right: 10px;
+    overflow-x: auto;
+}
+
+.plo-checkboxes label {
+    white-space: nowrap;
+}
+
+.removeCLO {
+    margin-left: 10px;
+}
+</style>

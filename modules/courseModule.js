@@ -19,7 +19,7 @@ let courseData = {
         goal: '',
         description: '',
         courseNotes: '',
-        productionNotes: '',
+        courseDevelopmentNotes: '',
         learningOutcomes: [] // Array of CLOs
     },
     mappedPLOs: [], // Array where each index represents the mapping of a CLO to a PLO (or none)
@@ -46,7 +46,7 @@ function initializeCourse() {
             goal: '',
             description: '',
             courseNotes: '',
-            productionNotes: '',
+            courseDevelopmentNotes: '',
             learningOutcomes: [] 
         },
         mappedPLOs: [], 
