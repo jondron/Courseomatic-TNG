@@ -9,7 +9,6 @@ import { createPieChart, getActivityTypesAndColours } from './chartModule.js';
 import { formatTimeForDisplay, timeToMinutes } from './timeUtils.js';
 
 export function initializeUI() {
-      console.log("Initializing UI...");
         const appContent = document.getElementById('main');
         if (appContent) {
             main.style.display = 'block'; // Show content after it's ready
@@ -20,8 +19,6 @@ export function initializeUI() {
     //setupCourseInfoToggle();
     setTitle();
     updateUI();
-    
-    console.log("UI initialized");
 }
 
 export function updateUI() {
@@ -81,6 +78,11 @@ function setupEventListeners() {
             document.getElementById('clearBtn').addEventListener('click', () => {
                 if (confirm('Are you sure you want to clear all data? This action cannot be undone.')) {
                     clearCourse();
+                    if(document.getElementById('unit-nav')){
+                        document.getElementById('unit-nav').innerHTML = '';
+                    } else {
+                        console.warning("Not found:", document.getElementById('unit-nav'));
+                    };
                     updateUI();
                 }
             });
@@ -532,7 +534,6 @@ function setTitle(){
     const courseData = getCourseData();
     if (courseData.course.code){
         document.getElementById('courseHeading').innerHTML = "Courseomatic Storyboard Editor: "+courseData.course.code;
-        console.log ("Courseomatic Storyboard Editor: "+courseData.course.name);
     }
 }
 
@@ -1002,7 +1003,6 @@ document.getElementById('courseInfo').addEventListener('click', function(event) 
 // Function to hide the modal
 function closeModal() {
     document.getElementById('courseInfo').style.display = 'none';
-    console.log("Setting display of courseinfo to none");
 }
 
 // Event listeners to open and close the modal
