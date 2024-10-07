@@ -135,18 +135,30 @@ function setupEventListeners() {
     });
     // Add a keydown event listener for the entire document
     // Get all buttons with the class 'cancel'
-    const cancelButtons = document.querySelectorAll('.cancel');
+        const cancelButtons = document.querySelectorAll('.cancel');
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {  // Check if the 'Escape' key was pressed
+                cancelButtons.forEach(button => button.click()); // Simulate a click on each cancel button
+                closeModal(); //close the course info popup if it is open
+                //close any expanded activity cards
+                document.querySelectorAll('div.expanded[data-activity-id]').forEach(div => {
+                    const activityId = div.getAttribute('data-activity-id');
+                    collapseActivityCard(activityId);
+                });
+            }
+    });
+
+    // make adding an activity accessible
     document.addEventListener('keydown', function(event) {
-        if (event.key === 'Escape') {  // Check if the 'Escape' key was pressed
-            cancelButtons.forEach(button => button.click()); // Simulate a click on each cancel button
-            closeModal(); //close the course info popup if it is open
-            document.querySelectorAll('div.expanded[data-activity-id]').forEach(div => {
-                const activityId = div.getAttribute('data-activity-id');
-                collapseActivityCard(activityId);
-            });
+        if (event.target.classList.contains('add-activity-button') && event.code === 'Space') {
+            event.preventDefault(); // Prevent default action of space key
+            event.target.click(); // Trigger click event
         }
     });
-   
+    
+    
+
+
     //study hour calculator 
      // Main form elements
      const activityForm = document.getElementById('activityForm');
@@ -1082,7 +1094,8 @@ function updateUnits() {
                         .filter(activity => activity.unitId === unit.id)
                         .map(activity => createActivityCard(activity))
                         .join('')}
-                    <div class="add-activity-button" data-unit-id="${unit.id}" title="Add a new activity to this unit">    
+                    <div class="add-activity-button" data-unit-id="${unit.id}" 
+                        title="Add a new activity to this unit" tabIndex="0">    
                         <p class="plus-icon">+ </p><p class="button">Add activity</p>
                     </div>
                 </div>
