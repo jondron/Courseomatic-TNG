@@ -738,6 +738,10 @@
             if (event.key === 'Escape') {  // Check if the 'Escape' key was pressed
                 cancelButtons.forEach(button => button.click()); // Simulate a click on each cancel button
                 closeModal(); //close the course info popup if it is open
+                document.querySelectorAll('div.expanded[data-activity-id]').forEach(div => {
+                    const activityId = div.getAttribute('data-activity-id');
+                    collapseActivityCard(activityId);
+                });
             }
         });
        
