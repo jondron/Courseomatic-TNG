@@ -136,11 +136,10 @@ function setupEventListeners() {
     // Add a keydown event listener for the entire document
     // Get all buttons with the class 'cancel'
     const cancelButtons = document.querySelectorAll('.cancel');
-
-    // Add a keydown event listener for the entire document
     document.addEventListener('keydown', function(event) {
         if (event.key === 'Escape') {  // Check if the 'Escape' key was pressed
             cancelButtons.forEach(button => button.click()); // Simulate a click on each cancel button
+            closeModal(); //close the course info popup if it is open
         }
     });
    
