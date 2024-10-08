@@ -155,7 +155,7 @@ main {
 .activity-card.expanded {
     z-index: 10100;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    width: 350px;
+    width: 400px;
 }
 
 .activity-card.expanded .activity-card-content {

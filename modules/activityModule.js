@@ -122,13 +122,13 @@ export function validateActivity(activityData) {
     if (!activityData.type) errors.push("Activity type is required");
     if (!activityData.title) errors.push("Activity title is required");
     if (!activityData.specificActivity) errors.push("Specific activity is required");
-    if (!activityData.studyHours) errors.push("Study hours are required");
+    //if (!activityData.studyHours) errors.push("Study hours are required");
     if (!activityData.unitId) errors.push("Unit assignment is required");
 
     if (activityData.isAssessed) {
-        if (!activityData.passMark) errors.push("Pass mark is required for assessed activities");
-        if (!activityData.weighting) errors.push("Weighting is required for assessed activities");
-        if (!activityData.markingHours) errors.push("Marking hours are required for assessed activities");
+      //  if (!activityData.passMark) errors.push("Pass mark is required for assessed activities");
+      //  if (!activityData.weighting) errors.push("Weighting is required for assessed activities");
+      //  if (!activityData.markingHours) errors.push("Marking hours are required for assessed activities");
     }
 
     return errors;

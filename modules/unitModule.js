@@ -143,7 +143,7 @@ export function validateUnit(unitData) {
     const errors = [];
 
     if (!unitData.title) errors.push("Unit title is required");
-    if (!unitData.description) errors.push("Unit description is required");
+//    if (!unitData.description) errors.push("Unit description is required");
 
     return errors;
 }

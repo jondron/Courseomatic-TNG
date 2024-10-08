@@ -21,17 +21,3 @@ setInterval(() => {
     saveToLocalStorage();
 }, 30000); // Autosave every 30 seconds
 
-// Initialize TinyMCE for rich text editors
-tinymce.init({
-    selector: '#programDescription, #courseGoal, #courseDescription, #courseNotes, #courseDevelopmentNotes, #unitDescription, #activityDescription, #activityDevNotes', 
-    height: 300,
-    menubar: false,
-    plugins: [
-        'advlist autolink lists link image charmap print preview anchor',
-        'searchreplace visualblocks code fullscreen',
-        'insertdatetime media table paste code help wordcount'
-    ],
-    toolbar: 'undo redo | formatselect | bold italic backcolor | \
-        alignleft aligncenter alignright alignjustify | \
-        bullist numlist outdent indent | removeformat | help'
-});

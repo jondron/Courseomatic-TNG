@@ -8,26 +8,85 @@ import { createActivity, editActivity, deleteActivity, cloneActivity, getActivit
 import { createPieChart, getActivityTypesAndColours } from './chartModule.js';
 import { formatTimeForDisplay, timeToMinutes } from './timeUtils.js';
 
+
 export function initializeUI() {
-        const appContent = document.getElementById('main');
-        if (appContent) {
-            main.style.display = 'block'; // Show content after it's ready
-        }
-    
+    const appContent = document.getElementById('main');
+    if (appContent) {
+        main.style.display = 'block'; // Show content after it's ready
+    }
+
     setupEventListeners();
     setupFormValidation();
-    //setupCourseInfoToggle();
     setTitle();
     updateUI();
 }
 
 export function updateUI() {
+    initializeTinyMCE();    
     updateCourseInfo();
     updateUnits();
     updateActivityTypePieChart();
     updateUnassessedLearningOutcomes();
     setTitle();
 }
+
+//for debugging only
+function getCallerFunctionName() {
+    // Create an error object and get the stack trace
+    const error = new Error();
+    const stack = error.stack.split("\n");
+
+    // The caller function is typically on the third line of the stack trace
+    // Format of stack: stack[0] -> "Error", stack[1] -> current function, stack[2] -> caller function
+    if (stack.length > 2) {
+        return stack[2].trim();
+    } else {
+        return "Caller not found";
+    }
+}
+
+
+function initializeTinyMCE() {
+    try {
+        tinymce.init({
+            selector: '#programDescription, #courseGoal, #courseDescription, #productionNotes, '+
+                '#unitDescription, #activityDescription, #activityDevNotes, #courseNotes, #courseDevelopmentNotes',
+            height: 300,
+            menubar: false,
+            plugins: [
+                'advlist autolink lists link image charmap print preview anchor',
+                'searchreplace visualblocks code fullscreen',
+                'insertdatetime media table paste code help wordcount',
+                'table',
+                'code',
+            ],
+            toolbar: 
+            'undo redo | cut copy paste | bold italic underline strikethrough | backcolor forecolor | formatselect | ' +
+            'alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | table | code \n' + 
+            
+            'searchreplace | visualblocks | removeformat | insertdatetime | anchor | link image | pastetext | preview | fullscreen | help',  
+            toolbar_mode: 'wrap',        
+            paste_as_text: true,
+            images_upload_handler: function (blobInfo, success, failure) {
+                var reader = new FileReader();
+                reader.onload = function() {
+                    success(reader.result);
+                };
+                reader.onerror = function() {
+                    failure('Image upload failed');
+                };
+                reader.readAsDataURL(blobInfo.blob());
+            },
+            content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }'
+        });
+        console.log("tinymceinit called from: ",getCallerFunctionName());
+    } catch (error){
+        console.warn('Error initializing tinyMCE:', error);
+    }
+}
+
+
+
 
 function setupEventListeners() {
         //debug
@@ -42,6 +101,7 @@ function setupEventListeners() {
         try {
             document.getElementById('courseInfoBtn').addEventListener('click', () => {
                 populateCourseForm();
+                //initializeTinyMCE();    
                 document.getElementById('courseInfoPopup').style.display = 'block';
             });
         } catch (error) {
@@ -293,6 +353,7 @@ function handleAddActivity(unitId) {
     const form = document.getElementById('activityForm');
     form.reset();
     populateActivityForm();
+    //initializeTinyMCE();    
     delete form.dataset.activityId; // Ensure we're not in edit mode
     document.getElementById('unitSelect').value = unitId;
     
@@ -372,6 +433,7 @@ function handleEditActivity(activityId) {
     const activity = courseData.activities.find(a => a.id === activityId);
     if (activity) {
         populateActivityForm(activity);
+        //initializeTinyMCE();    
         document.getElementById('activityPopup').style.display = 'block';
         setupFormValidation();
     }
@@ -435,22 +497,6 @@ function handleMoveActivityDown(activityId) {
 
 // uiModule.js - Part 3: Form Handling and UI Updates
 
-function handleProgramFormSubmit(event) {
-    event.preventDefault();
-    const programData = {
-        program: {
-            name: document.getElementById('programName').value,
-            level: document.getElementById('programLevel').value,
-            description: document.getElementById('programDescription').value,
-            learningOutcomes: Array.from(document.getElementById('programLearningOutcomes').children)
-                .map(child => child.querySelector('input').value)
-                .filter(value => value.trim() !== '')
-        }
-    };
-    saveCourse(programData);
-    updateUI();
-    document.getElementById('programInfoPopup').style.display = 'none';
-}
 
 function handleCourseFormSubmit(event) {
     event.preventDefault();
@@ -552,29 +598,12 @@ function setTitle(){
     }
 }
 
-function populateProgramForm() {
-    const courseData = getCourseData();
-    document.getElementById('programName').value = courseData.program.name || '';
-    document.getElementById('programLevel').value = courseData.program.level || '';
-     // Handle TinyMCE editor for program description
-     if (tinymce.get('programDescription')) {
-        tinymce.get('programDescription').setContent(courseData.program.description || '');
-    } else {
-        console.error('TinyMCE editor for programDescription not found');
-    }
-     
-    const ploContainer = document.getElementById('programLearningOutcomes');
-    ploContainer.innerHTML = courseData.program.learningOutcomes.map((plo, index) => `
-        <div>
-            <input type="text" id="plo${index}" name="plo${index}" value="${plo}" required>
-            <button type="button" class="removePLO">Remove</button>
-        </div>
-    `).join('');
-}
+
 
 
 function populateCourseForm() {
     const courseData = getCourseData();
+  //  initializeTinyMCE();    
 
     document.getElementById('courseName').value = courseData.course.name || '';
     document.getElementById('courseCode').value = courseData.course.code || '';
@@ -583,7 +612,7 @@ function populateCourseForm() {
     document.getElementById('courseRevision').value = courseData.course.revision || '';
     document.getElementById('deliveryMode').value = courseData.course.deliveryMode || '';
 
-    // Handle TinyMCE editor for course goal
+
     if (tinymce.get('courseGoal')) {
         tinymce.get('courseGoal').setContent(courseData.course.goal || '');
     } else {
@@ -759,12 +788,7 @@ function removeCLO(event) {
 
 
 
-function getCLOPLOMappings() {
-    const courseData = getCourseData();
-    return courseData.course.learningOutcomes.map((clo, index) => {
-        return courseData.mappedPLOs && courseData.mappedPLOs[index] ? courseData.mappedPLOs[index] : 'none';
-    });
-}
+
 
 function collectCLOPLOMappings() {
     const courseData = getCourseData();
@@ -1032,11 +1056,6 @@ window.addEventListener('click', function(event) {
 });
 
 
-function setupCourseInfoToggle() {
-    const courseInfoHeader = document.getElementById('courseInfoHeader');
-    courseInfoHeader.addEventListener('click', toggleCourseInfoAccordion);
-}
-
 function toggleCourseInfoAccordion() {
     const courseInfoContent = document.getElementById('courseInfoContent');
     const toggleIcon = document.getElementById('courseInfoToggleIcon');
@@ -1132,18 +1151,6 @@ function updateUnits() {
     });
 }
 
-
-
-function displayUnitHours() {
-    const courseData = getCourseData();
-    courseData.units.forEach(unit => {
-        const unitElement = document.querySelector(`[data-unit-id="${unit.id}"]`);
-        if (unitElement) {
-            unitElement.querySelector('.unit-study-hours').textContent = `Total Study Hours: ${unit.totalStudyHours}`;
-            unitElement.querySelector('.unit-marking-hours').textContent = `Total Marking Hours: ${unit.totalMarkingHours}`;
-        }
-    });
-}
 
 
 function createActivityCard(activity) {
@@ -1682,17 +1689,6 @@ function truncateText(text, wordCount) {
 
 function capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
-}
-
-function parseHours(timeString) {
-    const [hours, minutes] = timeString.split(':').map(Number);
-    return hours + minutes / 60;
-}
-
-function formatHours(hours) {
-    const wholeHours = Math.floor(hours);
-    const minutes = Math.round((hours - wholeHours) * 60);
-    return `${wholeHours}h ${minutes}m`;
 }
 
 function getUnitLearningOutcomes(unitId) {

@@ -190,10 +190,10 @@ function validateCourseData() {
 
     if (!courseData.course.name) errors.push("Course name is required");
     if (!courseData.course.code) errors.push("Course code is required");
-    if (!courseData.course.creditHours) errors.push("Credit hours are required");
-    if (courseData.course.learningOutcomes.length === 0) errors.push("At least one course learning outcome is required");
-    if (courseData.units.length === 0) errors.push("At least one unit is required");
-    if (courseData.activities.length === 0) errors.push("At least one activity is required");
+   // if (!courseData.course.creditHours) errors.push("Credit hours are required");
+   // if (courseData.course.learningOutcomes.length === 0) errors.push("At least one course learning outcome is required");
+   // if (courseData.units.length === 0) errors.push("At least one unit is required");
+   // if (courseData.activities.length === 0) errors.push("At least one activity is required");
 
     return errors;
 }
