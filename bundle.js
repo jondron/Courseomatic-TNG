@@ -1,3 +1,13 @@
+/*
+// Courseomatic
+// Author: Jon Dron, with help from various AIs
+// email: courseomatic@jondron.org 
+// Date: 8 October 2024
+// Licence: GPL3
+// Version: 0.4.2
+
+*/
+
 (function () {
     'use strict';
 
