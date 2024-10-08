@@ -606,26 +606,85 @@
     // uiModule.js - Part 1: Imports and Initial Setup
 
 
+
     function initializeUI() {
-            const appContent = document.getElementById('main');
-            if (appContent) {
-                main.style.display = 'block'; // Show content after it's ready
-            }
-        
+        const appContent = document.getElementById('main');
+        if (appContent) {
+            main.style.display = 'block'; // Show content after it's ready
+        }
+
         setupEventListeners();
         setupFormValidation();
-        //setupCourseInfoToggle();
         setTitle();
         updateUI();
     }
 
     function updateUI() {
+        initializeTinyMCE();    
         updateCourseInfo();
         updateUnits();
         updateActivityTypePieChart();
         updateUnassessedLearningOutcomes();
         setTitle();
     }
+
+    //for debugging only
+    function getCallerFunctionName() {
+        // Create an error object and get the stack trace
+        const error = new Error();
+        const stack = error.stack.split("\n");
+
+        // The caller function is typically on the third line of the stack trace
+        // Format of stack: stack[0] -> "Error", stack[1] -> current function, stack[2] -> caller function
+        if (stack.length > 2) {
+            return stack[2].trim();
+        } else {
+            return "Caller not found";
+        }
+    }
+
+
+    function initializeTinyMCE() {
+        try {
+            tinymce.init({
+                selector: '#programDescription, #courseGoal, #courseDescription, #productionNotes, '+
+                    '#unitDescription, #activityDescription, #activityDevNotes, #courseNotes, #courseDevelopmentNotes',
+                height: 300,
+                menubar: false,
+                plugins: [
+                    'advlist autolink lists link image charmap print preview anchor',
+                    'searchreplace visualblocks code fullscreen',
+                    'insertdatetime media table paste code help wordcount',
+                    'table',
+                    'code',
+                ],
+                toolbar: 
+                'undo redo | cut copy paste | bold italic underline strikethrough | backcolor forecolor | formatselect | ' +
+                'alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | table | code \n' + 
+                
+                'searchreplace | visualblocks | removeformat | insertdatetime | anchor | link image | pastetext | preview | fullscreen | help',  
+                toolbar_mode: 'wrap',        
+                paste_as_text: true,
+                images_upload_handler: function (blobInfo, success, failure) {
+                    var reader = new FileReader();
+                    reader.onload = function() {
+                        success(reader.result);
+                    };
+                    reader.onerror = function() {
+                        failure('Image upload failed');
+                    };
+                    reader.readAsDataURL(blobInfo.blob());
+                },
+                content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }'
+            });
+            console.log("tinymceinit called from: ",getCallerFunctionName());
+        } catch (error){
+            console.warn('Error initializing tinyMCE:', error);
+        }
+    }
+
+
+
 
     function setupEventListeners() {
             //debug
@@ -640,6 +699,7 @@
             try {
                 document.getElementById('courseInfoBtn').addEventListener('click', () => {
                     populateCourseForm();
+                    //initializeTinyMCE();    
                     document.getElementById('courseInfoPopup').style.display = 'block';
                 });
             } catch (error) {
@@ -891,6 +951,7 @@
         const form = document.getElementById('activityForm');
         form.reset();
         populateActivityForm();
+        //initializeTinyMCE();    
         delete form.dataset.activityId; // Ensure we're not in edit mode
         document.getElementById('unitSelect').value = unitId;
         
@@ -970,6 +1031,7 @@
         const activity = courseData.activities.find(a => a.id === activityId);
         if (activity) {
             populateActivityForm(activity);
+            //initializeTinyMCE();    
             document.getElementById('activityPopup').style.display = 'block';
             setupFormValidation();
         }
@@ -1030,6 +1092,9 @@
             }
         }
     }
+
+    // uiModule.js - Part 3: Form Handling and UI Updates
+
 
     function handleCourseFormSubmit(event) {
         event.preventDefault();
@@ -1132,8 +1197,11 @@
     }
 
 
+
+
     function populateCourseForm() {
         const courseData = getCourseData();
+      //  initializeTinyMCE();    
 
         document.getElementById('courseName').value = courseData.course.name || '';
         document.getElementById('courseCode').value = courseData.course.code || '';
@@ -1142,7 +1210,7 @@
         document.getElementById('courseRevision').value = courseData.course.revision || '';
         document.getElementById('deliveryMode').value = courseData.course.deliveryMode || '';
 
-        // Handle TinyMCE editor for course goal
+
         if (tinymce.get('courseGoal')) {
             tinymce.get('courseGoal').setContent(courseData.course.goal || '');
         } else {
@@ -1313,6 +1381,12 @@
         const cloItem = event.target.closest('.clo-item');
         cloItem.remove();
     }
+
+
+
+
+
+
 
     function collectCLOPLOMappings() {
         const courseData = getCourseData();
@@ -1662,6 +1736,7 @@
             }
         });
     }
+
 
 
     function createActivityCard(activity) {
@@ -2300,20 +2375,5 @@
     setInterval(() => {
         saveToLocalStorage();
     }, 30000); // Autosave every 30 seconds
-
-    // Initialize TinyMCE for rich text editors
-    tinymce.init({
-        selector: '#programDescription, #courseGoal, #courseDescription, #courseNotes, #courseDevelopmentNotes, #unitDescription, #activityDescription, #activityDevNotes', 
-        height: 300,
-        menubar: false,
-        plugins: [
-            'advlist autolink lists link image charmap print preview anchor',
-            'searchreplace visualblocks code fullscreen',
-            'insertdatetime media table paste code help wordcount'
-        ],
-        toolbar: 'undo redo | formatselect | bold italic backcolor | \
-        alignleft aligncenter alignright alignjustify | \
-        bullist numlist outdent indent | removeformat | help'
-    });
 
 })();
