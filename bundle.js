@@ -824,20 +824,6 @@
         setTitle();
     }
 
-    //for debugging only
-    function getCallerFunctionName() {
-        // Create an error object and get the stack trace
-        const error = new Error();
-        const stack = error.stack.split("\n");
-
-        // The caller function is typically on the third line of the stack trace
-        // Format of stack: stack[0] -> "Error", stack[1] -> current function, stack[2] -> caller function
-        if (stack.length > 2) {
-            return stack[2].trim();
-        } else {
-            return "Caller not found";
-        }
-    }
 
 
     function initializeTinyMCE() {
@@ -879,7 +865,7 @@
     }
 
 
-
+    //event listeners
 
     function setupEventListeners() {
             //debug
@@ -1079,6 +1065,9 @@
 
     }
 
+
+     //event handlers
+
     function handleUnitEvents(event) {
         const target = event.target;
         const unitPanel = target.closest('.unit-panel');
@@ -1111,8 +1100,49 @@
         }
     }
 
-    // uiModule.js - Part 2: Event Handlers
+ 
 
+    function handleActivityReorder(activityId, newUnitId, newIndex) {
+        
+        const courseData = getCourseData();
+        const activityIndex = courseData.activities.findIndex(a => a.id === activityId);
+        
+        if (activityIndex !== -1) {
+            const activity = courseData.activities[activityIndex];
+
+            // Remove the activity from its current position
+            courseData.activities.splice(activityIndex, 1);
+            
+            // Get the activities for the target unit (newUnitId)
+            const unitActivities = courseData.activities.filter(a => a.unitId === newUnitId);
+            
+            // Ensure the newIndex is valid within the unit's boundaries
+            const clampedNewIndex = Math.min(Math.max(0, newIndex), unitActivities.length);
+            
+            // Determine the global insertion index based on the clamped position in the unit
+            let targetIndex;
+
+            if (unitActivities.length === 0) {
+                // If no activities in the new unit, insert at the first position
+                targetIndex = courseData.activities.findIndex(a => a.unitId === newUnitId) + clampedNewIndex;
+            } else {
+                // Find the global index where this activity will go
+                const firstInUnitIndex = courseData.activities.findIndex(a => a.unitId === newUnitId);
+                targetIndex = firstInUnitIndex + clampedNewIndex;
+            }
+
+            // If inserting at the start of the unit (empty or not), append it at the end of the activities array
+            if (targetIndex === -1 || targetIndex >= courseData.activities.length) {
+                targetIndex = courseData.activities.length;
+            }
+
+            // Insert the activity at the determined global index with the new unitId
+            courseData.activities.splice(targetIndex, 0, { ...activity, unitId: newUnitId });
+
+            saveCourse(courseData);
+            updateUI();
+        }
+    }
 
     function handleActivityEvents(event, activityCard, activityId) {
         const target = event.target;
@@ -1578,7 +1608,51 @@
     }
 
 
+    // Initialize drag-and-drop functionality for CLOs
+    function initializeCLOReordering() {
+        const cloContainer = document.getElementById('courseLearningOutcomes');
+        Sortable.create(cloContainer, {
+            animation: 150,
+            handle: '.clo-handle', // Add a handle if needed for better UX
+            onEnd: function () {
+                collectCLOPLOMappings(); // Re-collect CLO-PLO mappings after reordering
+            }
+        });
+    }
 
+
+    // Function to add a new CLO with drag handle
+    function addNewCLO() {
+        const cloContainer = document.getElementById('courseLearningOutcomes');
+        const newIndex = cloContainer.children.length;
+
+        // Create a new CLO input element with PLO mapping checkboxes and a drag handle
+        const newCLOInput = document.createElement('div');
+        newCLOInput.className = 'clo-item';
+        newCLOInput.dataset.cloIndex = newIndex;
+        newCLOInput.innerHTML = `
+        <span class="clo-handle" style="cursor: move; margin-right: 10px;">⬍</span>
+        <label for="clo${newIndex}">CLO ${newIndex + 1}:</label>
+        <textarea id="clo${newIndex}" name="clo${newIndex}" rows="3" style="width: 100%;" required></textarea>
+        
+        <label>Map to PLO(s):</label>
+        <div class="plo-checkboxes" style="display: flex; flex-wrap: wrap;">
+            ${Array.from(document.querySelectorAll('.plo-item input')).map((_, ploIndex) => `
+                <label style="margin-right: 10px;">
+                    <input type="checkbox" name="ploMapping${newIndex}" value="${ploIndex}">
+                    ${ploIndex + 1}
+                </label>
+            `).join('')}
+        </div>
+        <button type="button" class="removeCLO" style="margin-top: 10px;">Remove</button>
+    `;
+        cloContainer.appendChild(newCLOInput);
+
+        // Add event listener to remove button for the new CLO
+        newCLOInput.querySelector('.removeCLO').addEventListener('click', function() {
+            cloContainer.removeChild(newCLOInput);
+        });
+    }
 
 
 
@@ -1707,53 +1781,47 @@
         document.getElementById('assessmentDetails').style.display = isAssessed ? 'block' : 'none';
     }
 
+    function getUnitLearningOutcomes(unitId) {
+        const courseData = getCourseData();
+        const unitActivities = courseData.activities.filter(activity => activity.unitId === unitId);
+        const outcomeIndices = new Set(unitActivities.flatMap(activity => activity.learningOutcomes));
+        return Array.from(outcomeIndices).map(index => courseData.course.learningOutcomes[index]);
+    }
 
+    function getActivityType(activityId, activities) {
+        // Find the activity with the matching id
+        const activity = activities.find(a => a.id === activityId);
 
-    // Initialize drag-and-drop functionality for CLOs
-    function initializeCLOReordering() {
-        const cloContainer = document.getElementById('courseLearningOutcomes');
-        Sortable.create(cloContainer, {
-            animation: 150,
-            handle: '.clo-handle', // Add a handle if needed for better UX
-            onEnd: function () {
-                collectCLOPLOMappings(); // Re-collect CLO-PLO mappings after reordering
-            }
-        });
+        // Check if activity exists and return the type and specificActivity, or return null if not found
+        if (activity) {
+            return {
+                type: activity.type,
+                specificActivity: activity.specificActivity
+            };
+        } else {
+            return null; // Return null if the activity with the given ID is not found
+        }
+    }
+
+    function getActivityLearningOutcomesText(activityId) {
+        const courseData = getCourseData();
+
+        // Find the activity with the given ID
+        const activity = courseData.activities.find(a => a.id === activityId);
+
+        if (!activity) {
+            return []; // Return an empty array if the activity is not found
+        }
+
+        // Map the numeric learning outcome indices to the corresponding text
+        return activity.learningOutcomes.map(index => courseData.course.learningOutcomes[index]);
     }
 
 
-    // Function to add a new CLO with drag handle
-    function addNewCLO() {
-        const cloContainer = document.getElementById('courseLearningOutcomes');
-        const newIndex = cloContainer.children.length;
 
-        // Create a new CLO input element with PLO mapping checkboxes and a drag handle
-        const newCLOInput = document.createElement('div');
-        newCLOInput.className = 'clo-item';
-        newCLOInput.dataset.cloIndex = newIndex;
-        newCLOInput.innerHTML = `
-        <span class="clo-handle" style="cursor: move; margin-right: 10px;">⬍</span>
-        <label for="clo${newIndex}">CLO ${newIndex + 1}:</label>
-        <textarea id="clo${newIndex}" name="clo${newIndex}" rows="3" style="width: 100%;" required></textarea>
-        
-        <label>Map to PLO(s):</label>
-        <div class="plo-checkboxes" style="display: flex; flex-wrap: wrap;">
-            ${Array.from(document.querySelectorAll('.plo-item input')).map((_, ploIndex) => `
-                <label style="margin-right: 10px;">
-                    <input type="checkbox" name="ploMapping${newIndex}" value="${ploIndex}">
-                    ${ploIndex + 1}
-                </label>
-            `).join('')}
-        </div>
-        <button type="button" class="removeCLO" style="margin-top: 10px;">Remove</button>
-    `;
-        cloContainer.appendChild(newCLOInput);
 
-        // Add event listener to remove button for the new CLO
-        newCLOInput.querySelector('.removeCLO').addEventListener('click', function() {
-            cloContainer.removeChild(newCLOInput);
-        });
-    }
+
+    
 
     // uiModule.js - Part 4: Main UI Updates and Utility Functions
 
@@ -2522,85 +2590,22 @@
         return string.charAt(0).toUpperCase() + string.slice(1);
     }
 
-    function getUnitLearningOutcomes(unitId) {
-        const courseData = getCourseData();
-        const unitActivities = courseData.activities.filter(activity => activity.unitId === unitId);
-        const outcomeIndices = new Set(unitActivities.flatMap(activity => activity.learningOutcomes));
-        return Array.from(outcomeIndices).map(index => courseData.course.learningOutcomes[index]);
-    }
+    //for debugging only
+    function getCallerFunctionName() {
+        // Create an error object and get the stack trace
+        const error = new Error();
+        const stack = error.stack.split("\n");
 
-    function getActivityType(activityId, activities) {
-        // Find the activity with the matching id
-        const activity = activities.find(a => a.id === activityId);
-
-        // Check if activity exists and return the type and specificActivity, or return null if not found
-        if (activity) {
-            return {
-                type: activity.type,
-                specificActivity: activity.specificActivity
-            };
+        // The caller function is typically on the third line of the stack trace
+        // Format of stack: stack[0] -> "Error", stack[1] -> current function, stack[2] -> caller function
+        if (stack.length > 2) {
+            return stack[2].trim();
         } else {
-            return null; // Return null if the activity with the given ID is not found
+            return "Caller not found";
         }
     }
 
-    function getActivityLearningOutcomesText(activityId) {
-        const courseData = getCourseData();
 
-        // Find the activity with the given ID
-        const activity = courseData.activities.find(a => a.id === activityId);
-
-        if (!activity) {
-            return []; // Return an empty array if the activity is not found
-        }
-
-        // Map the numeric learning outcome indices to the corresponding text
-        return activity.learningOutcomes.map(index => courseData.course.learningOutcomes[index]);
-    }
-
-
-
-    function handleActivityReorder(activityId, newUnitId, newIndex) {
-        
-        const courseData = getCourseData();
-        const activityIndex = courseData.activities.findIndex(a => a.id === activityId);
-        
-        if (activityIndex !== -1) {
-            const activity = courseData.activities[activityIndex];
-
-            // Remove the activity from its current position
-            courseData.activities.splice(activityIndex, 1);
-            
-            // Get the activities for the target unit (newUnitId)
-            const unitActivities = courseData.activities.filter(a => a.unitId === newUnitId);
-            
-            // Ensure the newIndex is valid within the unit's boundaries
-            const clampedNewIndex = Math.min(Math.max(0, newIndex), unitActivities.length);
-            
-            // Determine the global insertion index based on the clamped position in the unit
-            let targetIndex;
-
-            if (unitActivities.length === 0) {
-                // If no activities in the new unit, insert at the first position
-                targetIndex = courseData.activities.findIndex(a => a.unitId === newUnitId) + clampedNewIndex;
-            } else {
-                // Find the global index where this activity will go
-                const firstInUnitIndex = courseData.activities.findIndex(a => a.unitId === newUnitId);
-                targetIndex = firstInUnitIndex + clampedNewIndex;
-            }
-
-            // If inserting at the start of the unit (empty or not), append it at the end of the activities array
-            if (targetIndex === -1 || targetIndex >= courseData.activities.length) {
-                targetIndex = courseData.activities.length;
-            }
-
-            // Insert the activity at the determined global index with the new unitId
-            courseData.activities.splice(targetIndex, 0, { ...activity, unitId: newUnitId });
-
-            saveCourse(courseData);
-            updateUI();
-        }
-    }
 
     // Initialize the application
     document.addEventListener('DOMContentLoaded', () => {
