@@ -139,10 +139,6 @@ main {
     font-size: 2em;
 }
 
-.assessed-activity {
-    border: 1px solid red;
-}
-
 .activity-buttons {
     display: flex;
     justify-content: flex-end;
