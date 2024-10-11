@@ -22,5 +22,6 @@ A multi-user version (or rather, one with the option to be set as multi-user) ma
 - allow different activity models, e.g. R2D2, Lewin, pure ABC, etc
 - make multiple select possible to edit multiple activities at once (tricky interface)
 - make multi-user
-
+- add fields: team members and roles 
+- possibly add fields: addiditional programs, schedule info, precluded courses, challengeable, reason for revision,
 # licence: GPL3
