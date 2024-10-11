@@ -110,12 +110,16 @@ main {
 }
 
 .activity-card-clickable {
+    height: 90%;
     cursor: pointer;
 }
 
 .activity-card-content {
     padding: 10px;
+    height: 90%;
     cursor: pointer;
+    overflow: hidden;
+ 
 }
 
 .activity-card-content:hover {
@@ -134,7 +138,9 @@ main {
 }
 
 .assessed-icon {
-    float: right;
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
     color: rgba(255, 0, 157, 0.801);
     font-size: 2em;
 }
@@ -161,6 +167,7 @@ main {
 .activity-card.expanded .activity-card-content {
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     background-color: #f9f9f9;
+    overflow-y: auto; /* Add vertical scroll bars if the text overflows */
 }
 
 .activity-type-acquisition { background-color: salmon; }
@@ -206,11 +213,10 @@ main {
     right: 3.5rem;
 }
 
-.activity-card .assessed {
-    position: absolute;
-    top: 0.5rem;
-    left: 0.5rem;
-    font-size: 18px;
+.activity-assessed {
+    text-align: center;
+    text-decoration-color: yellow;
+    border: red 2px solid;
 }
 
 

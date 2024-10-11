@@ -1100,7 +1100,27 @@
         }
     }
 
- 
+     // Close popups when clicking outside
+     window.addEventListener('click', function(event) {
+        const courseInfoPopup = document.getElementById('courseInfoPopup');
+        const unitPopup = document.getElementById('unitPopup');
+        const activityPopup = document.getElementById('activityPopup');
+        const expanded= document.querySelector('.expanded');
+
+        if (event.target === courseInfoPopup) {
+            courseInfoPopup.style.display = 'none';
+        }
+        if (event.target === unitPopup) {
+            unitPopup.style.display = 'none';
+        }
+        if (event.target === activityPopup) {
+            activityPopup.style.display = 'none';
+        }
+        if (event.target === expanded) {
+            const activityId = div.getAttribute('data-activity-id');
+            collapseActivityCard(activityId);
+        }
+    });
 
     function handleActivityReorder(activityId, newUnitId, newIndex) {
         
@@ -1846,21 +1866,6 @@
         <span id="closeCourseInfoModal" class="close-button">&times;</span>
         <h3>${courseData.course.name} (${courseData.course.code})</h3>
         <p><strong>Revision:</strong> ${courseData.course.revision}</p>
-        <p><strong>Delivery Mode:</strong> ${courseData.course.deliveryMode}</p>
-        <p><strong>Prerequisites:</strong> ${courseData.course.prerequisites}</p>
-        <p><strong>Credit Hours:</strong> ${courseData.course.creditHours}</p>
-        <p><strong>Course Goal:</strong> ${courseData.course.goal}</p>
-        <p><strong>Course Description:</strong> ${courseData.course.description}</p>
-        <p><strong>Course Notes:</strong> ${courseData.course.courseNotes}</p>
-        <p><strong>Production Notes:</strong> ${courseData.course.courseDevelopmentNotes}</p>
-
-        <h4>Learning Outcomes:</h4>
-        <ol>
-        ${Array.isArray(courseData.course.learningOutcomes) && courseData.course.learningOutcomes.length > 0 
-            ? courseData.course.learningOutcomes.map(outcome => `<li>${outcome}</li>`).join('') 
-            : ''
-        }
-        </ol>
         <p><strong>Total Study Hours:</strong> ${formatTimeForDisplay(totalStudyHours)}</p>
         <p><strong>Total Marking Hours:</strong> ${formatTimeForDisplay(totalMarkingHours)}</p>
         <p><strong>Sum of weightings for assessments:</strong> ${totalWeighting}%</p>
@@ -1878,6 +1883,21 @@
             }).join('')} 
         </ol>
 
+        <p><strong>Delivery Mode:</strong> ${courseData.course.deliveryMode}</p>
+        <p><strong>Prerequisites:</strong> ${courseData.course.prerequisites}</p>
+        <p><strong>Credit Hours:</strong> ${courseData.course.creditHours}</p>
+        <p><strong>Course Goal:</strong> ${courseData.course.goal}</p>
+        <p><strong>Course Description:</strong> ${courseData.course.description}</p>
+        <p><strong>Course Notes:</strong> ${courseData.course.courseNotes}</p>
+        <p><strong>Production Notes:</strong> ${courseData.course.courseDevelopmentNotes}</p>
+
+        <h4>Learning Outcomes:</h4>
+        <ol>
+        ${Array.isArray(courseData.course.learningOutcomes) && courseData.course.learningOutcomes.length > 0 
+            ? courseData.course.learningOutcomes.map(outcome => `<li>${outcome}</li>`).join('') 
+            : ''
+        }
+        </ol>
         <div class="unit-navigation">
             Units: ${unitLinks}
         </div>
@@ -1900,15 +1920,15 @@
         }
     });
 
-    // Function to hide the modal
+    // Function to hide the course info modal
     function closeModal() {
         document.getElementById('courseInfo').style.display = 'none';
     }
 
-    // Event listeners to open and close the modal
+    // Event listeners to open and close the course info modal
     document.getElementById('showCourseInfoButton').addEventListener('click', unHideCourseInfo);
 
-    // Close the modal if the user clicks outside of it
+    // Close the course info modal if the user clicks outside of it
     window.addEventListener('click', function(event) {
         const modal = document.getElementById('courseInfo');
         if (event.target == modal) {
@@ -2006,9 +2026,10 @@
         const truncatedDescription = truncateText(activity.description, 10);
         const truncatedTitle = truncateText(activity.title,5);
         return `
-        <div class="activity-card activity-type-${activity.type}" data-activity-id="${activity.id}">
+        <div class="activity-card activity-type-${activity.type} ${activity.isAssessed ? 'activity-assessed' : ''}" data-activity-id="${activity.id}">
             <div class="activity-card-clickable">
                 <div class="activity-card-content">
+                    ${activity.isAssessed ? '<p class="activity-assessed"><strong>Assessment</strong></p>' : ''}
                     <h5 class="activity-title">${truncatedTitle}</h5>
                     <p class="activity-description">${truncatedDescription}</p>
                     ${activity.isAssessed ? '<span class="assessed-icon" title="Assessed">★</span>' : ''}
@@ -2062,6 +2083,7 @@
         ////("title", truncatedTitle);
         const truncatedDescription = truncateText(activity.description, 10);
         const collapsedContent = `
+         ${activity.isAssessed ? '<p class="activity-assessed"><strong>Assessment</strong></p>' : ''}
         <h5 class="activity-title">${truncatedTitle}</h5>
         <p class="activity-description">${truncatedDescription}</p>
         ${activity.isAssessed ? '<span class="assessed-icon" title="Assessed">★</span>' : ''}
