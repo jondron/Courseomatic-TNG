@@ -57,9 +57,9 @@
 
     const LOCAL_STORAGE_KEY = 'courseStoryboardData';
 
-    // ==============================
-    // SECTION 2: CORE FUNCTIONS
-    // ==============================
+// ==============================
+// SECTION 2: CORE FUNCTIONS
+// ==============================
 
     function initializeCourse() {
         courseData = {
@@ -669,7 +669,7 @@
             document.addEventListener('keydown', function(event) {
                 if (event.key === 'Escape') {  // Check if the 'Escape' key was pressed
                     cancelButtons.forEach(button => button.click()); // Simulate a click on each cancel button
-                    closeModal(); //close the course info popup if it is open
+                    closeCourseInfoModal(); //close the course info popup if it is open
                     //close any expanded activity cards
                     document.querySelectorAll('div.expanded[data-activity-id]').forEach(div => {
                         const activityId = div.getAttribute('data-activity-id');
@@ -959,8 +959,6 @@
             }
         }
     }
-
-    // uiModule.js - Part 3: Form Handling and UI Updates
 
 
     function handleCourseFormSubmit(event) {
@@ -1459,14 +1457,6 @@
         return activity.learningOutcomes.map(index => courseData.course.learningOutcomes[index]);
     }
 
-
-
-
-
-    
-
-    // uiModule.js - Part 4: Main UI Updates and Utility Functions
-
     function updateCourseInfo() {
         const courseData = getCourseData();
         const courseInfoContent = document.querySelector('.course-info-content');
@@ -1531,6 +1521,23 @@
 
     }
 
+    // Close popups when clicking outside
+    window.addEventListener('click', function(event) {
+        const courseInfoPopup = document.getElementById('courseInfoPopup');
+        const unitPopup = document.getElementById('unitPopup');
+        const activityPopup = document.getElementById('activityPopup');
+
+        if (event.target === courseInfoPopup) {
+            courseInfoPopup.style.display = 'none';
+        }
+        if (event.target === unitPopup) {
+            unitPopup.style.display = 'none';
+        }
+        if (event.target === activityPopup) {
+            activityPopup.style.display = 'none';
+        }
+    });
+
     function unHideCourseInfo(){
         document.getElementById('courseInfo').style.display = 'block';
     }
@@ -1538,23 +1545,23 @@
 
     document.getElementById('courseInfo').addEventListener('click', function(event) {
         if (event.target.id === 'closeCourseInfoModal') {
-            closeModal();
+            closeCourseInfoModal();
         }
     });
 
-    // Function to hide the modal
-    function closeModal() {
+    // Function to hide the course info modal
+    function closeCourseInfoModal() {
         document.getElementById('courseInfo').style.display = 'none';
     }
 
-    // Event listeners to open and close the modal
+    // Event listeners to open and close the course info modal
     document.getElementById('showCourseInfoButton').addEventListener('click', unHideCourseInfo);
 
-    // Close the modal if the user clicks outside of it
+    // Close the course info modal if the user clicks outside of it
     window.addEventListener('click', function(event) {
         const modal = document.getElementById('courseInfo');
         if (event.target == modal) {
-            closeModal();
+            closeCourseInfoModal();
         }
     });
 
@@ -2816,7 +2823,7 @@
     function unHideCourseInfo(){
         document.getElementById('courseInfo').style.display = 'block';
     }
-    function closeModal() {
+    function closeCourseInfoModal() {
         document.getElementById('courseInfo').style.display = 'none';
     }
     function updateUnits() {
