@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /*
 // Courseomatic
 // Author: Jon Dron, with help from various AIs
@@ -131,9 +132,27 @@
         }
     }
     function clearCourse() {
+=======
+import { initializeCourse, loadSavedCourse } from './modules/courseModule.js';
+import { saveToLocalStorage, loadFromLocalStorage, exportToJSON, importFromJSON } from './modules/storageModule.js';
+import { initializeUI, updateUI, setupEventListeners } from './modules/uiModule.js';
+
+// Initialize the application
+document.addEventListener('DOMContentLoaded', () => {
+    //loadSavedCourse();  // Load saved course data
+    initializeUI();
+    setupEventListeners();
+    const savedData = loadFromLocalStorage();
+    if (savedData) {
+        loadSavedCourse(savedData);
+        updateUI();
+    } else {
+>>>>>>> parent of 177b843 (Mass deletion of old files)
         initializeCourse();
     }
+});
 
+<<<<<<< HEAD
     // ==============================
     // SECTION 3: ANALYSIS FUNCTIONS
     // ==============================
@@ -2829,3 +2848,10 @@
     }, 30000); // Autosave every 30 seconds
 
 })();
+=======
+// Autosave functionality
+setInterval(() => {
+    saveToLocalStorage();
+}, 30000); // Autosave every 30 seconds
+
+>>>>>>> parent of 177b843 (Mass deletion of old files)
