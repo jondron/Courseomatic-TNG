@@ -33,6 +33,7 @@
             goal: '',
             description: '',
             courseNotes: '',
+            courseResources: '',
             courseDevelopmentNotes: '',
             learningOutcomes: [] // Array of CLOs
         },
@@ -60,6 +61,7 @@
                 goal: '',
                 description: '',
                 courseNotes: '',
+                courseResources: '',
                 courseDevelopmentNotes: '',
                 learningOutcomes: [] 
             },
@@ -89,6 +91,7 @@
               "goal": "",
               "description": "",
               "courseNotes": "",
+              "courseResources": "",
               "courseDevelopmentNotes": "",
               "learningOutcomes": [
                 "to make use of all the tools and features of Courseomatic",
@@ -830,7 +833,7 @@
         try {
             tinymce.init({
                 selector: '#programDescription, #courseGoal, #courseDescription, #productionNotes, '+
-                    '#unitDescription, #activityDescription, #activityDevNotes, #courseNotes, #courseDevelopmentNotes',
+                    '#unitDescription, #activityDescription, #activityDevNotes, #courseNotes, #courseResources, #courseDevelopmentNotes',
                 height: 300,
                 menubar: false,
                 plugins: [
@@ -1354,6 +1357,7 @@
                 goal: document.getElementById('courseGoal').value,
                 description: document.getElementById('courseDescription').value,
                 courseNotes: document.getElementById('courseNotes').value,
+                courseResources: document.getElementById('courseResources').value,
                 courseDevelopmentNotes: document.getElementById('courseDevelopmentNotes').value,
                 learningOutcomes: Array.from(document.getElementById('courseLearningOutcomes').children)
                     .map(child => child.querySelector('textarea').value)
@@ -1474,6 +1478,13 @@
             tinymce.get('courseNotes').setContent(courseData.course.courseNotes || '');
         } else {
             console.error('TinyMCE editor for courseNotes not found');
+        }
+
+        // Handle TinyMCE editor for course resources
+        if (tinymce.get('courseResources')) {
+            tinymce.get('courseResources').setContent(courseData.course.courseResources || '');
+        } else {
+            console.error('TinyMCE editor for courseResources not found');
         }
 
         // Handle TinyMCE editor for production Notes
@@ -1889,6 +1900,7 @@
         <p><strong>Course Goal:</strong> ${courseData.course.goal}</p>
         <p><strong>Course Description:</strong> ${courseData.course.description}</p>
         <p><strong>Course Notes:</strong> ${courseData.course.courseNotes}</p>
+        <p><strong>Course Resources:</strong> ${courseData.course.courseResources}</p>
         <p><strong>Production Notes:</strong> ${courseData.course.courseDevelopmentNotes}</p>
 
         <h4>Learning Outcomes:</h4>
@@ -2286,6 +2298,8 @@
         <div>${reportData.course.description}</div>
          <h2>Course  Notes</h2>
         <div>${reportData.course.courseNotes}
+        <h2>Course  Resources</h2>
+        <div>${reportData.course.courseResources}
         <h2>Course Production Notes</h2>
         <div>${reportData.course.courseDevelopmentNotes}
         <h2>Course Learning Outcomes</h2>
@@ -2384,7 +2398,9 @@
         <p><strong>Prerequisites:</strong> ${reportData.course.prerequisites}</p>
         <h2>Course Notes</h2>
         <div>${reportData.course.courseNotes || 'No course notes available.'}</div>
-        <h2>Overview</h2>
+        <h2>Course Resources</h2>
+        <div>${reportData.course.courseResources || 'No course resources available.'}</div>
+         <h2>Overview</h2>
         <div>${reportData.course.description || 'No description available.'}</div>
         <h2>Outline</h2>
         ${units}
