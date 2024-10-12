@@ -935,8 +935,8 @@
             // JSON export and import
         const exportJsonBtn = document.getElementById('exportJson');
         const importJsonBtn = document.getElementById('importJson');
-
-
+        const mergeJsonBtn = document.getElementById('mergeJson');
+        
         if (exportJsonBtn) {
         //    //('Export JSON button found, attaching listener');
             exportJsonBtn.addEventListener('click', handleExportJson);
@@ -949,6 +949,12 @@
         } else {
             console.error('Import JSON button not found');
         }     
+
+        if (mergeJsonBtn) {
+            mergeJsonBtn.addEventListener('click', handleMergeJson);
+        } else {
+            console.error('Merge JSON button not found');
+        }
 
 
         // Form submit listeners
@@ -2064,7 +2070,7 @@
         if (!activity) return;
 
         const expandedContent = `
-        <h5 class="activity-title">${activity.title}</h5>
+        <h5 class="activity-title">${activity.title}<span id="activityInfoModal" class="close-button" title="click to close">×</span> </h5>
         <p><strong>Type:</strong> ${capitalizeFirstLetter(activity.type)} (${activity.specificActivity})</p>
         <p><strong>Description:</strong> ${activity.description}</p>
         <p><strong>Development notes:</strong> ${activity.devNotes?activity.devNotes:''}</p>
@@ -2162,7 +2168,6 @@
         downloadAnchorNode.click();
         downloadAnchorNode.remove();
     }
-
     function handleImportJson() {
         const input = document.createElement('input');
         input.type = 'file';
@@ -2184,6 +2189,109 @@
             reader.readAsText(file);
         };
         input.click();
+    }
+
+    //merge with another json file
+
+    function handleMergeJson() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = (event) => {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    const currentData = getCourseData();
+                    const mergedData = mergeCourseData(currentData, importedData);
+                    saveCourse(mergedData);
+                    updateUI();
+                    alert('Course data merged successfully!');
+                } catch (error) {
+                    console.error('Error merging JSON:', error);
+                    alert('Error merging course data. Please check the file and try again.');
+                }
+            };
+            reader.readAsText(file);
+        };
+        input.click();
+    }
+
+    function mergeCourseData(currentData, importedData) {
+        // Merge course information
+        const mergedCourse = { ...currentData.course };
+        for (const key in importedData.course) {
+            if (!mergedCourse[key]) {
+            mergedCourse[key] = importedData.course[key];
+            }
+        }
+
+        // Merge program information
+        const mergedProgram = { ...currentData.program };
+        for (const key in importedData.program) {
+            if (!mergedProgram[key]) {
+            mergedProgram[key] = importedData.program[key];
+            }
+        }
+
+        // Merge CLOs
+        const mergedCLOs = [...currentData.course.learningOutcomes];
+        importedData.course.learningOutcomes.forEach((importedCLO, index) => {
+            if (!mergedCLOs[index]) {
+            mergedCLOs[index] = importedCLO;
+            }
+        });
+        mergedCourse.learningOutcomes = mergedCLOs;
+
+        // Merge PLOs
+        const mergedPLOs = [...currentData.program.learningOutcomes];
+        importedData.program.learningOutcomes.forEach((importedPLO, index) => {
+            if (!mergedPLOs[index]) {
+            mergedPLOs[index] = importedPLO;
+            }
+        });
+        mergedProgram.learningOutcomes = mergedPLOs;
+
+        // Merge units
+        const mergedUnits = [...currentData.units];
+        importedData.units.forEach(importedUnit => {
+            const existingUnit = mergedUnits.find(unit => unit.id === importedUnit.id);
+            if (existingUnit) {
+                Object.assign(existingUnit, importedUnit);
+            } else {
+                mergedUnits.push(importedUnit);
+            }
+        });
+
+        // Merge activities
+        const mergedActivities = [...currentData.activities];
+        importedData.activities.forEach(importedActivity => {
+            const existingActivity = mergedActivities.find(activity => activity.id === importedActivity.id);
+            if (existingActivity) {
+                Object.assign(existingActivity, importedActivity);
+            } else {
+                mergedActivities.push(importedActivity);
+            }
+        });
+
+        // Merge CLO-PLO mappings
+        const mergedMappedPLOs = [...currentData.mappedPLOs];
+        importedData.mappedPLOs.forEach((importedMapping, index) => {
+            if (mergedMappedPLOs[index]) {
+                mergedMappedPLOs[index] = Array.from(new Set([...mergedMappedPLOs[index], ...importedMapping]));
+            } else {
+                mergedMappedPLOs[index] = importedMapping;
+            }
+        });
+
+        return {
+            course: mergedCourse,
+            program: mergedProgram,
+            units: mergedUnits,
+            activities: mergedActivities,
+            mappedPLOs: mergedMappedPLOs
+        };
     }
 
     //report functions
@@ -2396,10 +2504,9 @@
         <p><strong>Delivery Mode:</strong> ${reportData.course.deliveryMode}</p>
         <p><strong>Credit Hours:</strong> ${reportData.course.creditHours}</p>
         <p><strong>Prerequisites:</strong> ${reportData.course.prerequisites}</p>
-        <h2>Course Notes</h2>
+        <h2>Notes</h2>
         <div>${reportData.course.courseNotes || 'No course notes available.'}</div>
-        <h2>Course Resources</h2>
-        <div>${reportData.course.courseResources || 'No course resources available.'}</div>
+        
          <h2>Overview</h2>
         <div>${reportData.course.description || 'No description available.'}</div>
         <h2>Outline</h2>
@@ -2435,6 +2542,8 @@
                 </tr>
             </tbody>
         </table>
+        <h2>Materials</h2>
+        <div>${reportData.course.courseResources || 'No course resources available.'}</div>
     </body>
     </html>
     `;

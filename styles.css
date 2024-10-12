@@ -524,6 +524,8 @@ textarea {
     font-size: 28px;
     font-weight: bold;
     cursor: pointer;
+    right: 30px;
+    position: absolute;
 }
 
 .close-button:hover,
@@ -544,20 +546,19 @@ textarea {
     height: 100%;
     background-color: rgba(0,0,0,0.5);
     z-index: 1000;
+    overflow-y: auto; /* Allow scrolling for the entire popup */
 }
 .popup-content {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    position: relative; /* Changed from fixed to relative */
+    margin: 5% auto;
     background-color: #fff;
     padding: 20px;
     border-radius: 5px;
     box-shadow: 0 0 10px rgba(0,0,0,0.3);
     max-width: 800px;
     width: 90%;
-    max-height:100%;
-    overflow-y: auto;
+    max-height: 90%; /* Ensure the content doesn't exceed the viewport height */
+    overflow-y: auto; /* Allow scrolling within the content area */
 }
 /* New styles for calculator button and layout */
 .study-hours-container {
