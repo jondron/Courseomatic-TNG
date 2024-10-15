@@ -19,28 +19,31 @@
         <nav>
             <button id="showCourseInfoButton" class="show-course-info">Show Summary Info</button>
             <!--<button id="programInfoBtn" title="Enter program information">Edit Program</button>-->
-            <button id="courseInfoBtn" title="Edit course information">Edit Course Info</button>
-            <button id="newUnitBtn" title="Create a new unit">New Unit</button>
-            <div class="dropdown">
+            <button id="courseInfoBtn" title="Edit main course information">Edit main Info</button>
+            <button id="devProdInfoBtn" title="Edit course production and development information">Edit dev/prod Info</button>
+             <div class="dropdown">
                 <button id="reportButton" title="Save or load course data">Reports</button>
                 <div class="dropdown-content">
                     <a href="#" id="saveHtml" title="Generate full report">Create a full report</a>
                     <a href="#" id="saveSyllabus" title="Generate the syllabus">Create a syllabus</a>
+                    <a href=""#"" id="generateMarkingScheme">Generate a marking scheme</a>
+                    <a href=""#"" id="saveCourseMap">Generate a course map</a>
                 </div>
             </div>
             <div class="dropdown">
                 <button id="saveLoadBtn" title="Save or load course data">Save/Load</button>
                 <div class="dropdown-content">
-                    <a href="#" id="exportJson" title="Export course to JSON file">Export to JSON</a>
-                    <a href="#" id="importJson" title="Import course from JSON file">Import from JSON (overwrite)</a>
-                    <a href="#" id="mergeJson" title="Merge course from JSON file retaining existing information">Merge from JSON </a>
+                    <a href="#" id="exportJson" title="Export course to JSON file">Export</a>
+                    <a href="#" id="importJson" title="Import course from JSON file">Import (overwrite all data)</a>
+                    <a href="#" id="mergeJson" title="Merge course from JSON file retaining existing information">Import (merge, retaining current data) </a>
 
                 </div>
             </div>
             <button id="clearBtn" title="Clear all data">Clear</button>
 
         </nav>
-        <div id="unit-nav"></div>
+        <div id="unit-nav">          <button id="newUnitBtn" title="Create a new unit">New Unit</button>
+        </div>
     </header>
 
     <main>
@@ -70,14 +73,7 @@
                 <label for="courseRevision">Course Revision:</label>
                 <input type="text" id="courseRevision" name="courseRevision">
                 
-                <label for="deliveryMode">Delivery Mode:</label>
-                <input type="text" id="deliveryMode" name="deliveryMode">
-               
-
-                <label for="coursePrerequisites">Course Prerequisites:</label>
-                <input type="text" id="coursePrerequisites" name="coursePrerequisites">
-
-                <label for="creditHours">Credit Hours:</label>
+               <label for="creditHours">Credit Hours:</label>
                 <input type="number" id="creditHours" name="creditHours" min="0" step="0.5" >
                 
                 <label for="courseGoal">Course Goal:</label>
@@ -93,11 +89,7 @@
 
                 <textarea id="courseResources" name="courseResources"></textarea>
 
-                <label for="courseDevelopmentNotes" title="Use this for stuff development info like textbooks, resources, copyright, schedules, etc">
-                    Development Notes:</label>
-                <textarea id="courseDevelopmentNotes" name="courseDevelopmentNotes"></textarea>
- 
-                <label for="programName">Program Name:</label>
+                 <label for="programName">Program Name:</label>
                 <input type="text" id="programName" name="programName" >
                 
                 <label for="programLevel">Program Level:</label>
@@ -119,6 +111,116 @@
             </form>
         </div>
     </div>
+    <!-- Popup Form -->
+<div id="devProdPopup" class="popup">
+    <div class = "popup-content">
+        <h2>Course Development and Production Information</h2>
+        <form id="devProdForm">
+            <h4>Design and development information</h4>
+            <label for="dpcourseCode">Course Code:</label>
+            <input type="text" id="dpcourseCode" name="dpcourseCode">
+
+            <label for="revisionLevel">Revision Level:</label>
+            <select id="revisionLevel" name="revisionLevel">
+                <option value="Major">Major</option>
+                <option value="Intermediate">Intermediate</option>
+                <option value="Minor">Minor</option>
+                <option value="Maintenance">Maintenance</option>
+                <option value="New">New</option>
+            </select>
+
+
+            <label for="courseDevelopmentNotes" title="Use this for stuff development info like textbooks, resources, copyright, schedules, etc">
+                Development Notes:</label>
+            <textarea id="courseDevelopmentNotes" name="courseDevelopmentNotes"></textarea>
+            
+            <label for="rationale" title"Explain what led to this course or the changes made to it">Rationale: why is this development needed, what evidence does it draw on?</label>
+            <textarea id="rationale" name="rationale"></textarea>
+
+
+            <label for="changeSummary" title"Changes to course and marking/overview of design">Summary of changes if this is a revision/overview of design if new</label>
+            <textarea id="changeSummary" name="changeSummary"></textarea>
+
+            <label for="evaluationCriteria" title="blurb for the syllabus, e.g. overall pass threshold">
+                Evaluation criteria (for syllabus):</label>
+            <textarea id="evaluationCriteria" name="evaluationCriteria"></textarea>
+
+            <label for="consulted">Who has been consulted (tutors, AEs, students, etc):</label>
+            <input type="text" id="consulted" name="consulted">
+
+            <label for="teamMembers">Design/development/production team Members:</label>
+            <div id="teamMembersContainer">
+                <!-- Team members will be added here dynamically -->
+            </div>
+            <button type="button" id="addMemberButton">Add Member</button>
+
+
+            <h4>Production information</h4>
+            <label for="faculty">Faculty:</label>
+            <input type="text" id="faculty" name="faculty">
+
+            <label for="studyArea">Study Area:</label>
+            <input type="text" id="studyArea" name="studyArea">
+
+            <label for="deliveryMode">Delivery Mode:</label>
+            <select id="deliveryMode" name="deliveryMode">
+                <option value="Challenge">Challenge</option>
+                <option value="Group Study">Group Study</option>
+                <option value="Self paced">Self-paced</option>
+                <option value="Paced">Paced</option>
+            </select>
+
+            <label for="deliveryModel">Delivery Model:</label>
+            <select id="deliveryModel" name="deliveryModel">
+                <option value="group">Group</option>
+                <option value="SSC">SSC</option>
+                <option value="circle">Circle</option>
+                <option value="tutor">Tutor</option>
+            </select>
+
+
+            <label for="preRequisites">Course Prerequisites:</label>
+            <input type="text" id="preRequisites" name="preRequisites">
+
+            <label for="precluded">Precluded courses:</label>
+            <input type="text" id="precluded" name="precluded">
+
+            <label for=coRequisites">Course Corequisites:</label>
+            <input type="text" id="coRequisites" name="coRequisites">
+
+
+            <label for="effectiveDate">Effective Date (when should the course be open?): </label>
+            <input type="date" id="effectiveDate" name="effectiveDate">
+
+            <label for="challengeable">Challengeable (is there a challenge assessment option?):</label>
+            <input type="checkbox" id="challengeable" name="challengeable"> Comments: <input type="text" id="challengeableComments" name="challengeableComments">
+
+            <label for="earlyStartFlag">Early Start Flag:</label>
+            <input type="checkbox" id="earlyStartFlag" name="earlyStartFlag">
+
+
+            <label for="stipend">Stipend needed for tutors/AEs:</label>
+            <input type="checkbox" id="stipend" name="stipend">
+
+            <label for="author">Author:</label>
+            <input type="text" id="author" name="author">
+
+
+            <label for="lastUpdated">Last Updated:</label>
+            <input type="date" id="lastUpdated" name="lastUpdated">
+
+            <label for="lab">Lab:</label>
+            <input type="text" id="lab" name="lab">
+
+            <label for="labType">Lab Type:</label>
+            <input type="text" id="labType" name="labType">
+            <p> </p>
+            <button type="submit">Save</button>
+            <p> </p>
+            <button type="button" id="closePopupButton" class="cancel">Close</button>
+        </form>
+    </div>
+</div>
 
     <div id="unitPopup" class="popup">
         <div class="popup-content">

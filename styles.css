@@ -33,7 +33,7 @@ nav {
     justify-content: center;
     gap: 0.5rem;
     margin-top: 1rem;
-    z-index: 101111;
+    z-index: 998;
 }
 
 button {
@@ -159,7 +159,7 @@ main {
 }
 
 .activity-card.expanded {
-    z-index: 21111;
+    z-index: 997;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     width: 400px;
 }
@@ -656,6 +656,11 @@ textarea {
     margin-left: 10px;
 }
 
+#programLearningOutcomes .plo-item select {
+    margin-left: 10px;
+    width: 100px;
+}
+
 .clo-item {
     margin-bottom: 15px;
 }
@@ -690,5 +695,23 @@ textarea {
 }
 
 .removeCLO {
+    margin-left: 10px;
+}
+
+#teamMembersContainer {
+    margin-top: 10px;
+}
+
+#teamMembersContainer .team-member {
+    display: flex;
+    align-items: center;
+    margin-top: 5px;
+}
+
+#teamMembersContainer .team-member input {
+    margin-right: 5px;
+}
+
+#teamMembersContainer .team-member button {
     margin-left: 10px;
 }

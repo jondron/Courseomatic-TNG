@@ -33,13 +33,28 @@
             goal: '',
             description: '',
             courseNotes: '',
+            changeSummary: '',
+            challengeableComments: '',
+            evaluationCriteria: '',
             courseResources: '',
             courseDevelopmentNotes: '',
+            rationale: '',
+            consulted: '',
+            faculty: '',
+            studyArea: '',
+            effectiveDate: '',
+            author: '',
+            earlyStartFlag: '',
+            stipend: '',
+            revisionLevel: '',
+            deliveryModel: '',
+            teamMembers: [],    // Array of team members
             learningOutcomes: [] // Array of CLOs
         },
         mappedPLOs: [], // Array where each index represents the mapping of a CLO to a PLO (or none)
         units: [],
-        activities: []
+        activities: [],
+
     };
 
     // Course Data Management Functions
@@ -61,8 +76,22 @@
                 goal: '',
                 description: '',
                 courseNotes: '',
+                changeSummary: '',
+                challengeableComments: '',
+                evaluationCriteria: '',
                 courseResources: '',
                 courseDevelopmentNotes: '',
+                rationale: '',
+                consulted: '',
+                faculty: '',
+                studyArea: '',
+                effectiveDate: '',
+                author: '',
+                earlyStartFlag: '',
+                stipend: '',
+                revisionLevel: '',
+                deliveryModel: '',
+                teamMembers: [], 
                 learningOutcomes: [] 
             },
             mappedPLOs: [], 
@@ -337,6 +366,7 @@
         if (data.mappedPLOs) {
             courseData.mappedPLOs = data.mappedPLOs;
         }
+        courseData.timestamp = Date.now();  // Add a timestamp to indicate when the course was last saved
         localStorage.setItem('courseData', JSON.stringify(courseData));
     }
 
@@ -833,7 +863,8 @@
         try {
             tinymce.init({
                 selector: '#programDescription, #courseGoal, #courseDescription, #productionNotes, '+
-                    '#unitDescription, #activityDescription, #activityDevNotes, #courseNotes, #courseResources, #courseDevelopmentNotes',
+                    '#unitDescription, #activityDescription, #activityDevNotes, #courseNotes, #courseResources, #courseDevelopmentNotes, ' +
+                    '#rationale, #changeSummary, #evaluationCriteria',
                 height: 300,
                 menubar: false,
                 plugins: [
@@ -891,6 +922,17 @@
             }
         
             try {
+                document.getElementById('devProdInfoBtn').addEventListener('click', () => {
+                    populateDevProdForm();
+                    //initializeTinyMCE();    
+                    document.getElementById('devProdPopup').style.display = 'block';
+                });
+            } catch (error) {
+                console.error('Error setting up dev/prod info button event listener:', error);
+            }
+
+
+            try {
                 document.getElementById('newUnitBtn').addEventListener('click', () => {
                     document.getElementById('unitForm').reset();
                     document.getElementById('unitPopup').style.display = 'block';
@@ -915,16 +957,32 @@
                 console.error('Error saving syllabus:', error);
             }
         
-        
+
+            try {
+                document.getElementById('saveCourseMap').addEventListener('click', () => {
+                    saveCourseMap();
+                });
+            } catch (error) {
+                console.error('Error saving course map:', error);
+            }
+
+            try {
+                document.getElementById('generateMarkingScheme').addEventListener('click', () => {
+                    displayMarkingScheme();
+                });
+            } catch (error) {
+                console.error('Error saving marking scheme:', error);
+            }
             try {
                 document.getElementById('clearBtn').addEventListener('click', () => {
                     if (confirm('Are you sure you want to clear all data? This action cannot be undone.')) {
                         clearCourse();
                         if(document.getElementById('unit-nav')){
-                            document.getElementById('unit-nav').innerHTML = '';
+                            document.getElementById('unit-nav').innerHTML = ''+ "<button id='newUnitBtn' title='Create a new unit'>New Unit</button>";
                         } else {
                             console.warning("Not found:", document.getElementById('unit-nav'));
                         };
+                        handleAddUnitButton();ß
                         updateUI();
                     }
                 });
@@ -960,6 +1018,7 @@
         // Form submit listeners
        // document.getElementById('programInfoForm').addEventListener('submit', handleProgramFormSubmit);
         document.getElementById('courseInfoForm').addEventListener('submit', handleCourseFormSubmit);
+        document.getElementById('devProdForm').addEventListener('submit', handleDevProdFormSubmit);
         document.getElementById('unitForm').addEventListener('submit', handleUnitFormSubmit);
          // Remove existing listeners before adding new ones
          document.getElementById('activityForm').removeEventListener('submit', handleActivityFormSubmit);
@@ -1115,10 +1174,15 @@
         const unitPopup = document.getElementById('unitPopup');
         const activityPopup = document.getElementById('activityPopup');
         const expanded= document.querySelector('.expanded');
+        const devProdPopup= document.getElementById('devProdPopup');
 
         if (event.target === courseInfoPopup) {
             courseInfoPopup.style.display = 'none';
         }
+        if (event.target === devProdPopup) {
+            devProdPopup.style.display = 'none';
+        }
+
         if (event.target === unitPopup) {
             unitPopup.style.display = 'none';
         }
@@ -1198,6 +1262,17 @@
             } else {
                 expandActivityCard(activityId);
             }
+        }
+    }
+
+    function handleAddUnitButton(){
+        try {
+            document.getElementById('newUnitBtn').addEventListener('click', () => {
+                document.getElementById('unitForm').reset();
+                document.getElementById('unitPopup').style.display = 'block';
+            });
+        } catch (error) {
+            console.error('Error setting up new unit button event listener:', error);
         }
     }
 
@@ -1352,18 +1427,23 @@
 
     function handleCourseFormSubmit(event) {
         event.preventDefault();
+        const programLearningOutcomes = Array.from(document.getElementById('programLearningOutcomes').children)
+        .map((child, index) => ({
+            plo: child.querySelector('input').value,
+            maxAssessedLevel: child.querySelector('select').value
+        }))
+        .filter(plo => plo.plo.trim() !== '');
         const courseData = {
             course: {
                 name: document.getElementById('courseName').value,
                 code: document.getElementById('courseCode').value,
                 creditHours: document.getElementById('creditHours').value,
-                prerequisites: document.getElementById('coursePrerequisites').value,
                 revision: document.getElementById('courseRevision').value,
                 deliveryMode: document.getElementById('deliveryMode').value,
-                goal: document.getElementById('courseGoal').value,
-                description: document.getElementById('courseDescription').value,
-                courseNotes: document.getElementById('courseNotes').value,
-                courseResources: document.getElementById('courseResources').value,
+                goal: tinymce.get('courseGoal').getContent(),
+                description: tinymce.get('courseDescription').getContent(),
+                courseNotes: tinymce.get('courseNotes').getContent(),
+                courseResources: tinymce.get('courseResources').getContent(),
                 courseDevelopmentNotes: document.getElementById('courseDevelopmentNotes').value,
                 learningOutcomes: Array.from(document.getElementById('courseLearningOutcomes').children)
                     .map(child => child.querySelector('textarea').value)
@@ -1372,15 +1452,61 @@
             program: {
                 name: document.getElementById('programName').value,
                 level: document.getElementById('programLevel').value,
-                learningOutcomes: Array.from(document.getElementById('programLearningOutcomes').children)
-                    .map(child => child.querySelector('input').value)
-                    .filter(value => value.trim() !== '')
+                learningOutcomes: programLearningOutcomes
             }
          };
         collectCLOPLOMappings();
         saveCourse(courseData);
+
         updateUI();
         document.getElementById('courseInfoPopup').style.display = 'none';
+    }
+
+
+
+
+
+
+    // Function to save dev prod data
+    function handleDevProdFormSubmit(event) {
+        event.preventDefault();
+
+        const courseData = {
+            course: {
+                code: document.getElementById('dpcourseCode').value || '',
+                faculty: document.getElementById('faculty').value || '',
+                studyArea: document.getElementById('studyArea').value || '',
+                rationale: tinymce.get('rationale').getContent() || '',
+                courseDevelopmentNotes: tinymce.get('courseDevelopmentNotes').getContent() || '',
+                consulted: document.getElementById('consulted').value || '',
+                deliveryMode: document.getElementById('deliveryMode').value || '',
+                prerequisites: document.getElementById('preRequisites').value || '',
+                precluded: document.getElementById('precluded').value || '',
+                corequisites: document.getElementById('coRequisites').value || '',
+                changeSummary: tinymce.get('changeSummary').getContent()  || '',
+                challengeableComments: document.getElementById('challengeableComments').value || '', 
+                evaluationCriteria: tinymce.get('evaluationCriteria').getContent() || '',
+                effectiveDate: document.getElementById('effectiveDate').value || '',
+                challengeable: document.getElementById('challengeable').checked || false,
+                earlyStartFlag: document.getElementById('earlyStartFlag').checked || false,
+                revisionLevel: document.getElementById('revisionLevel').value || '',
+                stipend: document.getElementById('stipend').checked || false,
+                author: document.getElementById('author').value || '',
+                teamMembers: Array.from(teamMembersContainer.children).map(memberDiv => ({
+                memberName: memberDiv.querySelector('input[placeholder="Member Name"]').value || '',
+                role: memberDiv.querySelector('input[placeholder="Role"]').value || ''
+                })),
+                lastUpdated: document.getElementById('lastUpdated').value || '',
+                deliveryModel: document.getElementById('deliveryModel').value || '',
+                lab: document.getElementById('lab').value || '',
+                labType: document.getElementById('labType').value || ''
+            }
+        };
+
+       saveCourse(courseData);
+       
+        updateUI();
+        document.getElementById('devProdPopup').style.display = 'none';
     }
 
     function handleUnitFormSubmit(event) {
@@ -1460,8 +1586,7 @@
 
         document.getElementById('courseName').value = courseData.course.name || '';
         document.getElementById('courseCode').value = courseData.course.code || '';
-        document.getElementById('creditHours').value = courseData.course.creditHours || '';
-       document.getElementById('coursePrerequisites').value = courseData.course.prerequisites || ''; 
+        document.getElementById('creditHours').value = courseData.course.creditHours || ''; 
         document.getElementById('courseRevision').value = courseData.course.revision || '';
         document.getElementById('deliveryMode').value = courseData.course.deliveryMode || '';
 
@@ -1504,13 +1629,7 @@
         document.getElementById('programName').value = courseData.program.name || '';
         document.getElementById('programLevel').value = courseData.program.level || '';
 
-        const ploContainer = document.getElementById('programLearningOutcomes');
-        ploContainer.innerHTML = courseData.program.learningOutcomes.map((plo, index) => `
-        <div class="plo-item" data-plo-index="${index}">
-            ${index+1}. <input type="text" id="plo${index}" name="plo${index}" value="${plo}" required>
-            <button type="button" class="removePLO">Remove</button>
-        </div>
-    `).join('');
+        populatePLODropdowns();
 
         // Add event listeners for removing PLOs and updating PLO values
         document.querySelectorAll('.removePLO').forEach(button => {
@@ -1574,6 +1693,60 @@
         addPLOButton.removeEventListener('click', addNewPLO); // Remove any previous listener
         addPLOButton.addEventListener('click', addNewPLO); // Add the correct listener
         initializeCLOReordering();
+    }
+
+    function populatePLODropdowns() {
+        const container = document.getElementById('programLearningOutcomes');
+        container.innerHTML = ''; // Clear any existing content
+    
+        courseData.program.learningOutcomes.forEach((ploObj, index) => {
+            const ploDiv = document.createElement('div');
+            ploDiv.className = 'plo-item';
+            ploDiv.dataset.ploIndex = index;
+    
+            const ploLabel = document.createElement('label');
+            ploLabel.textContent = `${index + 1}. `;
+            ploDiv.appendChild(ploLabel);
+    
+            const ploInput = document.createElement('input');
+            ploInput.type = 'text';
+            ploInput.id = `plo${index}`;
+            ploInput.name = `plo${index}`;
+            ploInput.value = ploObj.plo; 
+            ploInput.required = true;
+            ploDiv.appendChild(ploInput);
+    
+            const ploSelect = document.createElement('select');
+            ploSelect.name = `ploMaxAssessedLevel${index}`;
+            ploSelect.id = `ploMaxAssessedLevel${index}`;
+    
+            const levels = ['foundational', 'developing', 'advanced'];
+            levels.forEach(level => {
+                const option = document.createElement('option');
+                option.value = level;
+                option.textContent = level.charAt(0).toUpperCase() + level.slice(1);
+                if (ploObj.maxAssessedLevel === level) {
+                    option.selected = true;
+                }
+                ploSelect.appendChild(option);
+            });
+    
+            ploDiv.appendChild(ploSelect);
+    
+            const removeButton = document.createElement('button');
+            removeButton.type = 'button';
+            removeButton.className = 'removePLO';
+            removeButton.textContent = 'Remove';
+            removeButton.addEventListener('click', () => removePLO(index));
+            ploDiv.appendChild(removeButton);
+    
+            container.appendChild(ploDiv);
+        });
+    }
+    
+    function removePLO(index) {
+        courseData.program.learningOutcomes.splice(index, 1);
+        populatePLODropdowns();
     }
 
     // Function to add a new PLO
@@ -1694,6 +1867,98 @@
 
 
 
+    function populateDevProdForm() {
+        const courseData = getCourseData();
+
+        console.log(courseData);
+    
+        // Populate text and date fields
+        document.getElementById('dpcourseCode').value = courseData.course.code || '';
+        console.log(courseData.course.code);
+        document.getElementById('faculty').value = courseData.course.faculty || '';
+        document.getElementById('studyArea').value = courseData.course.studyArea || '';
+        document.getElementById('effectiveDate').value = courseData.course.effectiveDate || '';
+        document.getElementById('author').value = courseData.course.author || '';
+        document.getElementById('preRequisites').value = courseData.course.prerequisites || '';
+        document.getElementById('lastUpdated').value = courseData.course.timestamp || new Date();
+        document.getElementById('changeSummary').value = courseData.course.changeSummary || '';
+        document.getElementById('challengeableComments').value = courseData.course.challengeableComments || '';
+        document.getElementById('evaluationCriteria').value = courseData.course.evaluationCriteria || '';
+        document.getElementById('precluded').value = courseData.course.precluded || '';
+        document.getElementById('lab').value = courseData.course.lab || '';
+        document.getElementById('labType').value = courseData.course.labType || '';
+        document.getElementById('coRequisites').value = courseData.course.corequisites || '';
+        document.getElementById('consulted').value = courseData.course.consulted || '';
+
+    
+        // Populate checkboxes
+        document.getElementById('challengeable').checked = courseData.course.challengeable || false;
+        document.getElementById('earlyStartFlag').checked = courseData.course.earlyStartFlag || false;
+        document.getElementById('stipend').checked = courseData.course.stipend || false;
+    
+        // Populate dropdowns
+        document.getElementById('revisionLevel').value = courseData.course.revisionLevel || 'Major';
+        document.getElementById('deliveryModel').value = courseData.course.deliveryModel || 'group';
+    
+        // Handle TinyMCE editors
+        if (tinymce.get('rationale')) {
+            tinymce.get('rationale').setContent(courseData.course.rationale || '');
+        } else {
+            console.error('TinyMCE editor for rationale not found');
+        }
+
+    
+        if (tinymce.get('courseDevelopmentNotes')) {
+            tinymce.get('courseDevelopmentNotes').setContent(courseData.course.courseDevelopmentNotes || '');
+        } else {
+            console.error('TinyMCE editor for courseDevelopmentNotes not found');
+        }
+    
+        // Ensure teamMembers is an array
+        if (!Array.isArray(courseData.course.teamMembers)) {
+            courseData.course.teamMembers = [];
+        }
+    
+        // Populate team members
+        const teamMembersContainer = document.getElementById('teamMembersContainer');
+        teamMembersContainer.innerHTML = courseData.course.teamMembers.map((member, index) => `
+            <div class="team-member" data-member-index="${index}">
+                <input type="text" placeholder="Member Name" value="${member.memberName}" required>
+                <input type="text" placeholder="Role" value="${member.role}" required>
+                <button type="button" class="removeMember">Remove</button>
+            </div>
+        `).join('');
+    
+        // Add event listeners for removing team members
+        document.querySelectorAll('.removeMember').forEach(button => {
+            button.addEventListener('click', function () {
+                const memberDiv = button.closest('.team-member');
+                memberDiv.remove();
+            });
+        });
+    
+        // Add event listener for adding new team members
+        document.getElementById('addMemberButton').addEventListener('click', function () {
+            const newIndex = teamMembersContainer.children.length;
+            const newMemberDiv = document.createElement('div');
+            newMemberDiv.className = 'team-member';
+            newMemberDiv.dataset.memberIndex = newIndex;
+            newMemberDiv.innerHTML = `
+                <input type="text" placeholder="Member Name" required>
+                <input type="text" placeholder="Role" required>
+                <button type="button" class="removeMember">Remove</button>
+            `;
+            teamMembersContainer.appendChild(newMemberDiv);
+    
+            // Add event listener to the new remove button
+            newMemberDiv.querySelector('.removeMember').addEventListener('click', function () {
+                newMemberDiv.remove();
+            });
+        });
+        updateUI();
+    }
+
+
     function collectCLOPLOMappings() {
         const courseData = getCourseData();
 
@@ -1707,6 +1972,41 @@
         saveCourse(courseData); // Save the updated course data
     }
 
+
+
+
+      // Function to add a new team member input
+      function addTeamMember() {
+        const teamMemberDiv = document.createElement('div');
+        teamMemberDiv.className = 'team-member';
+
+        const memberNameInput = document.createElement('input');
+        memberNameInput.type = 'text';
+        memberNameInput.placeholder = 'Member Name';
+
+        const memberRoleInput = document.createElement('input');
+        memberRoleInput.type = 'text';
+        memberRoleInput.placeholder = 'Role';
+
+        const deleteButton = document.createElement('button');
+        deleteButton.type = 'button';
+        deleteButton.textContent = 'Delete';
+        deleteButton.addEventListener('click', function () {
+            teamMembersContainer.removeChild(teamMemberDiv);
+        });
+
+        teamMemberDiv.appendChild(memberNameInput);
+        teamMemberDiv.appendChild(memberRoleInput);
+        teamMemberDiv.appendChild(deleteButton);
+
+        teamMembersContainer.appendChild(teamMemberDiv);
+    }
+
+    // Event listener for the add member button
+    addMemberButton.addEventListener('click', addTeamMember);
+
+    // Event listener for the close button
+    // closePopupButton.addEventListener('click', hidePopupForm);
 
 
     function populateActivityForm(activity = null) {
@@ -1891,12 +2191,12 @@
         <p><strong>Program:</strong> ${courseData.program.name}</p>
         <h4>Program Learning Outcomes mapped to Course Learning Outcomes:</h4>
         <ol>
-            ${courseData.program.learningOutcomes.map((outcome, ploIndex) => {
-                const mappedCLOs = courseData.mappedPLOs
-                    .map((cloMappings, cloIndex) => cloMappings.includes(ploIndex) ? cloIndex + 1 : null)
-                    .filter(clo => clo !== null);
-                const mappingText = mappedCLOs.length > 0 ? `(maps to CLO: ${mappedCLOs.join(', ')})` : '(no CLOs mapped)';
-                return `<li>${outcome} ${mappingText}</li>`;
+            ${courseData.program.learningOutcomes.map((outcomeObj, ploIndex) => {
+            const mappedCLOs = courseData.mappedPLOs
+                .map((cloMappings, cloIndex) => cloMappings.includes(ploIndex) ? cloIndex + 1 : null)
+                .filter(clo => clo !== null);
+            const mappingText = mappedCLOs.length > 0 ? `(maps to CLO: ${mappedCLOs.join(', ')})` : '(no CLOs mapped)';
+            return `<li>${outcomeObj.plo} (${outcomeObj.maxAssessedLevel}) ${mappingText}</li>`;
             }).join('')} 
         </ol>
 
@@ -1917,13 +2217,14 @@
         }
         </ol>
         <div class="unit-navigation">
-            Units: ${unitLinks}
+            Units: ${unitLinks}  <button id="newUnitBtn" title="Create a new unit">New Unit</button>
         </div>
 
-    `;
+        `;
         
         updateActivityTypePieChart();
         updateUnassessedLearningOutcomes();
+        
 
     }
 
@@ -1967,7 +2268,7 @@
         const unitLinks = courseData.units.map((unit, index) =>
             `<a href="#unit-${unit.id}" class="unit-link">${index + 1} ${unit.title}</a>`
         );
-        document.getElementById('unit-nav').innerHTML = unitLinks.join(' | ');
+        document.getElementById('unit-nav').innerHTML = unitLinks.join(' | ')+ " <button id='newUnitBtn' title='Create a new unit'>New Unit</button>";
 
         unitsContainer.innerHTML = courseData.units.map((unit, index) => {
             const studyHours = getUnitStudyHours(unit.id);
@@ -2036,6 +2337,8 @@
                 handleActivityReorder(activityId, newUnitId, newIndex);
             }
         });
+        handleAddUnitButton();
+
     }
 
 
@@ -2327,6 +2630,17 @@
         }
     }
 
+    function saveCourseMap() {
+        const courseData = getCourseData(); // Retrieve the course data
+        const reportHtml = generateCourseMap(courseData);
+    
+        // Open the report in a new window
+        const reportWindow = window.open('', '_blank');
+        reportWindow.document.write(reportHtml);
+        reportWindow.document.close();
+    }
+
+
     function saveSyllabus() {
         const courseData = getCourseData();
         const syllabus = generateSyllabus(); // Generate the report content
@@ -2370,10 +2684,10 @@
             reportData.mappedPLOs = [];
         }
 
-        const chartDiv =document.createElement('div');
-        createPieChart(chartDiv,reportData.activityTypeProportions);
+        const chartDiv = document.createElement('div');
+        createPieChart(chartDiv, reportData.activityTypeProportions);
         const assessedActivities = courseData.activities.filter(activity => activity.isAssessed);
-          
+
         const { html: assessedActivitiesHTML, totalWeighting } = generateAssessedActivitiesHTML(assessedActivities);
 
         let html = `
@@ -2397,20 +2711,38 @@
     <body>
         <h1>${reportData.course.name} (${reportData.course.code})</h1>  
          <p><strong>Revision:</strong> ${reportData.course.revision}</p>
+        <h2>Course Production Notes</h2>
+        <div>${reportData.course.courseDevelopmentNotes}</div>
          <p><strong>Delivery Mode:</strong> ${reportData.course.deliveryMode}</p>
          <p><strong>Credit Hours:</strong> ${reportData.course.creditHours}</p>
         <p><strong>Prerequisites:</strong> ${reportData.course.prerequisites}</p>
-        <h2>Course Goal</h2>
+        <p><strong>Co-requisites:</strong> ${reportData.course.corequisites}</p>
+        <p><strong>Precluded:</strong> ${reportData.course.precluded}</p>
+        <p><strong>Faculty:</strong> ${reportData.course.faculty}</p>
+        <p><strong>Author:</strong> ${reportData.course.author}</p>
+        <p><strong>Effective Date:</strong> ${reportData.course.effectiveDate}</p>
+        <p><strong>Last Updated:</strong> ${reportData.course.timestamp}</p>
+        <p><strong>Change Summary:</strong> ${reportData.course.changeSummary}</p>
+        <p><strong>Challengeable:</strong> ${reportData.course.challengeable ? 'Yes' : 'No'}</p>
+        <p><strong>Challengeable Comments:</strong> ${reportData.course.challengeableComments}</p>
+        <p><strong>Evaluation Criteria:</strong> ${reportData.course.evaluationCriteria}</p>
+        <p><strong>Lab:</strong> ${reportData.course.lab}</p>
+        <p><strong>Lab Type:</strong> ${reportData.course.labType}</p>
+        <p><strong>Consulted:</strong> ${reportData.course.consulted ? 'Yes' : 'No'}</p>
+        <p><strong>Stipend:</strong> ${reportData.course.stipend ? 'Yes' : 'No'}</p>
+        <p><strong>Early Start Flag:</strong> ${reportData.course.earlyStartFlag ? 'Yes' : 'No'}</p>
+        <p><strong>Revision Level:</strong> ${reportData.course.revisionLevel}</p>
+        <p><strong>Delivery Model:</strong> ${reportData.course.deliveryModel}</p>
+        <h2>Essential course information</h2>
+        <h3>Course Goal</h3>
         <div>${reportData.course.goal}</div>
-        <h2>Course Description</h2>
+        <h3>Course Description</h3>
         <div>${reportData.course.description}</div>
-         <h2>Course  Notes</h2>
-        <div>${reportData.course.courseNotes}
-        <h2>Course  Resources</h2>
-        <div>${reportData.course.courseResources}
-        <h2>Course Production Notes</h2>
-        <div>${reportData.course.courseDevelopmentNotes}
-        <h2>Course Learning Outcomes</h2>
+        <h3>Course Notes</h3>
+        <div>${reportData.course.courseNotes}</div>
+        <h3>Course Resources</h3>
+        <div>${reportData.course.courseResources}</div>
+        <h3>Course Learning Outcomes</h3>
          ${reportData.course.learningOutcomes && reportData.course.learningOutcomes.length > 0 ? `
             <ul>
                 ${reportData.course.learningOutcomes.map((outcome, index) => `
@@ -2419,25 +2751,19 @@
                 `).join('')}
             </ul>
          ` : '<p>No outcomes defined for this course</p>'}   
-        <h2>Program Information</h2>
+        <h3>Program Information</h3>
         <p><strong>Program Name:</strong> ${reportData.program.name}</p>
         <p><strong>Program Level:</strong> ${reportData.program.level}</p>
         <h3>Program Learning Outcomes</h3>
-              <h5>Program Learning Outcomes:</h5>
-            <ol>
-                 ${reportData.program.learningOutcomes.map((outcome, ploIndex) => {
-                // Find CLOs that map to the current PLO
+        <ol>
+            ${reportData.program.learningOutcomes.map((outcomeObj, ploIndex) => {
                 const mappedCLOs = reportData.mappedPLOs
                     .map((cloMappings, cloIndex) => cloMappings.includes(ploIndex) ? cloIndex + 1 : null)
-                    .filter(clo => clo !== null); // Filter out unmapped CLOs
-
-                // If mappedCLOs is not empty, create the "maps to CLO" text
+                    .filter(clo => clo !== null);
                 const mappingText = mappedCLOs.length > 0 ? `(maps to CLO: ${mappedCLOs.join(', ')})` : '(no CLOs mapped)';
-
-                // Return the list item with outcome and the mapping text if applicable
-                return `<li>${outcome} ${mappingText}</li>`;
-                }).join('')} 
-          </ol>    
+                return `<li>${outcomeObj.plo} (${outcomeObj.maxAssessedLevel}) ${mappingText}</li>`;
+            }).join('')} 
+        </ol>    
         <h3>Assessed activities:</h3>
          <p><strong>Total Marking Hours:</strong> ${formatTimeForDisplay(reportData.totalMarkingHours)} </p>
          <p><strong>Sum of weightings for assessments:</strong> ${totalWeighting}%</p> 
@@ -2455,95 +2781,9 @@
                <h3>Activity Type Distribution</h3>
         ${chartDiv.innerHTML} 
  
-       <h2>Units</h2>
+       <h3>Units</h3>
         ${generateUnitsHTML(reportData.units)}
 
-    </body>
-    </html>
-    `;
-        return html;
-    }
-
-    function generateSyllabus() {
-        const reportData = generateCourseReport();
-        const courseData = getCourseData();
-        if (!Array.isArray(reportData.mappedPLOs)) {
-            reportData.mappedPLOs = [];
-        }
-
-        const assessedActivities = courseData.activities.filter(activity => activity.isAssessed);
-        const { html: assessedActivitiesHTML, totalWeighting } = generateAssessedActivitiesHTML(assessedActivities);
-        const units = reportData.units.map(unit => `
-        <div class="unit">
-            <h3>${unit.title}</h3>
-            <p>${unit.description}</p>
-            <p><strong>Total Study Hours:</strong> ${formatTimeForDisplay(unit.totalStudyHours)} </p>
-        </div>
-    `).join('');
-
-        let html = `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>${reportData.course.name} - Course Syllabus</title>
-        <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 1200px; margin: 0 auto; padding: 20px; }
-            h1, h2, h3 { color: #2c3e50; }
-            table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-            table, th, td { border: 1px solid #333; }
-            th, td { padding: 10px; text-align: left; }
-            th { background-color: #f4f4f4; }
-            .unit { background-color: #f4f4f4; padding: 15px; margin-bottom: 20px; border-radius: 5px; }
-            ${generateActivityStyles()}
-        </style>
-    </head>
-    <body>
-        <h1>${reportData.course.name} (${reportData.course.code})</h1>  
-        <p><strong>Delivery Mode:</strong> ${reportData.course.deliveryMode}</p>
-        <p><strong>Credit Hours:</strong> ${reportData.course.creditHours}</p>
-        <p><strong>Prerequisites:</strong> ${reportData.course.prerequisites}</p>
-        <h2>Notes</h2>
-        <div>${reportData.course.courseNotes || 'No course notes available.'}</div>
-        
-         <h2>Overview</h2>
-        <div>${reportData.course.description || 'No description available.'}</div>
-        <h2>Outline</h2>
-        ${units}
-        <h2>Learning Outcomes</h2>
-        ${reportData.course.learningOutcomes && reportData.course.learningOutcomes.length > 0 ? `
-            <ul>
-                ${reportData.course.learningOutcomes.map((outcome, index) => `
-                    <li>${index + 1}. ${outcome}</li>
-                `).join('')}
-            </ul>
-         ` : '<p>No learning outcomes defined for this course.</p>'}
-        <h2>Evaluation</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Activity</th>
-                    <th>Description</th>
-                    <th>Weighting (%)</th>
-                    </tr>
-            </thead>
-            <tbody>
-                ${assessedActivities.map(activity => `
-                    <tr>
-                        <td>${activity.title}</td>
-                        <td>${activity.description}</td>
-                        <td>${activity.weighting || '0'}</td>                        
-                    </tr>
-                `).join('')}
-                <tr>
-                    <td colspan="2"><strong>Total Weighting</strong></td>
-                    <td><strong>${totalWeighting}%</strong></td>
-                </tr>
-            </tbody>
-        </table>
-        <h2>Materials</h2>
-        <div>${reportData.course.courseResources || 'No course resources available.'}</div>
     </body>
     </html>
     `;
@@ -2620,6 +2860,227 @@
             totalWeighting: totalWeighting
         };
     }
+
+
+    function generateCourseMap() {
+        courseData = getCourseData();
+        const courseOutcomes = courseData.course.learningOutcomes.map((outcome, index) => {
+            const assessedActivities = courseData.activities.filter(activity => activity.learningOutcomes.includes(index) && activity.isAssessed);
+            const uniqueAssessedActivities = [...new Set(assessedActivities.map(activity => activity.specificActivity))];
+
+            const allActivities = courseData.activities.filter(activity => activity.learningOutcomes.includes(index));
+            const uniqueAllActivities = [...new Set(allActivities.map(activity => activity.title))];
+
+            return `
+            <tr>
+            <td width="186" colspan="2" valign="top">
+            <p><b>CO ${index + 1}:</b> ${outcome}</p>
+            </td>
+            <td width="138" valign="top">
+            <p>${uniqueAssessedActivities.join(', ')}</p>
+            </td>
+            <td width="162" colspan="2" valign="top">
+            <p>${uniqueAllActivities.join(', ')}</p>
+            </td>
+            <td width="120" valign="top">
+            <p>${courseData.units.filter(unit => courseData.activities.some(activity => activity.unitId === unit.id && activity.learningOutcomes.includes(index))).map(unit => unit.title).join(', ')}</p>
+            </td>
+            <td width="168" valign="top">
+            <p>${Array.isArray(courseData.mappedPLOs[index]) ? courseData.mappedPLOs[index].filter(ploIndex => courseData.program.learningOutcomes[ploIndex]).map(ploIndex => `${courseData.program.learningOutcomes[ploIndex].plo} (${courseData.program.learningOutcomes[ploIndex].level})`).join(', ') : ''}</p>
+            </td>
+            <td width="118" valign="top">
+            <p>${Array.isArray(courseData.mappedPLOs[index]) ? courseData.mappedPLOs[index].filter(ploIndex => courseData.program.learningOutcomes[ploIndex]).map(ploIndex => courseData.program.learningOutcomes[ploIndex].maxAssessedLevel).join(', ') : ''}</p>
+            </td>
+            </tr>
+            `;
+        }).join('');
+    
+        const reportHtml = `
+        <html>
+        <head>
+            <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+            <meta name="Generator" content="Microsoft Word 15 (filtered)">
+            <title>CENTRE:</title>
+        </head>
+        <body>
+            <div>
+                <p><b><span>FST Course Map</span></b></p>
+                <table border="1" cellspacing="0" cellpadding="0" width="892">
+                    <tr>
+                        <td width="117" valign="top">
+                            <h1>Program Name:</h1>
+                        </td>
+                        <td width="775" colspan="7" valign="top">
+                            <p><b>${courseData.program.name}</b></p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td width="117" valign="top">
+                            <h1>Course Number:<br>Revision Number:</h1>
+                        </td>
+                        <td width="207" colspan="2" valign="top">
+                            <p><b>${courseData.course.code}<br>Rev. ${courseData.course.revision}</b></p>
+                        </td>
+                        <td width="110" valign="top">
+                            <h1>Course Name:</h1>
+                        </td>
+                        <td width="458" colspan="4" valign="top">
+                            <p><b>${courseData.course.name}</b></p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td width="324" colspan="3" valign="top">
+                            <p><span>Course Overview:<br></span><i><span>(The overall description of the course goals, structure, and learning approach, corresponding exactly with the description in the course syllabus.)</span></i></p>
+                        </td>
+                        <td width="568" colspan="5" valign="top">
+                            <p>${courseData.course.description}</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td width="186" colspan="2" valign="top">
+                            <h1 align="center">Course Outcomes (COs)</h1>
+                        </td>
+                        <td width="138" valign="top">
+                            <h1 align="center">Assessment</h1>
+                        </td>
+                        <td width="162" colspan="2" valign="top">
+                            <h1 align="center">Teaching and Learning Activities</h1>
+                        </td>
+                        <td width="120" valign="top">
+                            <h1 align="center">Learning Unit</h1>
+                        </td>
+                        <td width="286" colspan="2" valign="top">
+                            <h1 align="center">Program Outcome Mapping</h1>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td width="186" colspan="2" valign="top">
+                            <p><i><span>What are the knowledge, skills, and attitudes students should be able to attain at the end of the course? (4–10 recommended)</span></i></p>
+                        </td>
+                        <td width="138" valign="top">
+                            <p><i><span>What assessment measures are used to assess the course outcome? (see examples)</span></i></p>
+                        </td>
+                        <td width="162" colspan="2" valign="top">
+                            <p><i><span>What are the main teaching and learning activities for the course outcome?</span></i></p>
+                        </td>
+                        <td width="120" valign="top">
+                            <p><i><span>Which units cover the course outcome?</span></i></p>
+                        </td>
+                        <td width="168" valign="top">
+                            <p><i><span>Which program outcome is the course outcome mapping to?</span></i></p>
+                        </td>
+                        <td width="118" valign="top">
+                            <p><i><span>At what level?</span></i></p>
+                            <p><span>·</span><i><span>foundational</span></i></p>
+                            <p><span>·</span><i><span>developing</span></i></p>
+                            <p><span>·</span><i><span>advanced</span></i></p>
+                        </td>
+                    </tr>
+                    ${courseOutcomes}
+                </table>
+                <p>&nbsp;</p>
+                <table border="1" cellspacing="0" cellpadding="0" width="697">
+                    <tr>
+                        <td width="697" colspan="5" valign="top">
+                            <p><b><span>Examples of Assessment Measures</span></b></p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td width="151" valign="top">
+                            <p><span>quiz</span></p>
+                        </td>
+                        <td width="157" valign="top">
+                            <p><span>discuss</span></p>
+                        </td>
+                        <td width="160" valign="top">
+                            <p><span>field work</span></p>
+                        </td>
+                        <td width="133" valign="top">
+                            <p><span>case study</span></p>
+                        </td>
+                        <td width="97" valign="top">
+                            <p><span>group project</span></p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td width="151" valign="top">
+                            <p><span>project</span></p>
+                        </td>
+                        <td width="157" valign="top">
+                            <p><span>midterm exam</span></p>
+                        </td>
+                        <td width="160" valign="top">
+                            <p><span>reflection</span></p>
+                        </td>
+                        <td width="133" valign="top">
+                            <p><span>essay</span></p>
+                        </td>
+                        <td width="97" valign="top">
+                            <p><span>practicum</span></p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td width="151" valign="top">
+                            <p><span>problem solving</span></p>
+                        </td>
+                        <td width="157" valign="top">
+                            <p><span>final exam</span></p>
+                        </td>
+                        <td width="160" valign="top">
+                            <p><span>share information</span></p>
+                        </td>
+                        <td width="133" valign="top">
+                            <p><span>paper</span></p>
+                        </td>
+                        <td width="97" valign="top">
+                            <p><span>portfolio</span></p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td width="151" valign="top">
+                            <p><span>artifacts</span></p>
+                        </td>
+                        <td width="157" valign="top">
+                            <p><span>lab report</span></p>
+                        </td>
+                        <td width="160" valign="top">
+                            <p><span>present</span></p>
+                        </td>
+                        <td width="133" valign="top">
+                            <p><span>defence</span></p>
+                        </td>
+                        <td width="97" valign="top">
+                            <p>&nbsp;</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td width="151" valign="top">
+                            <p><span>research</span></p>
+                        </td>
+                        <td width="157" valign="top">
+                            <p><span>lab video report</span></p>
+                        </td>
+                        <td width="160" valign="top">
+                            <p><span>report</span></p>
+                        </td>
+                        <td width="133" valign="top">
+                            <p><span>peer review</span></p>
+                        </td>
+                        <td width="97" valign="top">
+                            <p>&nbsp;</p>
+                        </td>
+                    </tr>
+                </table>
+                <p>&nbsp;</p>
+            </div>
+        </body>
+        </html>
+        `;
+    
+        return reportHtml;
+    }
+
+
 
     function calculateStudyTime(activity, wordCount) {
         switch (activity) {
