@@ -2861,7 +2861,96 @@
         };
     }
 
+    function generateSyllabus() {
+        const reportData = generateCourseReport();
+        const courseData = getCourseData();
+        if (!Array.isArray(reportData.mappedPLOs)) {
+            reportData.mappedPLOs = [];
+        }
 
+        const assessedActivities = courseData.activities.filter(activity => activity.isAssessed);
+        const { html: assessedActivitiesHTML, totalWeighting } = generateAssessedActivitiesHTML(assessedActivities);
+        const units = reportData.units.map(unit => `
+        <div class="unit">
+            <h3>${unit.title}</h3>
+            <p>${unit.description}</p>
+            <p><strong>Total Study Hours:</strong> ${formatTimeForDisplay(unit.totalStudyHours)} </p>
+        </div>
+    `).join('');
+
+        let html = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${reportData.course.name} - Course Syllabus</title>
+        <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 1200px; margin: 0 auto; padding: 20px; }
+            h1, h2, h3 { color: #2c3e50; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+            table, th, td { border: 1px solid #333; }
+            th, td { padding: 10px; text-align: left; }
+            th { background-color: #f4f4f4; }
+            .unit { background-color: #f4f4f4; padding: 15px; margin-bottom: 20px; border-radius: 5px; }
+            ${generateActivityStyles()}
+        </style>
+    </head>
+    <body>
+        <h1>${reportData.course.name} (${reportData.course.code})</h1>  
+        <h2>Basic Information</h2>
+        <p><strong>Delivery Mode:</strong> ${reportData.course.deliveryMode}</p>
+        <p><strong>Credit Hours:</strong> ${reportData.course.creditHours}</p>
+        <p><strong>Prerequisites:</strong> ${reportData.course.prerequisites}</p>
+        ${'<p><strong>Precluded:</strong>'+reportData.course.precluded+'</p>' || ""} 
+        ${'<p><strong>Co-requisites:</strong>'+reportData.course.corequisites+'</p>' || ""} 
+        <p><strong>Faculty:</strong> ${reportData.course.faculty}</p>
+        <h2>Notes</h2>
+        <div>${reportData.course.courseNotes || 'No course notes available.'}</div>
+        <h2>Course Information</h2>
+         <h2>Overview</h2>
+        <div>${reportData.course.description || 'No description available.'}</div>
+        <h2>Outline</h2>
+        ${units}
+        <h2>Learning Outcomes</h2>
+        ${reportData.course.learningOutcomes && reportData.course.learningOutcomes.length > 0 ? `
+            <ul>
+                ${reportData.course.learningOutcomes.map((outcome, index) => `
+                    <li>${index + 1}. ${outcome}</li>
+                `).join('')}
+            </ul>
+         ` : '<p>No learning outcomes defined for this course.</p>'}
+        <h2>Evaluation</h2>
+        <p>${courseData.course.evaluationCriteria || 'No evaluation criteria available.'}</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Activity</th>
+                    <th>Description</th>
+                    <th>Weighting (%)</th>
+                    </tr>
+            </thead>
+            <tbody>
+                ${assessedActivities.map(activity => `
+                    <tr>
+                        <td>${activity.title}</td>
+                        <td>${activity.description}</td>
+                        <td>${activity.weighting || '0'}</td>                        
+                    </tr>
+                `).join('')}
+                <tr>
+                    <td colspan="2"><strong>Total Weighting</strong></td>
+                    <td><strong>${totalWeighting}%</strong></td>
+                </tr>
+            </tbody>
+        </table>
+        <h2>Materials</h2>
+        <div>${reportData.course.courseResources || 'No course resources available.'}</div>
+    </body>
+    </html>
+    `;
+        return html;
+    }
     function generateCourseMap() {
         courseData = getCourseData();
         const courseOutcomes = courseData.course.learningOutcomes.map((outcome, index) => {
