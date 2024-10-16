@@ -27,6 +27,10 @@ header {
     position: sticky;
     top: 0;
     z-index: 1000;
+    display: flex;
+    align-items: center; /* Align items vertically centered */
+    justify-content: space-between; /* Ensure space between heading and buttons */
+    width: 100%; /* Full width of the container */
 }
 
 nav {
@@ -35,6 +39,7 @@ nav {
     gap: 0.5rem;
     margin-top: 1rem;
     z-index: 998;
+    
 }
 
 button {
@@ -45,6 +50,7 @@ button {
     cursor: pointer;
     border-radius: 4px;
     transition: background-color 0.3s;
+    margin-right: 1em;
 }
 
 button:hover {
@@ -337,6 +343,7 @@ textarea {
     justify-content: flex-end;
     gap: 1rem;
     margin-top: 1rem;
+    margin-right: 5%;
 }
 
 .dropdown {
@@ -632,13 +639,20 @@ textarea {
     text-align: right;
     padding: 1rem;
     position: sticky;
-    top: 100px;
-    z-index: 900;
+    top: 80px;
+    z-index: 1000;
 }
 
-#courseHeading{
-  float:left;
-  height:min-content;
+#courseHeading {
+    height: fit-content;
+    max-width: 100%; /* Ensure it doesn't overflow */
+    overflow: hidden; /* Hide any overflow content */
+    text-overflow: ellipsis; /* Add ellipsis for overflow text */
+    white-space: normal; /* Allow text to wrap */
+    flex-grow: 1; /* Allow the heading to grow and shrink with the container */
+    min-width: 0; /* Prevent the heading from overflowing its container */
+    word-wrap: break-word; /* Break words if necessary */
+    align: left;
 }
 
 #programLearningOutcomes .plo-item {

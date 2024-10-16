@@ -166,21 +166,15 @@
       // courseData.code is not set
 
       document.getElementById("unit-nav").style.display = "none";
-      let messageDiv = document.querySelector("#unit-nav + div");
+      let messageDiv = document.querySelector("#header + div");
       if (!messageDiv) {
         messageDiv = document.createElement("div");
         messageDiv.innerHTML = `
         <p>Either edit the course information (click "Edit Main Info") to provide (at least) a title and a code for your
         course, or import an existing course using the save/load button to get started. Once you have entered a course name and code, 
-        you can add units to your course. <a href="#" id="loadTutorialLink">Load the tutorial course that came with this app </a> 
-        if you want a little tutoring</p>`;
-        document.getElementById("unit-nav").insertAdjacentElement('afterend', messageDiv);
-
-        // Add event listener for the link
-        document.getElementById("loadTutorialLink").addEventListener("click", function(event) {
-          event.preventDefault();
-          handleImportJson('./tutorial.json');
-        });
+        you can add units to your course.</p>`;
+        messageDiv.style.display = "block";
+      
       }
       if (editMainInfoButton) {
         editMainInfoButton.style.border = "2px solid red";
@@ -633,7 +627,7 @@
           ...activity,
           id: generateUniqueId(),
           unitId: clonedUnit.id,
-          title: `${activity.title} (Clone)`,
+          title: `${activity.title}`,
         };
         courseData.activities.push(clonedActivity);
       });
@@ -1268,7 +1262,7 @@
     if (unit) {
       const unitForm = document.getElementById("unitForm");
       unitForm.elements.unitTitle.value = unit.title;
-      unitForm.elements.unitDescription.value = unit.description;
+      //unitForm.elements.unitDescription.value = unit.description;
       // Handle TinyMCE editor for course description
       if (tinymce.get("unitDescription")) {
         tinymce.get("unitDescription").setContent(unit.description || "");
@@ -1516,7 +1510,7 @@
     event.preventDefault();
     const unitData = {
       title: document.getElementById("unitTitle").value,
-      description: document.getElementById("unitDescription").value,
+      description: tinymce.get("unitDescription").getContent(),
     };
     const unitId = event.target.dataset.unitId;
     if (unitId) {
@@ -1578,7 +1572,7 @@
     const courseData = getCourseData();
     if (courseData.course.code) {
       document.getElementById("courseHeading").innerHTML =
-        "Courseomatic Storyboard Editor: " + courseData.course.code;
+        `Editing: ${courseData.course.name} (${courseData.course.code})`;
     } else {
       document.getElementById("courseHeading").innerHTML =
         "Courseomatic Storyboard Editor";
