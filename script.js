@@ -315,7 +315,6 @@
     };
 
     try {
-      // Use the embedded data directly
       saveCourse(courseData);
       updateUI();
       alert("Getting Started course opened successfully!");
@@ -1094,7 +1093,6 @@
             console.warning("Not found:", document.getElementById("unit-nav"));
           }
           handleAddUnitButton();
-          ß;
           updateUI();
         }
       });
@@ -2861,9 +2859,55 @@ async function handleExportJson() {
 }
 
 
-  // import json file and overwrite existing data
 
-  function handleImportJson() {
+// import json file and overwrite existing data
+
+function handleImportJson(filePath) {
+  if (filePath !== undefined && filePath !== null) {
+    // Ensure filePath is a string before using startsWith
+    if (typeof filePath === 'string' && (filePath.startsWith('http://') || filePath.startsWith('https://'))) {
+      // Load JSON file from the provided URL
+      fetch(filePath)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error("Network response was not ok");
+          }
+          return response.json();
+        })
+        .then(importedData => {
+          saveCourse(importedData);
+          updateUI();
+          alert("Course data imported successfully!");
+        })
+        .catch(error => {
+          console.error("Error importing JSON:", error);
+          alert("Error importing course data. Please check the file and try again.");
+        });
+    } else {
+      // Load JSON file from the local file system
+      const input = document.createElement("input");
+      input.type = "file";
+      input.accept = ".json";
+      input.onchange = (event) => {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const importedData = JSON.parse(e.target.result);
+            saveCourse(importedData);
+            updateUI();
+            alert("Course data imported successfully!");
+          } catch (error) {
+            console.error("Error importing JSON:", error);
+            alert("Error importing course data. Please check the file and try again.");
+          }
+        };
+        reader.readAsText(file);
+      };
+      input.click();
+    }
+  } else {
+    // Open file dialog to select JSON file if there is no file path provided
     const input = document.createElement("input");
     input.type = "file";
     input.accept = ".json";
@@ -2878,16 +2922,14 @@ async function handleExportJson() {
           alert("Course data imported successfully!");
         } catch (error) {
           console.error("Error importing JSON:", error);
-          alert(
-            "Error importing course data. Please check the file and try again."
-          );
+          alert("Error importing course data. Please check the file and try again.");
         }
       };
       reader.readAsText(file);
     };
     input.click();
   }
-
+}
   //merge with another json file
 
   function handleMergeJson() {
@@ -3693,81 +3735,73 @@ async function handleExportJson() {
           activity.learningOutcomes.includes(index)
         );
         const uniqueAllActivities = [
-          ...new Set(allActivities.map((activity) => activity.title)),
+          ...new Set(
+            allActivities.map((activity) => {
+              const unitIndex = courseData.units.findIndex(
+          (unit) => unit.id === activity.unitId
+              );
+              return `Unit ${unitIndex + 1}: ${activity.title}`;
+            })
+          ),
         ];
 
         return `
-            <tr>
-            <td width="186" colspan="2" valign="top">
-            <p><b>CO ${index + 1}:</b> ${outcome}</p>
-            </td>
-            <td width="138" valign="top">
-            <p>${uniqueAssessedActivities.join(", ")}</p>
-            </td>
-            <td width="162" colspan="2" valign="top">
-            <p>${uniqueAllActivities.join(", ")}</p>
-            </td>
-            <td width="120" valign="top">
-            <p>${courseData.units
-              .filter((unit) =>
-                courseData.activities.some(
-                  (activity) =>
-                    activity.unitId === unit.id &&
-                    activity.learningOutcomes.includes(index)
-                )
-              )
-              .map((unit) => unit.title)
-              .join(", ")}</p>
-            </td>
-            <td width="168" valign="top">
-            <p>${
-              Array.isArray(courseData.mappedPLOs[index])
-                ? courseData.mappedPLOs[index]
-                    .filter(
-                      (ploIndex) =>
-                        courseData.program.learningOutcomes[ploIndex]
-                    )
-                    .map(
-                      (ploIndex) =>
-                        `${courseData.program.learningOutcomes[ploIndex].plo} (${courseData.program.learningOutcomes[ploIndex].level})`
-                    )
-                    .join(", ")
-                : ""
-            }</p>
-            </td>
-            <td width="118" valign="top">
-            <p>${
-              Array.isArray(courseData.mappedPLOs[index])
-                ? courseData.mappedPLOs[index]
-                    .filter(
-                      (ploIndex) =>
-                        courseData.program.learningOutcomes[ploIndex]
-                    )
-                    .map(
-                      (ploIndex) =>
-                        courseData.program.learningOutcomes[ploIndex]
-                          .maxAssessedLevel
-                    )
-                    .join(", ")
-                : ""
-            }</p>
-            </td>
-            </tr>
-            `;
-      })
-      .join("");
+        <tr>
+        <td width="186" colspan="2" valign="top">
+        <p><b>CO ${index + 1}:</b> ${outcome}</p>
+        </td>
+        <td width="138" valign="top">
+        <p>${uniqueAssessedActivities.join("<br> ")}</p>
+        </td>
+        <td width="162" colspan="2" valign="top">
+        <p>${uniqueAllActivities.join("<br> ")}</p>
+        </td>
+        <td width="150" valign="top">
+        <p>${courseData.units
+            .filter((unit) =>
+          courseData.activities.some(
+              (activity) =>
+            activity.unitId === unit.id &&
+            activity.learningOutcomes.includes(index)
+          )
+            )
+            .map((unit, unitIndex) => `${unitIndex + 1}: ${unit.title}`)
+            .join("<br> ")}</p>
+        </td>
+        <td width="168" valign="top">
+          <table class="aligned-table">
+              ${Array.isArray(courseData.mappedPLOs[index])
+            ? courseData.mappedPLOs[index]
+                .filter(ploIndex => courseData.program.learningOutcomes[ploIndex])
+                .map(ploIndex => `<tr><td height="90">${courseData.program.learningOutcomes[ploIndex].plo}</td></tr>`)
+                .join("")
+            : ""}
+          </table>
+         </td><td width="168" valign="top">       
+          <table class="aligned-table">
+              ${Array.isArray(courseData.mappedPLOs[index])
+            ? courseData.mappedPLOs[index]
+                .filter(ploIndex => courseData.program.learningOutcomes[ploIndex])
+                .map(ploIndex => `<tr><td height="90">${courseData.program.learningOutcomes[ploIndex].maxAssessedLevel}</td></tr>`)
+                .join("")
+            : ""}
+          </table>
+
+        </td>
+        </tr>
+        `;
+})
+.join("");
 
     const reportHtml = `
         <html>
         <head>
-            <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-            <meta name="Generator" content="Microsoft Word 15 (filtered)">
-            <title>CENTRE:</title>
+            <title>${courseData.course.name} course map</title>
         </head>
         <body>
             <div>
                 <p><b><span>FST Course Map</span></b></p>
-                <table border="1" cellspacing="0" cellpadding="0" width="892">
+                <table border="1" cellspacing="0" cellpadding="0" width="100%">
                     <tr>
                         <td width="117" valign="top">
                             <h1>Program Name:</h1>

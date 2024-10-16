@@ -715,3 +715,22 @@ textarea {
 #teamMembersContainer .team-member button {
     margin-left: 10px;
 }
+.aligned-tables {
+    display: fixed;
+    height: 100%;   
+}
+
+.aligned-table {
+    width: 100%;
+    border-collapse: collapse;
+    height: 100%;
+    display: fixed;
+}
+
+.aligned-table tr {
+    border: #0056b3;
+}
+
+.aligned-table td {
+    height: 50px
+}
