@@ -6,6 +6,7 @@
     --highlight-color: #007bff;
     --error-color: #dc3545;
     --success-color: #28a745;
+    --color-disabled: #767879;
 }
 
 
@@ -732,5 +733,6 @@ textarea {
 }
 
 .aligned-table td {
-    height: 50px
+    height: 50px;
+
 }

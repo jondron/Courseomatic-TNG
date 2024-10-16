@@ -95,235 +95,16 @@
       units: [],
       activities: [],
     };
+    saveCourse(courseData);
+    saveToLocalStorage();
+    updateUI();
   }
 
   //load the tutorial
   function initGettingStarted() {
-    const courseData = {
-      program: {
-        name: "none",
-        level: "none",
-        description: "",
-        learningOutcomes: [],
-      },
-      course: {
-        name: "Getting started",
-        code: "Getting Started",
-        creditHours: "0",
-        prerequisites: "none",
-        revision: "0.1",
-        deliveryMode: "online",
-        goal: "",
-        description: "",
-        courseNotes: "",
-        courseResources: "",
-        courseDevelopmentNotes: "",
-        learningOutcomes: [
-          "to make use of all the tools and features of Courseomatic",
-          "to design a course using Courseomatic",
-          "to use Courseomatic's reporting features effectively",
-        ],
-      },
-      units: [
-        {
-          id: "m1zel0wf2drmh",
-          title: "Getting started",
-          description: "",
-          learningOutcomes: [],
-          order: 0,
-        },
-        {
-          id: "m1zemv151uigs",
-          title: "Course design with Courseomatic",
-          description: "",
-          learningOutcomes: [],
-          order: 1,
-        },
-      ],
-      activities: [
-        {
-          id: "m1znlc2bqm8t3",
-          type: "acquisition",
-          specificActivity: "reading",
-          title: "Start here",
-          description: "<p>Click the activity cards to see the contents</p>",
-          devNotes: "",
-          studyHours: 1,
-          unitId: "m1zel0wf2drmh",
-          isAssessed: false,
-          otherActivity: "",
-          learningOutcomes: [0],
-          markingHours: 0,
-        },
-        {
-          id: "m1zergfm5wdwx",
-          type: "acquisition",
-          specificActivity: "reading",
-          title: "Courseomatic overview",
-          description:
-            '<p dir="auto">Courseomatic is a javascript app to develop course storyboards. Using a drag and drop interface (with buttons as fallback) you can create:</p>\n<ul dir="auto">\n<li>courses, with learning outcomes that are mappable to program learning outcomes</li>\n<li>units - weeks, or themes, or whatever</li>\n<li>activities - these are the main elements of the system, represented as cards that can be dragged within and between units.</li>\n<li>assessments - these are just activities that have been marked as assessments, with special fields for marking hours, pass marks, percentage of total marks</li>\n</ul>\n<p dir="auto">The app provides various forms of assistance with the mechanics of writing a course: it automatically calculates total study hours and total marking hours, shows proportions of time spent on different learning activity types, identifies outcomes that have not yet been assessed, it can help calculate estimated study hours (for writing and reading) and it can generate a syllabus and a full course report that can be used to develop the course itself.</p>\n<p dir="auto">It is intended to scaffold the course design process in a way that focuses on what learners will do and how they will learn, rather than what we intend to teach. What we intend to teach is specified in the learning outcomes and in the units (which have titles and descriptions but that are largely specified in terms of learning activities). Assessments are simply another activity type, with fields for weighting, pass mark, optionality, and projected marking time.</p>\n<p dir="auto">The learning activity types are based on ABC Learning Design activity types, with the addition of reflection and cooperation to better support self-paced study (you don\'t have to use those if you don\'t like them).</p>\n<div class="markdown-heading" dir="auto">\n<h2 class="heading-element" dir="auto" tabindex="-1">Limitations</h2>\n<a id="user-content-limitations" class="anchor" href="https://github.com/jondron/Courseomatic-TNG#limitations" aria-label="Permalink: Limitations"></a></div>\n<p dir="auto">Courseomatic is a single-user app that, on the bright side, needs no backend application server to run. This is by design: it means it can be deployed on (say) an LMS like Brightspace and needs no special privileges to do so, meaning anyone with editing rights can add it to their course. Changes are saved locally (on the user\'s machine, by their browser) every 30 seconds, and can be exported and imported via JSoN files should they wish to share it or to work in a different browser or on a different machine, but only one person can work on a given course design at a time.</p>\n<p dir="auto">A multi-user version (or rather, one with the option to be set as multi-user) may be developed later but, for now, the assumption is that it will be used by a single course designer, ideally in collaboration with a team, but there is one and only one master copy that can be shared but that cannot be edited by multiple users simultaneously.</p>\n<div class="markdown-heading" dir="auto">\n<h2 class="heading-element" dir="auto" tabindex="-1">To do:</h2>\n</div>\n<ul dir="auto">\n<li>to make it possible to attach files in a portable way without relying on URLs</li>\n<li>allow different activity models, e.g. R2D2, Lewin, pure ABC, etc</li>\n<li>make multiple select possible to edit multiple activities at once (tricky interface)</li>\n<li>make multi-user</li>\n</ul>\n<div class="markdown-heading" dir="auto">\n<h1 class="heading-element" dir="auto" tabindex="-1">licence: GPL3</h1>\n</div>',
-          devNotes: "",
-          studyHours: 2,
-          unitId: "m1zel0wf2drmh",
-          isAssessed: false,
-          otherActivity: "",
-          learningOutcomes: [0],
-          markingHours: 0,
-        },
-        {
-          id: "m1zfnwvwcsqkv",
-          type: "acquisition",
-          specificActivity: "reading",
-          title: "Using the interface",
-          description:
-            '<p>Everything in Courseomatic relies upon there being a course, so the starting point when faced with a blank course is to click the Edit Course Info button. This presents you with a form. You must fill in fields for the course name, course code, credit hours, and perhaps a couple more. The rest are optional: you can continue to edit it as the course design progresses - nothing is fixed in stone. Note that there are development notes that you can use for anything you need to remember or pass on to other developers, such as needs for copyright clearance, textbooks, web services, and so on. It is also not a bad place to consider things like schedules. You can enter program learning outcomes (by clicking the Add PLO button) and the primary program for which the course is intended. When you add course learning outcomes, you can map them to the PLOs. This is useful information for the design of programs.</p>\n<p>When you have saved it or at any time you can click "Show Summary Info" to display what you have entered here, as well as other information about the course that will be populated as you start to design it. It\'s a really useful button that you might find yourself using quite a lot.</p>\n<p>The next significant piece of Courseomatic is the unit - this may equate to weeks, or modules, or chunks of the course. You can create as many as you like by clicking the New Unit button. This brings up a form with fields for a title and description. Save it, and a new unit panel will appear at the end of the list of units. Clicking the&nbsp;<span class="toggle-icon">▼ or text of the unit panel title will reveal the description and, as you start to add activities, other useful information about the unit. The other buttons include up/down arrows to change the unit order, an edit button, a clone button that duplicates the unit and a delete button that deletes it.<br /></span></p>\n<p><span class="toggle-icon">The main point of the system and the thing for which everything else provides a frame, is the learning activity. Learning activities are represented as cards in unit panels, of different colours depending on the kind of activity. Learning activities may also be assessments, in which case a small red star will appear on the activity card.</span></p>\n<p><span class="toggle-icon">Activities are what students have to do. All have a type (based on an augmented version of the ABC Learning Design activity types) which determines the colour of the card and describes the kind of activity in broad terms as one of acquisition, practice, investigation, reflection, production,&nbsp; &nbsp; discussion, cooperation, or collaboration. For any activity type you can select from a prepopulated list of common activities (reading, writing, lab, etc) or add your own. Activities can be marked as assessed, in which case you gain some fields to describe the assessment marking, estimated marking time, and so on. You are required to enter an estimated study time for the activity. You can identify the course learning outcomes it addresses, and provide information for development such as resources needed, or project management information.</span></p>\n<p><span class="toggle-icon">You can expand each activity box by clicking on it. It should shrink to its usual size when you click on it again, or press the Esc key. Sometimes it doesn\'t do so right away - that\'s a bug! I sometimes find it easier to simply click the edit button and read it from there. You can cancel the form by using the cancel button or pressing the Esc key.</span></p>\n<p><span class="toggle-icon">The Reports button offers choices of a full report (all the information you have entered, as well as calculated statistics such as total study hours, unit study hours, relative hours spent doing different kinds of activity, unassessed learning outcomes, and so on) or a syllabus (summary information not including activities or statistics). Note that, for each of these, it both saves a self-contained HTML file to wherever your browser saves its files, and opens a new window or tab with the content displayed. You need to click on the original window or tab, or close the new one, to return to working on the course.<br /></span></p>\n<p><span class="toggle-icon">The save/load button offers choices of exporting to or importing from a JSoN file. Use this to save and load courses. You can share the files with others so that they can edit them, too, but beware that there is no option yet to merge changes so only do this if you are not planning to work on it, at least until they send it back. It is also handy for moving to a different machine or using a different browser on the same machine.</span></p>\n<p><span class="toggle-icon">The Clear button removes all the data and lets you start a fresh course. Note that the system saves a copy as you go every 30 seconds and will automatically reload the previous course you were working on when you refresh the page, until you actually edit the course info, after which the old one will be overwritten. This gives you the potential to undo mistaken clearing of a course: just reload the page straight away if that happens. </span></p>\n<p>When you are ready to play, move on to the next activity</p>',
-          devNotes: "",
-          studyHours: 2,
-          unitId: "m1zel0wf2drmh",
-          isAssessed: false,
-          otherActivity: "",
-          learningOutcomes: [],
-          markingHours: 0,
-        },
-        {
-          id: "m1zjzbzgkia9c",
-          type: "practice",
-          specificActivity: "exercises",
-          title: "Edit the course info",
-          description:
-            '<p>Click Edit Course Info to bring up the course editing form. Make any changes you wish.</p>\n<p>These are the fields:</p>\n<p>Course name (required): the name</p>\n<p>Course code (required): an abbreviation, typically something like COMP650 or BIOL12345, but you can and should provide any short name you like. Do keep it short or it will uglify the main toolbar!</p>\n<p>Course revision: anything you like, typically a number or rev1 or something along those lines.</p>\n<p>Delivery mode: anything you like, typically blended, online, in-person, paced, grouped study, self-paced, or whatever is used in your organization</p>\n<p>Course prerequisites: anything you like. Feel free to use to add precluded courses (type "Precluded" if you do that to make it clear what you mean)</p>\n<p>Credit hours (required): whatever you like. "None" or 0 is fine.</p>\n<p>Course goal: a short phrase describing the main intent of the course.</p>\n<p>Course Description: typically longer, describing whatever you want to describe about the course. This would typically be the sort of thing that would appear in a syllabus or prospectus, but don\'t worry about things like course outlines, learning outcomes, or details of assessments (unless you want to, in which case go ahead): such things will be automatically generated by Courseomatic.</p>\n<p>Course Notes: anything you want. Often used to describe special features of the course or unusual resource requirements.</p>\n<p>Development notes: any information needed to support the design, development, and production of the course such as resource needs, timelines, constraints, copyright clearance needs, textbooks, and so on.</p>\n<p>Program name: the name of the program the course is associated with</p>\n<p>Program level: the program\'s level (eg. graduate, intermediate, undergraduate, introductory)</p>\n<p>Program learning outcomes (PLOs): click the Add Program Learning Outcome button to add one. Add as many as needed. Click the Remove button next to each field to remove it.</p>\n<p>Course learning outcomes (CLOs): click the Add Course Learning outcome to add an outcome. Checkboxes for any PLOs will be shown underneath. Click to select any to which a CLO maps. Click the Remove CLO button associated with a CLO to remove it.</p>\n<p>You can drag CLOs to reorder them using the <span class="clo-handle" style="cursor: move; margin-right: 10px;">⬍ icon.</span></p>',
-          devNotes: "",
-          studyHours: 5,
-          unitId: "m1zel0wf2drmh",
-          isAssessed: false,
-          otherActivity: "",
-          learningOutcomes: [0],
-          markingHours: 0,
-        },
-        {
-          id: "m1zfof4owrq1f",
-          type: "practice",
-          specificActivity: "exercises",
-          title: "Create a new unit",
-          description:
-            "<p>Create a new unit by clicking the New Unit button and entering a title and description.</p>\n<p>When you click Save it, the unit panel should appear at the end of the page. Notice that a link to it appears in the top menu bar: you can click that to go directly to the unit, or simply scroll down to it.</p>\n<p>From there you can drag it further up the list: try it, by dragging its title bar to wherever you want it to be (the top is a good place). You can use the arrow keys towards the far right of the unit panel's title bar instead, if you prefer.</p>\n<p>Click the pen button on the title bar to make changes to the description or title. Try it.</p>\n<p>Click the clone button to make a copy of the unit. It should appear at the end. Use the link in the top menu bar to go there.</p>\n<p>Click the x button to delete your cloned unit. Note that, if it contained any activity cards, these would be deleted too.</p>",
-          devNotes: "",
-          studyHours: 5,
-          unitId: "m1zel0wf2drmh",
-          isAssessed: false,
-          otherActivity: "",
-          learningOutcomes: [0],
-          markingHours: 0,
-        },
-        {
-          id: "m1zk2vwtjftnw",
-          type: "practice",
-          specificActivity: "exercises",
-          title: "Create a couple of activities",
-          description:
-            '<p>In your new unit, click the "add activity" button (big + symbol on a green card-sized button) to create an activity card.</p>\n<p>These are the fields:</p>\n<p>Activity type: one of <span class="toggle-icon">acquisition, practice,&nbsp; investigation, reflection, production,&nbsp; &nbsp; discussion, cooperation, or collaboration</span></p>\n<p><span class="toggle-icon">Title: a brief description of the activity</span></p>\n<p><span class="toggle-icon">Description: a description of the activity. You can always go back to edit this (and anything else about the activity) later if you want</span></p>\n<p><span class="toggle-icon">Development notes: anything you like, relating to design, development, and production processes and resourcing.<br /></span></p>\n<p><span class="toggle-icon">Specific activity: a list that changes depending on the activity type selected. Clicking "other" will bring up a field to enter your own.</span></p>\n<p><span class="toggle-icon">Estimated study time (required): enter either a number of minutes or hours and minutes in HH:MM format (e.g. 12:00, 1:00). Clicking the help button next to the field brings up a convenient calculator that works out study times for different kinds and quantities of reading or writing, and provides some heuristics to help work out study hours for other common activities. If you use the calculator, when you close the form then the number it has calculated appears in the estimated study time field. You can edit that if you don\'t think it is accurate.</span></p>\n<p><span class="toggle-icon">Learning outcomes: select any course learning outcomes that this activity addresses</span></p>\n<p><span class="toggle-icon">Assessed: checking this box brings up a checkbox for whether it is a required or optional assessment, the assessment weighting, the pass mark, and estimated marking time. </span></p>',
-          devNotes: "",
-          studyHours: 5,
-          unitId: "m1zel0wf2drmh",
-          isAssessed: false,
-          otherActivity: "",
-          learningOutcomes: [0],
-          markingHours: 0,
-        },
-        {
-          id: "m1zjcki458zqm",
-          type: "practice",
-          specificActivity: "exercises",
-          title: "Reporting",
-          description:
-            "<p>There are two kinds of report that can be generated by Courseomatic, both of which can be accessed from the Reports button:</p>\n<ol>\n<li>a full report</li>\n<li>a syllabus</li>\n</ol>\n<p>The full report collects and displays all of the information gathered by or calculated by Courseomatic. The syllabus only shows course information and unit information, organized roughly as a traditional syllabus might be organized.</p>\n<p>Try it now. Read through the generated reports, noting the kind of information they provide.</p>",
-          devNotes: "",
-          studyHours: 4,
-          unitId: "m1zel0wf2drmh",
-          isAssessed: false,
-          otherActivity: "",
-          learningOutcomes: [0, 2],
-          markingHours: 0,
-        },
-        {
-          id: "m1zyfaua14dy9",
-          type: "practice",
-          specificActivity: "exercises",
-          title: "Import/export a course",
-          description:
-            "<p>The save/load button gives choices of exporting to or importing from a JSoN file. Use this to save and load courses. You can share the files with others so that they can edit them, too, but beware that there is no option yet to merge changes so only do this if you are not planning to work on it, at least until they send it back. It is also handy for moving to a different machine or using a different browser on the same machine.</p>\n<p>Click Save/Load then Export to JSoN File. This will be saved wherever your browser saves files.</p>\n<p>Delete one of the units by clicking its X button on its title bar.</p>\n<p>Click Save/Load then Import from JSoN File. Select your previously saved course file. You should see the unit return.</p>",
-          devNotes:
-            "<p>Something in this appears to be messing up placement of the button bar</p>",
-          studyHours: 3,
-          unitId: "m1zel0wf2drmh",
-          isAssessed: true,
-          otherActivity: "",
-          learningOutcomes: [0],
-          markingHours: 1,
-          passMark: "50",
-          weighting: "1",
-        },
-        {
-          id: "m1zfpfqp032ib",
-          type: "reflection",
-          specificActivity: "journaling",
-          title: "How can you use this?",
-          description:
-            "<p>Edit this activity description (click the little pen icon on the activity card) to describe how you might use this to design a course.</p>\n<p>Save your changes.</p>\n<p>This is a self-assessed activity - I have made it assessed so that you can see how the assessment features work</p>",
-          devNotes: "",
-          studyHours: 5,
-          unitId: "m1zel0wf2drmh",
-          isAssessed: true,
-          otherActivity: "",
-          learningOutcomes: [0, 1],
-          markingHours: 5,
-          passMark: "50",
-          weighting: "100",
-        },
-        {
-          id: "m1zm6reh5hgrj",
-          type: "acquisition",
-          specificActivity: "reading",
-          title: "General approaches to course design",
-          description:
-            "<p>This is a standalone tool that only needs a browser to run, which limits how it can be used collaboratively. My assumption is that it will either be used on a shared computer or, more commonly, the course designer will use it to develop a storyboard alone, then share it with a team, or with the team during a workshop or design session, entering changes as the team decides.</p>\n<p>How you use it is largely up to you. When brainstorming it provides a quick interface for rapidly developing an outline of a course, allowing details to be filled in later. It can alternatively be used methodically, filling in details as you go, or anything in between. Everything is editable - no edits are set in stone.</p>\n<p>The level of detail is up to you, but I recommend avoiding adding a great deal of information or detailed content into these fields. This is not a whole course development tool - it is only meant to generate the <em>design</em> for later implementation in a learning management system or classroom - so it does not provide a good set of tools for what I am doing now, which is actually running a kind of a course in the system itself. I have found it to be handy for collecting notes and pasting in existing content where applicable, but large amounts of content soon become very unwieldy and difficult to read, as well as slowing down the system considerably and making it harder to share or read exported files.</p>\n<p>Useful tips:</p>\n<p>I use the Show Summary Info button a lot. I especially like the breakdown of relative proportions of study time spent on different types of activity, and the total study hours calculation. It's nice to see how the effects of recent changes alter the shape of the course itself.</p>\n<p>The study hours are shown on each unit's title bar because it is really helpful to know how long each unit will take to accomplish. Studies show that it is a good idea to keep the time for each unit consistent each week, when a course follows a weekly schedule. Even for a self-paced course, it is very useful to students to have some estimate of the approximate workload though, obviously, estimated study hours may differ wildly from actual study hours, and are very dependent on the student, their availability, their distractions, their existing capabilities, and so on.</p>\n<p>It can sometimes be difficult to allocate a given activity to one activity type. It's OK if, say, a reading activity also includes the occasional practice exercise but, if a secondary activity type takes up a lot of time then it probably means you should separate it out into a different activity. It's up to you, though: use it in the way that suits your way of working and your approach to design. Courseomatic is very flexible.</p>",
-          devNotes: "",
-          studyHours: 3,
-          unitId: "m1zemv151uigs",
-          isAssessed: false,
-          otherActivity: "",
-          learningOutcomes: [1],
-          markingHours: 0,
-        },
-        {
-          id: "m1ziqjyckvgc1",
-          type: "production",
-          specificActivity: "writing",
-          title: "Clear this course and start your own",
-          description:
-            '<p>If you have followed the rest of this course then you should have a backup of this one which you can always reload using Save/Load button then "Import from JSoN".</p>\n<p>If you have added anything you want to keep, it would be a good idea to make another backup now, by clicking the Save/Load button and selecting "Export to JSoN"</p>\n<p>When you are ready, click the clear button and start building.</p>\n<p>Good luck, and good designing!</p>\n<p>Jon</p>\n<p>Any questions, suggestions, bug reports, features requests, etc: courseomatic@jondron.org</p>',
-          devNotes: "",
-          studyHours: 1,
-          unitId: "m1zemv151uigs",
-          isAssessed: false,
-          otherActivity: "",
-          learningOutcomes: [0, 1],
-          markingHours: 0,
-        },
-      ],
-      mappedPLOs: [[], [], []],
-    };
-
-    try {
-      saveCourse(courseData);
-      updateUI();
-      alert("Getting Started course opened successfully!");
-    } catch (error) {
-      console.error("Error importing JSON:", error);
-      alert(
-        "Error importing the Getting Started course. Sorry - you are on your own!"
-      );
-    }
+    // initializeCourse();
+   // handleImportJson('tutorial.json');
+    checkCourseCode();
   }
 
   function getCourseData() {
@@ -366,15 +147,50 @@
         return courseData;
       } catch (error) {
         console.error("Error parsing saved course data:", error);
-        initializeEmptyCourse();
+        initGettingStarted();
       }
     } else {
-      initializeEmptyCourse();
+      initGettingStarted();
     }
   }
 
   function clearCourse() {
     initializeCourse();
+  }
+
+  //function to determine whether the course code is set and encourage the user to set it
+  function checkCourseCode() {
+    const editMainInfoButton = document.getElementById("courseInfoBtn");
+  
+    if (!courseData.course.code) {
+      // courseData.code is not set
+
+      document.getElementById("unit-nav").style.display = "none";
+      let messageDiv = document.querySelector("#unit-nav + div");
+      if (!messageDiv) {
+        messageDiv = document.createElement("div");
+        messageDiv.innerHTML = `
+        <p>Either edit the course information (click "Edit Main Info") to provide (at least) a title and a code for your
+        course, or import an existing course using the save/load button to get started. Once you have entered a course name and code, 
+        you can add units to your course.</p>`;
+        document.getElementById("unit-nav").insertAdjacentElement('afterend', messageDiv);
+      }
+      if (editMainInfoButton) {
+        editMainInfoButton.style.border = "2px solid red";
+      }
+      return false;
+    } else {
+      // courseData.code is set
+      document.getElementById("unit-nav").style.display = "block";
+      const messageDiv = document.querySelector("#unit-nav + div");
+      if (messageDiv) {
+        messageDiv.remove();
+      }
+      if (editMainInfoButton) {
+        editMainInfoButton.style.border = "none";
+      }
+      return true;
+    }
   }
 
   // Analysis Functions
@@ -942,6 +758,7 @@
     setupEventListeners();
     setupFormValidation();
     setTitle();
+    checkCourseCode();
     updateUI();
   }
 
@@ -952,6 +769,7 @@
     updateActivityTypePieChart();
     updateUnassessedLearningOutcomes();
     setTitle();
+    checkCourseCode();
   }
 
   function initializeTinyMCE() {
@@ -1754,6 +1572,9 @@
     if (courseData.course.code) {
       document.getElementById("courseHeading").innerHTML =
         "Courseomatic Storyboard Editor: " + courseData.course.code;
+    } else {
+      document.getElementById("courseHeading").innerHTML =
+        "Courseomatic Storyboard Editor";
     }
   }
 
@@ -2099,8 +1920,6 @@
       courseData.course.changeSummary || "";
     document.getElementById("challengeableComments").value =
       courseData.course.challengeableComments || "";
-    document.getElementById("evaluationCriteria").value =
-      courseData.course.evaluationCriteria || "";
     document.getElementById("precluded").value =
       courseData.course.precluded || "";
     document.getElementById("lab").value = courseData.course.lab || "";
@@ -2139,6 +1958,17 @@
       console.error("TinyMCE editor for courseDevelopmentNotes not found");
     }
 
+    if (tinymce.get("evaluationCriteria")) {
+      tinymce.get("evaluationCriteria").setContent(courseData.course.evaluationCriteria || "");
+    } else {
+      console.error("TinyMCE editor for rationale not found");
+    }
+
+    if (tinymce.get("changeSummary")) {
+      tinymce.get("changeSummary").setContent(courseData.course.changeSummary || "");
+    } else {
+      console.error("TinyMCE editor for change summary not found");
+    }
     // Ensure teamMembers is an array
     if (!Array.isArray(courseData.course.teamMembers)) {
       courseData.course.teamMembers = [];
@@ -2553,9 +2383,14 @@
     const unitsContainer = document.getElementById("units");
 
     if (!courseData.units || courseData.units.length === 0) {
-      unitsContainer.innerHTML =
+      if (checkCourseCode()){
+         unitsContainer.innerHTML =
         "<p>No units found. Add a unit to get started.</p>";
-      return;
+        return;
+      }else{
+        unitsContainer.innerHTML =
+        "<p>Give the course a name and a code (from the <b>Edit Main Info</b> button) to get started.</p>";
+      }
     }
 
     // Add navigation to the main menu
