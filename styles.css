@@ -106,7 +106,7 @@ main {
     padding: 10px;
     margin-bottom: 10px;
     /*overflow: hidden; */
-    z-index: 999;
+    z-index: 998;
 }
 
 .activity-card .title {
@@ -357,7 +357,7 @@ textarea {
     background-color: #f9f9f9;
     min-width: 160px;
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-    z-index: 1000;
+    z-index: 2000;
 }
 
 .dropdown-content a {
@@ -365,6 +365,7 @@ textarea {
     padding: 12px 16px;
     text-decoration: none;
     display: block;
+    z-index: 1005;
 }
 
 .dropdown-content a:hover {
@@ -373,6 +374,7 @@ textarea {
 
 .dropdown:hover .dropdown-content {
     display: block;
+    z-index: 1005;
 }
 
 
@@ -640,7 +642,7 @@ textarea {
     padding: 1rem;
     position: sticky;
     top: 80px;
-    z-index: 1000;
+    z-index: 999;
 }
 
 #courseHeading {
