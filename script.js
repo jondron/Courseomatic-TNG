@@ -172,8 +172,15 @@
         messageDiv.innerHTML = `
         <p>Either edit the course information (click "Edit Main Info") to provide (at least) a title and a code for your
         course, or import an existing course using the save/load button to get started. Once you have entered a course name and code, 
-        you can add units to your course.</p>`;
+        you can add units to your course. <a href="#" id="loadTutorialLink">Load the tutorial course that came with this app </a> 
+        if you want a little tutoring</p>`;
         document.getElementById("unit-nav").insertAdjacentElement('afterend', messageDiv);
+
+        // Add event listener for the link
+        document.getElementById("loadTutorialLink").addEventListener("click", function(event) {
+          event.preventDefault();
+          handleImportJson('./tutorial.json');
+        });
       }
       if (editMainInfoButton) {
         editMainInfoButton.style.border = "2px solid red";
