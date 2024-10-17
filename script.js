@@ -1146,6 +1146,7 @@
   });
 
   function handleActivityReorder(activityId, newUnitId, newIndex) {
+    console.log("Reordering activity:", activityId, newUnitId, newIndex);
     const courseData = getCourseData();
     const activityIndex = courseData.activities.findIndex(
       (a) => a.id === activityId
@@ -2409,7 +2410,7 @@
       unitLinks.join(" | ") +
       " <button id='newUnitBtn' title='Create a new unit'>New Unit</button>";
 
-    unitsContainer.innerHTML = courseData.units
+      unitsContainer.innerHTML = courseData.units
       .map((unit, index) => {
         const studyHours = getUnitStudyHours(unit.id);
         const markingHours = getUnitMarkingHours(unit.id);
@@ -2463,21 +2464,31 @@
         `;
       })
       .join("");
-
+    
+  
     // Initialize sortable for units using Sortable.js
     Sortable.create(unitsContainer, {
       animation: 150,
       handle: ".unit-header", // Allow dragging by grabbing the unit header
       onEnd: function () {
+       const courseData= getCourseData();
         // Update unit order after drag-and-drop
         const updatedUnits = Array.from(unitsContainer.children).map(
           (unitElement) => {
             const unitId = unitElement.dataset.unitId;
-            return courseData.units.find((unit) => unit.id === unitId);
+            console.log(`Processing unitId: ${unitId}`); // Log the unitId
+            const unit = courseData.units.find((unit) => unit.id === unitId);
+    
+            if (!unit) {
+              console.error(`Unit with ID ${unitId} not found in courseData.units`);
+            }
+    
+            return unit;
           }
         );
-        courseData.units = updatedUnits;
-        saveCourse(courseData);
+        
+        courseData.units = updatedUnits.filter(unit => unit !== undefined); // Filter out any undefined values
+         saveCourse(courseData);
         updateUnits(); // Re-render the units to reflect the new order
       },
     });
