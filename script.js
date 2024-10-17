@@ -2511,7 +2511,7 @@
     const truncatedTitle = truncateText(activity.title, 5);
     return `
         <div class="activity-card activity-type-${activity.type} ${
-      activity.isAssessed ? "activity-assessed" : ""
+      activity.isAssessed ? "" : ""
     }" data-activity-id="${activity.id}">
             <div class="activity-card-clickable">
                 <div class="activity-card-content">
@@ -3853,10 +3853,11 @@ function handleImportJson(filePath) {
     return activityColours
       .map(
         (activity) =>
-          `.activity-${activity.type} { background-color: ${activity.color}; }`
+          `.activity-${activity.type} { background-color: #fafafa; border: 2px solid ${activity.color}; }`
       )
       .join("\n");
   }
+  
   // timeUtils.js
 
   // Convert any time input to minutes

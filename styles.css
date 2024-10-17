@@ -178,14 +178,35 @@ main {
     overflow-y: auto; /* Add vertical scroll bars if the text overflows */
 }
 
-.activity-type-acquisition { background-color: salmon; }
-.activity-type-practice { background-color: pink; }
-.activity-type-investigation { background-color: orange; }
-.activity-type-reflection { background-color: gold; }
-.activity-type-production { background-color: thistle; }
-.activity-type-discussion { background-color: lightgreen; }
-.activity-type-cooperation { background-color: lightblue; }
-.activity-type-collaboration { background-color: bisque; }
+.activity-type-acquisition { 
+    background-color: #f4f4f4; 
+    border: 2px solid salmon; 
+}
+
+.activity-type-investigation { 
+    background-color: #f4f4f4; 
+    border: 2px solid orange; 
+}
+.activity-type-reflection { 
+    background-color: #f4f4f4; 
+    border: 2px solid gold; 
+}
+.activity-type-production { 
+    background-color: #f4f4f4; 
+    border: 2px solid thistle; 
+}
+.activity-type-discussion { 
+    background-color: #f4f4f4; 
+    border: 2px solid lightgreen; 
+}
+.activity-type-cooperation { 
+    background-color: #f4f4f4; 
+    border: 2px solid lightblue; 
+}
+.activity-type-collaboration { 
+    background-color: #f4f4f4; 
+    border: 2px solid bisque; 
+}
 
 /* Ensure text is readable on all background colors */
 .activity-card h4,
@@ -245,7 +266,7 @@ main {
     border-radius: 5px;
     padding: 10px;
     margin-bottom: 10px;
-    background-color: #4CAF50; /* Green background */
+    background-color: var(--highlight-color);
     display: inline-block;
     justify-content: center;
     text-align: center;
@@ -256,7 +277,7 @@ main {
 }
 
 .add-activity-button:hover {
-    background-color: #45a049; /* Darker green on hover */
+    background-color: var(--secondary-color)
 }
 
 .plus-icon {
