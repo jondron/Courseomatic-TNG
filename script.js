@@ -1544,6 +1544,7 @@
       studyHours: document.getElementById("studyHours").value,
       unitId: document.getElementById("unitSelect").value,
       isAssessed: document.getElementById("isAssessed").checked,
+      isRequired: document.getElementById("isRequired").checked,
       otherActivity: document.getElementById("otherActivity").value,
       learningOutcomes: Array.from(
         document.querySelectorAll("#activityLearningOutcomes input:checked")
@@ -1551,6 +1552,7 @@
     };
 
     if (activityData.isAssessed) {
+      activityData.isRequired = document.getElementById("isRequired").value
       activityData.passMark = document.getElementById("passMark").value;
       activityData.weighting = document.getElementById("weighting").value;
       activityData.markingHours = document.getElementById("markingHours").value;
@@ -2135,7 +2137,9 @@
       document.getElementById("studyHours").value = activity.studyHours || "";
       document.getElementById("isAssessed").checked =
         activity.isAssessed || false;
-      document.getElementById("unitSelect").value = activity.unitId || "";
+        document.getElementById("isRequired").checked =
+        activity.isRequired || false;
+        document.getElementById("unitSelect").value = activity.unitId || "";
 
       // Check the corresponding CLOs
       if (activity.learningOutcomes.length > 0) {
@@ -2538,7 +2542,7 @@
         <p><strong>Type:</strong> ${capitalizeFirstLetter(activity.type)} (${
       activity.specificActivity
     })</p>
-        <p><strong>Description:</strong> ${activity.description}</p>
+        <p><strong>Details:</strong> ${activity.description}</p>
         <p><strong>Development notes:</strong> ${
           activity.devNotes ? activity.devNotes : ""
         }</p>
@@ -3333,7 +3337,7 @@ function handleImportJson(filePath) {
             <p><strong>Subtype:</strong> ${
               getActivityType(activity.id, activities).specificActivity
             }
-            <p><strong>Description: </strong>${activity.description}</p>
+            <p><strong>Details: </strong>${activity.description}</p>
              <p><strong>Development Notes: </strong>${activity.devNotes}</p>
             <p><strong>Study Hours:</strong> ${formatTimeForDisplay(
               activity.studyHours

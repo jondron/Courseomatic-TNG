@@ -38,6 +38,7 @@ nav {
     justify-content: center;
     gap: 0.5rem;
     margin-top: 1rem;
+    margin-right: 1rem;
     z-index: 998;
     
 }
