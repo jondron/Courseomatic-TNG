@@ -208,6 +208,11 @@ main {
     border: 2px solid bisque; 
 }
 
+.activity-type-practice { 
+    background-color: #f4f4f4; 
+    border: 2px solid pink; 
+}
+
 /* Ensure text is readable on all background colors */
 .activity-card h4,
 .activity-card p {
