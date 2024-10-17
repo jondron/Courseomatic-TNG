@@ -13,9 +13,9 @@ It is intended to scaffold the course design process in a way that focuses on wh
 
 ## Limitations
 
-Courseomatic is a single-user app that, on the bright side, needs no backend application server to run. This is by design: it means it can be deployed on (say) an LMS like Brightspace and needs no special privileges to do so, meaning anyone with editing rights can add it to their course. Changes are saved locally (on the user's machine, by their browser) every 30 seconds, and can be exported and imported via JSoN files should they wish to share it or to work in a different browser or on a different machine, but only one person can work on a given course design at a time.
+Courseomatic is a single-user app that, on the bright side, needs no backend application server to run. This is by design: it means it can be deployed on (say) an LMS like Brightspace and needs no special privileges to do so, meaning anyone with editing rights can add it to their course. Changes are saved locally (on the user's machine, by their browser) every 30 seconds, and can be exported and imported via JSoN files should they wish to share it or to work in a different browser or on a different machine, but only one person can work on a given course design at a time. It is, however, possible to merge courses so different people could work on different units (say) and later pull them together.
 
-A multi-user version (or rather, one with the option to be set as multi-user) may be developed later but, for now, the assumption is that it will be used by a single course designer, ideally in collaboration with a team, but there is one and only one master copy that can be shared but that cannot be edited by multiple users simultaneously.
+A multi-user version (or rather, one with the option to be set as multi-user) may be developed later but, for now, the assumption is that it will be used by a single course designer, ideally in collaboration with a team.
 
  
  ## To do:
