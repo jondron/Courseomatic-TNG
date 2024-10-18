@@ -2343,7 +2343,8 @@
       </ol>
       
       <div class="unit-navigation">
-        Units: ${unitLinks}  
+           <h4>Units:</h4>
+          <p> ${unitLinks} </p> 
       </div>
       <p><strong>Last Updated:</strong> ${
       courseData.timestamp ? new Date(courseData.timestamp).toLocaleString() : "N/A"
@@ -2407,8 +2408,9 @@
         }</a>`
     );
     document.getElementById("unit-nav").innerHTML =
+      "<h4>Units:</h4>" +
       unitLinks.join(" | ") +
-      " <button id='newUnitBtn' title='Create a new unit'>New Unit</button>";
+      "<button id='newUnitBtn' title='Create a new unit'>New Unit</button>";
 
       unitsContainer.innerHTML = courseData.units
       .map((unit, index) => {
