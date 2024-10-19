@@ -260,6 +260,12 @@
             (total, activity) => total + parseFloat(activity.markingHours || 0),
             0
           ),
+          totalDevTime: courseData.activities
+          .filter((activity) => activity.unitId === unit.id)
+          .reduce(
+            (total, activity) => total + parseFloat(activity.estDevTime || 0),
+            0
+          ),
         learningOutcomes: [
           ...new Set(
             courseData.activities
@@ -270,10 +276,19 @@
       })),
       totalStudyHours: getTotalStudyHours(),
       totalMarkingHours: getTotalMarkingHours(),
+      totalDevTime: getTotalDevTime(),
       activityTypeProportions: getActivityTypeProportions(),
       unassessedLearningOutcomes: getUnassessedLearningOutcomes(),
       mappedPLOs: courseData.mappedPLOs,
     };
+  }
+
+  // get development time
+  function getTotalDevTime() {
+    const totalMinutes = courseData.activities.reduce((total, activity) => {
+      return addTimes(total, activity.estDevTime || 0);
+    }, 0);
+    return formatTimeForDisplay(totalMinutes);
   }
 
   //handle marking and study hours
@@ -313,6 +328,12 @@
         return addTimes(total, activity.markingHours || 0);
       }, 0);
     return formatTimeForDisplay(totalMinutes);
+  }
+
+  function getUnitDevHours(unitId) {
+    const unitActivities = courseData.activities.filter(activity => activity.unitId === unitId);
+    const totalDevTime = unitActivities.reduce((total, activity) => total + parseFloat(activity.estDevTime || 0), 0);
+    return formatTimeForDisplay(totalDevTime);
   }
 
   // add unit
@@ -497,6 +518,7 @@
         ...courseData.activities[activityIndex],
         ...updatedData,
         studyHours: timeToMinutes(updatedData.studyHours),
+        estDevTime: timeToMinutes(updatedData.estDevTime),
         markingHours: updatedData.isAssessed
           ? timeToMinutes(updatedData.markingHours)
           : 0,
@@ -1543,6 +1565,7 @@
       description: tinymce.get("activityDescription").getContent(),
       devNotes: tinymce.get("activityDevNotes").getContent(),
       studyHours: document.getElementById("studyHours").value,
+      estDevTime: document.getElementById("estDevTime").value,
       unitId: document.getElementById("unitSelect").value,
       isAssessed: document.getElementById("isAssessed").checked,
       isRequired: document.getElementById("isRequired").checked,
@@ -2136,6 +2159,7 @@
       document.getElementById("specificActivity").value =
         activity.specificActivity || "";
       document.getElementById("studyHours").value = activity.studyHours || "";
+      document.getElementById("estDevTime").value = activity.estDevTime || "";
       document.getElementById("isAssessed").checked =
         activity.isAssessed || false;
         document.getElementById("isRequired").checked =
@@ -2260,6 +2284,7 @@
     const courseData = getCourseData();
     const courseInfoContent = document.querySelector(".course-info-content");
     const totalStudyHours = getTotalStudyHours();
+    const totalDevTime = getTotalDevTime();
     const totalMarkingHours = getTotalMarkingHours();
     const assessedActivities = courseData.activities.filter(
       (activity) => activity.isAssessed
@@ -2290,6 +2315,9 @@
       )}</p>
       <p><strong>Total Marking Hours:</strong> ${formatTimeForDisplay(
         totalMarkingHours
+      )}</p>
+      <p><strong>Total Development Hours:</strong> ${formatTimeForDisplay(
+        totalDevTime
       )}</p>
       <p><strong>Sum of weightings for assessments:</strong> ${totalWeighting}%</p>
       <div id="unassessedOutcomes"></div>
@@ -2415,7 +2443,9 @@
       unitsContainer.innerHTML = courseData.units
       .map((unit, index) => {
         const studyHours = getUnitStudyHours(unit.id);
+        // add estimated dev hours here
         const markingHours = getUnitMarkingHours(unit.id);
+        const devHours = getUnitDevHours(unit.id);
         return `
         <div id="unit-${unit.id}" class="unit-panel" data-unit-id="${unit.id}">
             <div class="unit-header">
@@ -2440,7 +2470,8 @@
             </div>
             <div class="unit-collapsible" style="display: none;">
                 <p>${unit.description || "No description available"}</p>
-                <p><strong>Total Study Hours:</strong> ${studyHours}</p>
+                <p><strong>Total Study Hours:</strong> ${studyHours}</p>                
+                <p><strong>Total Development Hours:</strong> ${devHours}</p>                
                 <p><strong>Total Marking Hours:</strong> ${markingHours}</p>
                 <h4>Learning Outcomes Covered:</h4>
                 <ul>
@@ -2523,6 +2554,7 @@
                         : ""
                     }
                     <h5 class="activity-title">${truncatedTitle}</h5>
+                    <p>Study time: ${formatTimeForDisplay(activity.studyHours)}</p>
                     <p class="activity-description">${truncatedDescription}</p>
                     ${
                       activity.isAssessed
@@ -2561,6 +2593,9 @@
         }</p>
         <p><strong>Study Hours:</strong> ${formatTimeForDisplay(
           activity.studyHours
+        )}</p>
+         <p><strong>Development Hours:</strong> ${formatTimeForDisplay(
+          activity.estDevTime
         )}</p>
         <p><strong>Learning Outcomes:</strong>
         ${
