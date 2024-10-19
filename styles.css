@@ -23,7 +23,7 @@ header {
     background-color: var(--primary-color);
     color: #fff;
     text-align: center;
-    padding: 0.5rem;
+    padding: 0.1rem;
     position: sticky;
     top: 0;
     z-index: 1000;
@@ -180,37 +180,37 @@ main {
 
 .activity-type-acquisition { 
     background-color: #f4f4f4; 
-    border: 2px solid salmon; 
+    border: 3px solid salmon; 
 }
 
 .activity-type-investigation { 
     background-color: #f4f4f4; 
-    border: 2px solid orange; 
+    border: 3px solid orange; 
 }
 .activity-type-reflection { 
     background-color: #f4f4f4; 
-    border: 2px solid gold; 
+    border: 3px solid gold; 
 }
 .activity-type-production { 
     background-color: #f4f4f4; 
-    border: 2px solid thistle; 
+    border: 3px solid thistle; 
 }
 .activity-type-discussion { 
     background-color: #f4f4f4; 
-    border: 2px solid lightgreen; 
+    border: 3px solid lightgreen; 
 }
 .activity-type-cooperation { 
     background-color: #f4f4f4; 
-    border: 2px solid lightblue; 
+    border: 3px solid lightblue; 
 }
 .activity-type-collaboration { 
     background-color: #f4f4f4; 
-    border: 2px solid bisque; 
+    border: 3px solid bisque; 
 }
 
 .activity-type-practice { 
     background-color: #f4f4f4; 
-    border: 2px solid pink; 
+    border: 3px solid pink; 
 }
 
 /* Ensure text is readable on all background colors */
@@ -586,7 +586,7 @@ textarea {
     overflow-y: auto; /* Allow scrolling for the entire popup */
 }
 .popup-content {
-    position: relative; /* Changed from fixed to relative */
+    position: relative; 
     margin: 5% auto;
     background-color: #fff;
     padding: 20px;
@@ -597,13 +597,18 @@ textarea {
     max-height: 90%; /* Ensure the content doesn't exceed the viewport height */
     overflow-y: auto; /* Allow scrolling within the content area */
 }
-/* New styles for calculator button and layout */
-.study-hours-container {
+
+.study-hours-container, .estDevTime-container {
     padding: 10px;
     display: flex;
     align-items: center;
     gap: 15px;
 }
+
+#studyHours, #estDevTime {
+    width: 100px;
+}
+
 .calculator-btn {
     background-color: #007bff;
     color: white;
@@ -668,8 +673,14 @@ textarea {
     text-align: right;
     padding: 1rem;
     position: sticky;
-    top: 80px;
+    top: 70px;
+    width: 100%;
     z-index: 999;
+    display: inline-block; /* Ensure it appears on the same line */
+    margin-left: auto; /* Push the element to the right */
+    margin-right: 1rem; /* Inset from the right */
+    max-width: 100%; /* Ensure it doesn't overflow */
+    box-sizing: border-box; /* Include padding and border in the element's total width and height */
 }
 
 #unit-nav h4 {
@@ -686,15 +697,12 @@ textarea {
     background-color: var(--highlight-color);
     color: #fff;
     border: none;
-    padding: 0.5rem 1rem;
+    padding: 0.4rem 1.5rem;
     cursor: pointer;
     border-radius: 4px;
     transition: background-color 0.3s;
     margin-right: 1rem;
-    margin-left: 1rem;
-    margin-top: 1rem;
-    display: inline-block; /* Ensure it appears on the same line */
-    vertical-align: super; /* Align vertically with the previous block */
+    margin-top: .1rem;
 }
 
 #courseHeading {

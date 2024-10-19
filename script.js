@@ -381,16 +381,17 @@
       "reading",
       "watching video",
       "listening to audio",
+      "immersive video",
       "attending lecture",
       "other",
     ],
     practice: [
-      "exercises",
-      "tests & quizzes",
+      "exercise",
+      "test or quiz",
       "exam",
-      "drills",
-      "games",
-      "simulations & role plays",
+      "drill",
+      "game",
+      "simulation or role play",
       "workshop",
       "design",
       "prototyping",
@@ -405,6 +406,8 @@
       "inquiry-based learning",
       "data analysis",
       "experiment",
+      "interview",
+      "survey",
       "lab",
       "other",
     ],
@@ -443,6 +446,9 @@
     discussion: [
       "discussion",
       "debate",
+      "forum",
+      "chat",
+      "webinar",
       "think-pair-share",
       "socratic seminar",
       "tutorial",
@@ -451,12 +457,12 @@
       "other",
     ],
     cooperation: [
+      "blog",
+      "wiki",
       "social bookmarking",
       "tagging",
       "commenting",
       "rating",
-      "blog",
-      "wiki",
       "scheduling",
       "image sharing",
       "FAQ contribution",
@@ -2307,7 +2313,7 @@
       .join(" | ");
 
     courseInfoContent.innerHTML = `
-      <span id="closeCourseInfoModal" class="close-button">&times;</span>
+      <span id="closeCourseInfoModal" class="close-button">▲</span>
       <h3>${courseData.course.name} (${courseData.course.code})</h3>
       <p><strong>Revision:</strong> ${courseData.course.revision}</p>
       <p><strong>Total Study Hours:</strong> ${formatTimeForDisplay(
@@ -2451,7 +2457,7 @@
             <div class="unit-header">
                 <h3 class="unit-title">${index + 1}: ${
           unit.title
-        } (study hours: ${studyHours})<span class="toggle-icon">▼</span></h3>
+        } (study hours: ${studyHours})<span class="toggle-icon" title="click to toggle">▼</span></h3>
                 <div class="unit-buttons">
                     ${
                       index > 0
@@ -2583,7 +2589,7 @@
     const expandedContent = `
         <h5 class="activity-title">${
           activity.title
-        }<span id="activityInfoModal" class="close-button" title="click to close">×</span> </h5>
+        }<span id="activityInfoModal" class="close-button" title="click to close">▲</span> </h5>
         <p><strong>Type:</strong> ${capitalizeFirstLetter(activity.type)} (${
       activity.specificActivity
     })</p>

@@ -252,6 +252,15 @@
                     <option value="collaboration">Collaboration</option>
                 </select>
                 
+                         
+                <label for="specificActivity">Specific Activity:</label>
+                <select id="specificActivity" name="specificActivity" required></select>
+                
+                <div id="otherActivityContainer" style="display: none;">
+                    <label for="otherActivity">Other Activity:</label>
+                    <input type="text" id="otherActivity" name="otherActivity">
+                </div>
+                
                 <label for="activityTitle">Title:</label>
                 <input type="text" id="activityTitle" name="activityTitle" required>
                 
@@ -260,25 +269,17 @@
 
                 <label for="activityDevNotes">Development Notes:</label>
                 <textarea id="activityDevNotes" name="activityDevNotes"></textarea>
-    
-                
-                <label for="specificActivity">Specific Activity:</label>
-                <select id="specificActivity" name="specificActivity" required></select>
-                
-                <div id="otherActivityContainer" style="display: none;">
-                    <label for="otherActivity">Other Activity:</label>
-                    <input type="text" id="otherActivity" name="otherActivity">
-                </div>
 
                 <div class="study-hours-container">
                      <label for="studyHours">Estimated Study Time (HH:MM or number of minutes) :</label><br>
                     <input type="text" id="studyHours" name="studyHours" pattern="^(\d+:\d{2}|\d+)$" title="Enter time as HH:MM or minutes">
                     <button type="button" class="calculator-btn" id="openCalculator" title="get help working out study hours">?</button>
                 </div>   
-                <label for="estDevTime">Estimated Development Time (HH:MM or number of minutes):</label>
-                <input type="text" id="estDevTime" name="estDevTime" title="Enter time as either HH:MM or minutes">
-
-                    <h3>Learning Outcomes</h3>
+                <div class="estDevTime-container">
+                    <label for="estDevTime">Estimated Development Time (HH:MM or number of minutes):</label>
+                    <input type="text" id="estDevTime" name="estDevTime" title="Enter time as either HH:MM or minutes">
+                </div>
+                 <h3>Learning Outcomes</h3>
                 <div id="activityLearningOutcomes"></div>
                 
                 <label for="unitSelect">Unit:</label>
