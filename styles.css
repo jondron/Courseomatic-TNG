@@ -275,6 +275,7 @@ main {
     display: inline-block;
     justify-content: center;
     text-align: center;
+    color: white;
     align-items: center;
     cursor: pointer;
     transition: background-color 0.3s ease;
@@ -697,12 +698,13 @@ textarea {
     background-color: var(--highlight-color);
     color: #fff;
     border: none;
-    padding: 0.4rem 1.5rem;
+    padding: .5rem 1.5rem;
     cursor: pointer;
     border-radius: 4px;
     transition: background-color 0.3s;
     margin-right: 1rem;
-    margin-top: .1rem;
+    margin-top: .2rem;
+    margin-left: 1rem;
 }
 
 #courseHeading {
@@ -715,6 +717,7 @@ textarea {
     min-width: 0; /* Prevent the heading from overflowing its container */
     word-wrap: break-word; /* Break words if necessary */
     text-align: left;
+    padding-left: 1rem;
 }
 
 #programLearningOutcomes .plo-item {
