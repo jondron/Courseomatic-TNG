@@ -388,7 +388,7 @@
       "exploring hypertext",
       "exploring glossary",  
       "AI-assisted learning",
-      "abstract conceptualization"
+      "abstract conceptualization",
       "other",
     ],
     practice: [
@@ -407,7 +407,7 @@
       "AI-assisted production"
       "work placement",
       "work-integrated learning",
-      "active experimentation"
+      "active experimentation",
       "other",
     ],
     investigation: [
