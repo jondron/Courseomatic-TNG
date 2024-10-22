@@ -388,7 +388,7 @@
       "exploring hypertext",
       "exploring glossary",  
       "AI-assisted learning",
-      "abstract conceptualization"
+      "abstract conceptualization",
       "other",
     ],
     practice: [
@@ -404,10 +404,10 @@
       "design",
       "prototyping",
       "lab",
-      "AI-assisted production"
+      "AI-assisted production",
       "work placement",
       "work-integrated learning",
-      "active experimentation"
+      "active experimentation",
       "other",
     ],
     investigation: [
@@ -468,6 +468,10 @@
       "configuration",
       "prototyping",
       "model design",
+      "construction",
+      "assembly",
+      "development",
+      "documentation",
       "concept map",
       "portfolio",
       "project",
@@ -3915,6 +3919,137 @@ function handleImportJson(filePath) {
     return reportHtml;
   }
 
+  
+  
+// file management functions
+let fileData = {
+  course: {
+      files: []
+  }
+};
+
+// Function to compress and encode binary data to Base64
+function compressAndEncode(binaryData) {
+  const compressedData = pako.gzip(binaryData);
+  return btoa(
+      new Uint8Array(compressedData)
+          .reduce((data, byte) => data + String.fromCharCode(byte), '')
+  );
+}
+
+// Function to decode and decompress Base64 string back to binary data
+function decodeAndDecompress(base64String) {
+  const binaryString = atob(base64String);
+  const len = binaryString.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+  }
+  return pako.ungzip(bytes.buffer);
+}
+
+// Function to handle file selection and add files to the repository
+document.getElementById('fileInput').addEventListener('change', (event) => {
+  const files = event.target.files;
+  for (const file of files) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+          const binaryData = e.target.result;
+          const compressedData = compressAndEncode(binaryData);
+          const fileEntry = {
+              name: file.name,
+              data: compressedData,
+              mimeType: file.type
+          };
+          fileData.course.files.push(fileEntry);
+          updateFileList();
+      };
+      reader.readAsArrayBuffer(file);
+  }
+});
+
+// Function to load fileData repository
+document.getElementById('loadFileDataButton').addEventListener('click', (event) => {
+  event.preventDefault(); // Prevent form submission
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  input.onchange = (event) => {
+      const file = event.target.files[0];
+      const reader = new FileReader();
+      reader.onload = (e) => {
+          fileData = JSON.parse(e.target.result);
+          updateFileList();
+      };
+      reader.readAsText(file);
+  };
+  input.click();
+});
+
+// Function to save fileData repository
+document.getElementById('saveFileDataButton').addEventListener('click', (event) => {
+  event.preventDefault(); // Prevent form submission
+  const jsonString = JSON.stringify(fileData);
+  const blob = new Blob([jsonString], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'fileData.json';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+// Function to update the file list UI
+function updateFileList() {
+  const fileList = document.getElementById('fileList');
+  fileList.innerHTML = '';
+
+  // List course files
+  fileData.course.files.forEach((fileEntry, index) => {
+      const fileElement = document.createElement('div');
+      fileElement.className = 'file-entry';
+      fileElement.innerHTML = `
+          <a href="#" class="view-file" data-index="${index}">${fileEntry.name}</a>
+          <button class="remove-file" data-index="${index}">Remove</button>
+      `;
+      fileList.appendChild(fileElement);
+  });
+
+  // Attach event listeners
+  document.querySelectorAll('.view-file').forEach(element => {
+      element.addEventListener('click', (event) => {
+          event.preventDefault();
+          const index = event.target.getAttribute('data-index');
+          viewFile(index);
+      });
+  });
+
+  document.querySelectorAll('.remove-file').forEach(element => {
+      element.addEventListener('click', (event) => {
+          const index = event.target.getAttribute('data-index');
+          removeFile(index);
+      });
+  });
+}
+
+// Function to view a file
+function viewFile(index) {
+  const fileEntry = fileData.course.files[index];
+  const binaryData = decodeAndDecompress(fileEntry.data);
+  const blob = new Blob([binaryData], { type: fileEntry.mimeType });
+  const url = URL.createObjectURL(blob);
+  window.open(url);
+  URL.revokeObjectURL(url);
+}
+
+// Function to remove a file
+function removeFile(index) {
+  fileData.course.files.splice(index, 1);
+  updateFileList();
+}
+
+  // Utility functions
+ 
   function calculateStudyTime(activity, wordCount) {
     switch (activity) {
       case "reading_main":
@@ -3933,8 +4068,6 @@ function handleImportJson(filePath) {
         return 0;
     }
   }
-
-  // Utility functions
 
   function generateActivityStyles() {
     const activityColours = getActivityTypesAndColours();

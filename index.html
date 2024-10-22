@@ -11,6 +11,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/5.10.0/tinymce.min.js"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.0.4/pako.min.js"></script>
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 </head>
 <body>
@@ -38,6 +39,8 @@
 
                 </div>
             </div>
+
+
             <button id="clearBtn" title="Clear all data">Clear</button>
 
         </nav>
@@ -116,6 +119,7 @@
     <div class = "popup-content">
         <h2>Course Development and Production Information</h2>
         <form id="devProdForm">
+        
             <h4>Design and development information</h4>
             <label for="dpcourseCode">Course Code:</label>
             <input type="text" id="dpcourseCode" name="dpcourseCode">
@@ -210,6 +214,31 @@
 
             <label for="labType">Lab Type:</label>
             <input type="text" id="labType" name="labType">
+
+            <!-- File Management Panel -->
+            <div id="fileManagementPanel">
+                <h4>Experimental file repository</h4>
+                <p> As a client-side program it is not practical to save files with the rest of the data: the performance would be terrible.
+                    You may, though, use this experimental file repository to store files that are associated with the course in a 
+                    single convenient separate file and then access them from here.
+                </p>
+                <p>To do so, browse for the files you want to include and click the "Save File Repository" button.
+                    To load the files back into the program, click the "Load File Repository" button and select the file you saved.
+                    Courseomatic will work just fine without this feature so don't use it if you don't need it.</p>
+                <p> Beware that performance will suffer greatly if you add large files to the repository, or large numbers of them.
+                    This is intended for things like images, PDFs, and similar documents that you might be collecting for the course or
+                    to support its administration. <strong>The files will not be saved until you click "Save file repository"</strong>
+                    Don't forget to share both the saved course AND the saved file repository with anyone else who needs to work on the course.
+                    This is a beta feature and may not work as expected. 
+                </p>
+                <button id="loadFileDataButton">Load File Repository</button>
+                <button id="saveFileDataButton">Save File Repository</button>
+                <input type="file" id="fileInput" multiple>
+                <div id="fileList"></div>
+            </div>
+
+
+           
             <p> </p>
             <button type="submit">Save</button>
             <p> </p>
@@ -362,6 +391,18 @@
             </li>
         </ul>
     </div>
+</div>
+<!--beta file management-->
+<div id="fileManagementPanel" class="popup">
+    <button id="loadFileDataButton">Load File Data</button>
+    <button id="saveFileDataButton">Save File Data</button>
+    <select id="unitSelect">
+        <option value="course">Course</option>
+        <!-- Dynamically populate units -->
+    </select>
+    <input type="file" id="fileInput" multiple>
+    <input type="text" id="fileInfoInput" placeholder="File Info">
+    <div id="fileList"></div>
 </div>
 
 <!--<script src="script.js" type="module">-->

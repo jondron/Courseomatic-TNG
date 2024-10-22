@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Repository Proof of Concept</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.0.4/pako.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/5.10.0/tinymce.min.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #fileManagementPanel {
+            margin-bottom: 20px;
+        }
+        #fileList {
+            margin-top: 20px;
+        }
+        .file-entry {
+            margin-bottom: 10px;
+        }
+        .file-entry a {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>File Repository Proof of Concept</h1>
+    <div id="fileManagementPanel">
+        <button id="loadFileDataButton">Load File Data</button>
+        <button id="saveFileDataButton">Save File Data</button>
+        <select id="unitSelect">
+            <option value="course">Course</option>
+            <!-- Dynamically populate units -->
+        </select>
+        <input type="file" id="fileInput" multiple>
+        <input type="text" id="fileInfoInput" placeholder="File Info">
+        <div id="fileList"></div>
+    </div>
+    <textarea id="editor"></textarea>
+
+    <script>
+        let fileData = {
+            course: {
+                files: [],
+                units: {}
+            }
+        };
+
+        // Initialize TinyMCE
+        tinymce.init({
+            selector: '#editor',
+            plugins: 'link image',
+            toolbar: 'undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | outdent indent | link image',
+            setup: function (editor) {
+                editor.ui.registry.addButton('insertFileLink', {
+                    text: 'Insert File Link',
+                    onAction: function () {
+                        insertFileLink();
+                    }
+                });
+            }
+        });
+
+        // Function to compress and encode binary data to Base64
+        function compressAndEncode(binaryData) {
+            const compressedData = pako.gzip(binaryData);
+            return btoa(
+                new Uint8Array(compressedData)
+                    .reduce((data, byte) => data + String.fromCharCode(byte), '')
+            );
+        }
+
+        // Function to decode and decompress Base64 string back to binary data
+        function decodeAndDecompress(base64String) {
+            const binaryString = atob(base64String);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            return pako.ungzip(bytes.buffer);
+        }
+
+        // Function to handle file selection and add files to the repository
+        document.getElementById('fileInput').addEventListener('change', (event) => {
+            const files = event.target.files;
+            const unitId = document.getElementById('unitSelect').value; // Get selected unit
+            const fileInfo = document.getElementById('fileInfoInput').value; // Get file info
+            for (const file of files) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const binaryData = e.target.result;
+                    const compressedData = compressAndEncode(binaryData);
+                    const fileEntry = {
+                        name: file.name,
+                        info: fileInfo,
+                        data: compressedData,
+                        mimeType: file.type
+                    };
+                    if (unitId === 'course') {
+                        fileData.course.files.push(fileEntry);
+                    } else {
+                        if (!fileData.course.units[unitId]) {
+                            fileData.course.units[unitId] = { files: [] };
+                        }
+                        fileData.course.units[unitId].files.push(fileEntry);
+                    }
+                    updateFileList();
+                };
+                reader.readAsArrayBuffer(file);
+            }
+        });
+
+        // Function to load fileData repository
+        document.getElementById('loadFileDataButton').addEventListener('click', () => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = (event) => {
+                const file = event.target.files[0];
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    fileData = JSON.parse(e.target.result);
+                    updateFileList();
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        });
+
+        // Function to save fileData repository
+        document.getElementById('saveFileDataButton').addEventListener('click', () => {
+            const jsonString = JSON.stringify(fileData);
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'fileData.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        // Function to update the file list UI
+        function updateFileList() {
+            const fileList = document.getElementById('fileList');
+            fileList.innerHTML = '';
+
+            // List course files
+            fileData.course.files.forEach((fileEntry, index) => {
+                const fileElement = document.createElement('div');
+                fileElement.className = 'file-entry';
+                fileElement.innerHTML = `
+                    <a href="#" onclick="viewFile('course', ${index})">${fileEntry.name}</a>
+                    <button onclick="removeFile('course', ${index})">Remove</button>
+                `;
+                fileList.appendChild(fileElement);
+            });
+
+            // List unit files
+            for (const unitId in fileData.course.units) {
+                const unitFiles = fileData.course.units[unitId].files;
+                unitFiles.forEach((fileEntry, index) => {
+                    const fileElement = document.createElement('div');
+                    fileElement.className = 'file-entry';
+                    fileElement.innerHTML = `
+                        <a href="#" onclick="viewFile('${unitId}', ${index})">${fileEntry.name}</a>
+                        <button onclick="removeFile('${unitId}', ${index})">Remove</button>
+                    `;
+                    fileList.appendChild(fileElement);
+                });
+            }
+        }
+
+        // Function to view a file
+        function viewFile(unitId, index) {
+            const fileEntry = unitId === 'course' ? fileData.course.files[index] : fileData.course.units[unitId].files[index];
+            const binaryData = decodeAndDecompress(fileEntry.data);
+            const blob = new Blob([binaryData], { type: fileEntry.mimeType });
+            const url = URL.createObjectURL(blob);
+            window.open(url);
+            URL.revokeObjectURL(url);
+        }
+
+        // Function to remove a file
+        function removeFile(unitId, index) {
+            if (unitId === 'course') {
+                fileData.course.files.splice(index, 1);
+            } else {
+                fileData.course.units[unitId].files.splice(index, 1);
+            }
+            updateFileList();
+        }
+
+        // Function to insert file link into TinyMCE editor
+        function insertFileLink() {
+            const fileList = fileData.course.files.map((fileEntry, index) => {
+                return `<a href="#" onclick="insertLink('course', ${index})">${fileEntry.name}</a>`;
+            }).join('<br>');
+
+            for (const unitId in fileData.course.units) {
+                const unitFiles = fileData.course.units[unitId].files;
+                unitFiles.forEach((fileEntry, index) => {
+                    fileList += `<br><a href="#" onclick="insertLink('${unitId}', ${index})">${fileEntry.name}</a>`;
+                });
+            }
+
+            const fileListPopup = window.open('', 'File List', 'width=300,height=400');
+            fileListPopup.document.write(`<html><body>${fileList}</body></html>`);
+        }
+
+        // Function to insert link into TinyMCE editor
+        function insertLink(unitId, index) {
+            const fileEntry = unitId === 'course' ? fileData.course.files[index] : fileData.course.units[unitId].files[index];
+            const link = `<a href="data:${fileEntry.mimeType};base64,${fileEntry.data}" download="${fileEntry.name}">${fileEntry.name}</a>`;
+            tinymce.activeEditor.insertContent(link);
+        }
+    </script>
+</body>
+</html>
