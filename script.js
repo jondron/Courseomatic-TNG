@@ -677,8 +677,10 @@
       });
 
       return true;
-    }
-    return false;
+    } else {
+      console.error("Unit not found:", unitId);
+      return false;
+    }  
   }
 
   function cloneUnit(unitId) {
@@ -1306,6 +1308,11 @@
     try {
       document.getElementById("newUnitBtn").addEventListener("click", () => {
         document.getElementById("unitForm").reset();
+        if (tinymce.get("unitDescription")) {
+          tinymce.get("unitDescription").setContent("");
+        } else {
+          console.error("TinyMCE editor for unitDescription not found");
+        }
         document.getElementById("unitPopup").style.display = "block";
       });
     } catch (error) {
@@ -1363,6 +1370,7 @@
       )
     ) {
       deleteUnit(unitId);
+      saveCourse(getCourseData());
       updateUI();
     }
   }
@@ -1591,6 +1599,13 @@
       editUnit(unitId, unitData);
     } else {
       createUnit(unitData);
+      updateUI(); 
+      window.scrollTo(
+        {
+          top: document.body.clientHeight,
+          behaviour: 'smooth'
+        }
+      );
     }
     updateUI();
     document.getElementById("unitPopup").style.display = "none";
