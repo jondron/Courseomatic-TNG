@@ -404,7 +404,7 @@
       "design",
       "prototyping",
       "lab",
-      "AI-assisted production"
+      "AI-assisted production",
       "work placement",
       "work-integrated learning",
       "active experimentation",
