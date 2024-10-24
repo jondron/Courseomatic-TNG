@@ -19,6 +19,8 @@ A multi-user version (or rather, one with the option to be set as multi-user) ma
 
  
  ## To do:
+- replace textarea with individual entries for resources, with fields for copyright clearance and comments 
+- add EDI field to record potential concerns, fixes, etc
 - allow different activity models, e.g. R2D2, Lewin, pure ABC, etc
 - make multiple select possible to edit multiple activities at once (tricky interface)
 - make multi-user
