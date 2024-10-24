@@ -180,37 +180,37 @@ main {
 
 .activity-type-acquisition { 
     background-color: #f4f4f4; 
-    border: 3px solid salmon; 
+    border: 4px solid salmon; 
 }
 
 .activity-type-investigation { 
     background-color: #f4f4f4; 
-    border: 3px solid orange; 
+    border: 4px solid orange; 
 }
 .activity-type-reflection { 
     background-color: #f4f4f4; 
-    border: 3px solid gold; 
+    border: 4px solid gold; 
 }
 .activity-type-production { 
     background-color: #f4f4f4; 
-    border: 3px solid thistle; 
+    border: 4px solid thistle; 
 }
 .activity-type-discussion { 
     background-color: #f4f4f4; 
-    border: 3px solid lightgreen; 
+    border: 4px solid lightgreen; 
 }
 .activity-type-cooperation { 
     background-color: #f4f4f4; 
-    border: 3px solid lightblue; 
+    border: 4px solid lightblue; 
 }
 .activity-type-collaboration { 
     background-color: #f4f4f4; 
-    border: 3px solid bisque; 
+    border: 4px solid bisque; 
 }
 
 .activity-type-practice { 
     background-color: #f4f4f4; 
-    border: 3px solid pink; 
+    border: 4px solid pink; 
 }
 
 /* Ensure text is readable on all background colors */
@@ -420,7 +420,7 @@ textarea {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #cec5c5;
+    background-color: #cecece;
     padding: 10px 15px;
     cursor: pointer;
 }
@@ -503,7 +503,7 @@ textarea {
 .activities-section {
     margin-top: 15px;
     padding: 10px;
-    background-color: #f9f9f9;
+    background-color: lightgray;
     border-top: 1px solid #eee;
     min-height: 330px;
 }
@@ -814,4 +814,26 @@ textarea {
 .aligned-table td {
     height: 50px;
 
+}
+
+.hidden {
+    display: none;
+}
+
+#fileManagementPanel {
+    z-index: 100111;
+    margin-bottom: 20px;
+    background-color: #fff;
+}
+
+#fileList {
+    margin-top: 20px;
+}
+
+.file-entry {
+    margin-bottom: 10px;
+}
+
+.file-entry a {
+    margin-right: 10px;
 }
