@@ -2624,7 +2624,8 @@
                         : ""
                     }
                     <h5 class="activity-title">${truncatedTitle}</h5>
-                    <p>Study time: ${formatTimeForDisplay(activity.studyHours)}</p>
+                    <p>Study time: ${activity.studyHours>0 ? formatTimeForDisplay(activity.studyHours) : "<span style='color: red'>"+formatTimeForDisplay(activity.studyHours)+"</span>"}</p>
+                    <p>Dev time: ${activity.estDevTime>0 ? formatTimeForDisplay(activity.estDevTime) : "<span style='color: red'>" + formatTimeForDisplay(activity.estDevTime)+"</span>"}</p>
                     <p class="activity-description">${truncatedDescription}</p>
                     ${
                       activity.isAssessed
