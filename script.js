@@ -1312,6 +1312,8 @@
   function handleAddUnitButton() {
     try {
       document.getElementById("newUnitBtn").addEventListener("click", () => {
+        document.getElementById('unitForm').dataset.unitId = '';
+        document.getElementById('unitTitle').value = '';
         document.getElementById("unitForm").reset();
         if (tinymce.get("unitDescription")) {
           tinymce.get("unitDescription").setContent("");
