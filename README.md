@@ -21,8 +21,14 @@ A multi-user version (or rather, one with the option to be set as multi-user) ma
  ## To do:
 - replace textarea with individual entries for resources, with fields for copyright clearance and comments 
 - add EDI field to record potential concerns, fixes, etc
+- add rubrics, marking criteria, etc
+- provide unit and/or activity outcomes
+- add option to assign team member to an activity
+- introduce basic scheduling/task management
+- autofill course orientation form
 - allow different activity models, e.g. R2D2, Lewin, pure ABC, etc
 - make multiple select possible to edit multiple activities at once (tricky interface)
 - make multi-user
+- BUG FIX: sometimes adding a unit replaces an existing unit instead of adding. It recovers with a window refresh.
 
 # licence: GPL3

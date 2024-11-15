@@ -393,6 +393,7 @@
     ],
     practice: [
       "exercise",
+      "assignment",
       "test",
       "quiz",
       "exam",
