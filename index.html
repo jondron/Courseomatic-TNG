@@ -299,6 +299,12 @@
                 <label for="activityDevNotes">Development Notes:</label>
                 <textarea id="activityDevNotes" name="activityDevNotes"></textarea>
 
+                <label for="assignedTeamMember">Assign to Team Member:</label>
+                <select id="assignedTeamMember" name="assignedTeamMember">
+                  <option value="">Select a team member</option>
+                  <!-- Options will be populated dynamically -->
+                </select>
+
                 <div class="study-hours-container">
                      <label for="studyHours">Estimated Study Time (HH:MM or number of minutes) :</label><br>
                     <input type="text" id="studyHours" name="studyHours" pattern="^(\d+:\d{2}|\d+)$" title="Enter time as HH:MM or minutes">

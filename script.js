@@ -1639,6 +1639,7 @@
       devNotes: tinymce.get("activityDevNotes").getContent(),
       studyHours: document.getElementById("studyHours").value,
       estDevTime: document.getElementById("estDevTime").value,
+      assignedTeamMember: document.getElementById("assignedTeamMember").value,
       unitId: document.getElementById("unitSelect").value,
       isAssessed: document.getElementById("isAssessed").checked,
       isRequired: document.getElementById("isRequired").checked,
@@ -2170,8 +2171,30 @@
   // Event listener for the add member button
   addMemberButton.addEventListener("click", addTeamMember);
 
+  function getActivitiesByTeamMember(courseData) {
+    const activitiesByTeamMember = {};
+  
+    courseData.activities.forEach(activity => {
+      const teamMember = activity.assignedTeamMember || courseData.course.author;
+      if (!activitiesByTeamMember[teamMember]) {
+        activitiesByTeamMember[teamMember] = {};
+      }
+  
+      const unitId = activity.unitId;
+      if (!activitiesByTeamMember[teamMember][unitId]) {
+        activitiesByTeamMember[teamMember][unitId] = [];
+      }
+  
+      activitiesByTeamMember[teamMember][unitId].push(activity);
+    });
+  
+    return activitiesByTeamMember;
+  }
+
   // Event listener for the close button
   // closePopupButton.addEventListener('click', hidePopupForm);
+
+  document.getElementById('activityForm').addEventListener('show', populateTeamMemberDropdown);
 
   function populateActivityForm(activity = null) {
     const form = document.getElementById("activityForm");
@@ -2210,6 +2233,7 @@
 
     // handled specific activity dropdown
     updateSpecificActivityDropdown(activity);
+    populateTeamMemberDropdown();
 
     if (activity) {
       // Populate form with existing activity data
@@ -2233,6 +2257,8 @@
         activity.specificActivity || "";
       document.getElementById("studyHours").value = activity.studyHours || "";
       document.getElementById("estDevTime").value = activity.estDevTime || "";
+      document.getElementById("assignedTeamMember").value =
+        activity.assignedTeamMember || "";
       document.getElementById("isAssessed").checked =
         activity.isAssessed || false;
         document.getElementById("isRequired").checked =
@@ -2264,6 +2290,20 @@
     toggleAssessmentDetails();
     // updateSpecificActivityDropdown();
   }
+
+  function populateTeamMemberDropdown() {
+    const teamMemberDropdown = document.getElementById('assignedTeamMember');
+    teamMemberDropdown.innerHTML = '<option value="">Select a team member</option>'; // Clear existing options
+  
+    courseData.course.teamMembers.forEach(member => {
+      const option = document.createElement('option');
+      option.value = member.memberName;
+      option.textContent = member.memberName;
+      teamMemberDropdown.appendChild(option);
+    });
+  }
+
+
 
   function updateSpecificActivityDropdown(activity = null) {
     const activityType = document.getElementById("activityType").value;
@@ -2442,7 +2482,7 @@
         : ""
       }
       </ol>
-      
+      ${generateTeamMemberReportSection(courseData)}
       <div class="unit-navigation">
            <h4>Units:</h4>
           <p> ${unitLinks} </p> 
@@ -3306,6 +3346,10 @@ function handleImportJson(filePath) {
       <p><strong>Precluded:</strong> ${reportData.course.precluded}</p>
       <p><strong>Faculty:</strong> ${reportData.course.faculty}</p>
       <p><strong>Author:</strong> ${reportData.course.author}</p>
+       <p><strong>Team Members:</strong></p>
+      <ul>
+        ${courseData.course.teamMembers.map(member => `<li>${member.memberName} - ${member.role}</li>`).join('')}
+      </ul>
       <p><strong>Effective Date:</strong> ${
       reportData.course.effectiveDate
       }</p>
@@ -3419,6 +3463,7 @@ function handleImportJson(filePath) {
      
        <h3>Units</h3>
       ${generateUnitsHTML(reportData.units)}
+      ${generateTeamMemberReportSection(courseData)}
 
     </body>
     </html>
@@ -3544,6 +3589,34 @@ function handleImportJson(filePath) {
       html: assessedActivitiesHTML,
       totalWeighting: totalWeighting,
     };
+  }
+
+  function generateTeamMemberReportSection(courseData) {
+    const activitiesByTeamMember = getActivitiesByTeamMember(courseData);
+    let reportHtml = '<h2>Activities by Team Member</h2>';
+  
+    for (const teamMember in activitiesByTeamMember) {
+      reportHtml += `<h3>${teamMember}</h3>`;
+      const units = activitiesByTeamMember[teamMember];
+  
+      for (const unitId in units) {
+        const unit = courseData.units.find(unit => unit.id === unitId);
+        reportHtml += `<h4>Unit: ${unit.title}</h4>`;
+        const activities = units[unitId];
+  
+        activities.forEach(activity => {
+          reportHtml += `
+            <div>
+              <strong>Activity:</strong> ${activity.title} - 
+               <strong>Estimated Development Time:</strong> ${activity.estDevTime}<br>
+            </div>
+            <hr>
+          `;
+        });
+      }
+    }
+  
+    return reportHtml;
   }
 
   function generateSyllabus() {
