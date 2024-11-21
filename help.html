@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Courseomatic-TNG End-User Documentation</title>
+</head>
+<body>
+    <h1>Courseomatic-TNG End-User Documentation</h1>
+
+    <section>
+        <h2>Getting Started</h2>
+        <p>Courseomatic-TNG is a fully browser-based JavaScript application designed to assist educators in developing courses,
+            allowing them to create storyboards and fill out information needed for the development and production of a course.
+            It provides a user-friendly interface for creating and organizing courses, units, activities, and assessments, 
+            as well as managing study time distribution across learning activities. It has some support for managing 
+        the development and production process, such as allocating tasks to team members and estimating development times.
+            It is not intended as a tool for developing course content, but rather as a tool for planning and managing the development of course content.
+        However, it is possible to use it as a simple course authoring tool at a pinch, especially for text-based content. Under development
+    is a script that will take its output and convert it to a standard Common Course Cartridge format that can be
+imported into a learning management system.</p>
+        </p>
+    </p>
+
+        <h3>1. Accessing the Application</h3>
+        <p>Open the <code>index.html</code> file in your web browser to launch Courseomatic-TNG.</p>
+
+        <h3>2. Creating a New Course</h3>
+        <p>To start building your course, first click the "Edit main course info" button and (minimally) enter a name and a code, then 
+            save it. You 
+            can add more information later. Next,             
+            click on the "New Unit" button to add a new unit to your course. 
+            You will need to enter the unit's title and description. 
+            Once done, click "Save" to add it to your course structure.</p>
+        <p>Repeat this process to add more units to your course (though you might want to wait if there are repeating activities
+            because it can save time to clone them). 
+            You can also drag and drop units to rearrange them as needed.</p>
+        <p>Once you have at least one unit you are ready to start adding activities, which is where the interesting
+            stuff happens.
+        </p>
+
+        <h3>3. Editing, Deleting, and Moving Units</h3>
+        <p>Courseomatic-TNG allows you to manage units easily:</p>
+        <ul>
+            <li><strong>Edit:</strong> To edit a unit, click the "Edit" button next to the unit you want to modify, change the details, and click "Save" to update it.</li>
+            <li><strong>Delete:</strong> To remove a unit, click the "Delete" button next to the unit you want to delete. You will be prompted for confirmation.</li>
+            <li><strong>Clone:</strong> To create a copy of a unit, click the "Clone" button. This creates an identical unit that you can modify independently of the original.</li>
+            <li><strong>Move:</strong> Units can be reordered by dragging and dropping them within the course structure.</li>
+        </ul>
+
+        <h3>4. Adding, Editing, Cloning, and Deleting Activities</h3>
+        <p>Within each unit, you can manage activities as follows:</p>
+        <ul>
+            <li><strong>Add:</strong> To add a new activity, click the "New Activity" button within the unit. You can select the activity type (e.g., Reading, Writing, Discussion), provide a title and description, and specify study time estimates. Click "Save" to add the activity to the unit.</li>
+            <li><strong>Edit:</strong> To modify an activity, click the "Edit" button next to the activity, make the necessary changes, and click "Save" to update it.</li>
+            <li><strong>Delete:</strong> To remove an activity, click the "Delete" button next to the activity. Confirmation will be requested before the activity is permanently removed.</li>
+            <li><strong>Clone:</strong> To duplicate an activity, click the "Clone" button next to the activity. This will create an identical copy, allowing you to modify it without affecting the original.</li>
+
+        </ul>
+        <p>You can drag and drop activities within a unit or to another unit. There are also arrow keys to do this if you prefer</p>
+        <p>The activity form includes a study time calculator that estimates study times for various activities. 
+            By entering details like the number of words or pages, and selecting the activity type (e.g., Reading, Writing, etc.), the system can estimate the time required for each activity.</p>
+
+
+        <h3>5. Defining Assessments</h3>
+        <p>Activities can be marked as assessments by checking the "Assessed" box. For each assessment, you can set the pass mark percentage, weighting, and marking hours. Once done, click "Save" to include it in your assessment plan.</p>
+
+        <h3>6. Managing Course Information</h3>
+        <p>The "Edit main course info" section allows you to input basic details about the course, such as its name, code,
+            credit hours, description, and learning outcomes. 
+            You can also add program and course learning outcomes here, mapping program outcomes to course outcomes as needed. 
+            These can later be mapped to individual learning activities.</p>
+
+
+        <h3>7. Managing Course Development Information</h3>    
+        <p>The "Edit dev/prod info" button allows you to input details needed for development and production. These
+            are fairly specific to Athabasca University but can be adapted for other institutions and most are of generic value.
+        </p>
+        <h3>8. Generating Reports</h3>
+        <p>Courseomatic-TNG enables you to generate comprehensive reports for your course, including:</p>
+        <ul>
+            <li><strong>Course Report:</strong> A detailed report that summarizes your course structure, including units, activities, and assessments.</li>
+            <li><strong>Syllabus:</strong> A course syllabus generated from the activities and learning outcomes.</li>
+            <li><strong>Marking Scheme:</strong> A report that outlines the grading criteria for assessments within the course.</li>
+            <li><strong>Course Map:</strong> A visual representation of the course structure, showing how units and activities are organized.
+            and the learning outcomes they address</li>
+        </ul>
+
+        <h3>9. Saving and Loading Data</h3>
+        <p>Changes are saved in your local browser as you go and these will be reloaded next time you open or refresh the page but, if you switch to a different browser or 
+            move the index.html file, you will lose access to that. 
+        </p>
+        <p>To save your course data for sharing with others, for archive purposes, or reusing in a different browser, click the "Save" button. You can later load existing course data by clicking the "Load" button. To merge new data with your current course, use the "Merge" button. To clear all data and start fresh, click the "Clear" button.</p>
+        <p>The "merge" option is a neat way of combining pre-made elements: for example, you can import program learning outcomes or standard unit templates, if they have already been written</p>
+
+
+        <h3>10. Getting a quick overview</h3>
+        <p> Click the "Show quick summary info" button to get some quick statistics such as study hours, development hours, whether 
+            all outcomes are assessed, the balance of different activity types, tasks assigned to team members, and so on.
+            This is a subset of the full course report and is useful for a quick overview. 
+        </p>
+        <h3>Additional Information</h3>
+        <p>Courseomatic-TNG is a client-side application, meaning it runs directly from your browser 
+            without requiring a server. This makes it easy to use without any installation or hosting requirements.
+        The downside is that sharing has to be done manually - save the course to a file and then share it with others
+     as needed</p>
+        
+        <p>For more information or to contribute to the project, visit the <a href="https://github.com/jondron/Courseomatic-TNG" target="_blank">Courseomatic-TNG GitHub repository</a>.</p>
+    </section>
+</body>
+</html>
