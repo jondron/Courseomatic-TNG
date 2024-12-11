@@ -24,6 +24,7 @@ A multi-user version (or rather, one with the option to be set as multi-user) ma
 - add rubrics, marking criteria, etc
 - provide unit and/or activity outcomes
 - add option to assign team member to an activity
+- add option to clone multiple activities to a different unit
 - introduce basic scheduling/task management
 - autofill course orientation form
 - allow different activity models, e.g. R2D2, Lewin, pure ABC, etc
