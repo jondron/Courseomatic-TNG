@@ -1,0 +1,2178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quickmodel - Mind Mapping App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow: auto;
+        }
+        #menu-bar {
+            background-color: #f0f0f0;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            position: sticky;
+            top: 0;
+        }
+        #canvas-container {
+            width: 100%;
+            height: calc(100vh - 50px); /* Adjust based on your menu bar height */
+            overflow: auto;
+            position: relative;
+        }
+
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            transform-origin: top left;
+            width: 100%;
+            height: 100%;
+        }
+        .note {
+            position: absolute;
+            background-color: #ffffc0;
+            border: 1px solid #000;
+            border-radius: 5px;
+            padding: 5px;
+            cursor: move;
+            z-index: 1000;
+        }
+        .note-title {
+            font-weight: bold;
+            margin-top: 10%;
+            margin-bottom: 5px;
+            cursor: text;
+            display: block;
+            max-height: 15%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .note-body {
+            display: block;
+            cursor: text;
+            overflow-y: auto;
+            max-height:75%;
+        }
+        .note-controls {
+            position: absolute;
+            top: 2px;
+            right: 5px;
+            display: flex;
+            align-items: center;
+            flex-direction: row;
+        }
+        .note-menu, .note-delete {
+            cursor: pointer;
+            margin-left: 5px;
+            display: inline-block;
+        }
+        .connection {
+            position: absolute;
+            pointer-events: none;
+            z-index: 2000;
+        }
+        .connection-line {
+            stroke: #000;
+            stroke-width: 2px;
+        }
+
+        #arrow, #arrow-start, #crow, #crow-start {
+            overflow: visible;
+        }
+
+        .note-menu-popup {
+            position: absolute;
+            background-color: white;
+            border: 1px solid #ccc;
+            padding: 10px;
+            z-index: 1000;
+        }
+        .color-option {
+            width: 20px;
+            height: 20px;
+            display: inline-block;
+            margin-right: 5px;
+            cursor: pointer;
+        }
+        .note-drag-handle {
+            cursor: move;
+            padding: 0 5px;
+            width: max-content ;
+            display:inline-block;
+        }
+
+        .note.potential-connection {
+            box-shadow: 0 0 10px rgba(0, 0, 255, 0.5);
+        }
+
+        .note.connected {
+            animation: pulse 0.5s;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(0, 255, 0, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(0, 255, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 255, 0, 0); }
+        }
+
+        .graphic-element {
+            position: absolute;
+            cursor: move;
+            user-select: none;
+        }
+
+        .graphic-label {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            user-select: text;
+            min-width: 50px;
+            min-height: 20px;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .resizer {
+            width: 10px;
+            height: 10px;
+            background: blue;
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            cursor: se-resize;
+        }
+
+        .graphic-controls {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+        }
+
+        .graphic-menu,
+        .graphic-delete {
+            cursor: pointer;
+            margin-left: 5px;
+        }
+
+        .close-button {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 1;
+            color: #000;
+            opacity: 0.5;
+        }
+
+        .close-button:hover {
+            opacity: 1;
+        }
+        .no-select {
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+
+    </style>
+</head>
+<body>
+    <svg width="0" height="0">
+        <defs>
+            <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                <path d="M0,0 L0,6 L9,3 z" fill="#000"/>
+            </marker>
+            <marker id="arrow-start" markerWidth="10" markerHeight="10" refX="1" refY="3" orient="auto" markerUnits="strokeWidth">
+                <path d="M9,0 L9,6 L0,3 z" fill="#000"/>
+            </marker>
+            <marker id="crow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto" markerUnits="strokeWidth">
+                <path d="M0,5 L10,0 M0,5 L10,10" fill="none" stroke="#000"/>
+            </marker>
+            <marker id="crow-start" markerWidth="10" markerHeight="10" refX="1" refY="5" orient="auto" markerUnits="strokeWidth">
+                <path d="M10,5 L0,0 M10,5 L0,10" fill="none" stroke="#000"/>
+            </marker>
+        </defs>
+    </svg>
+    <div id="menu-bar">
+        <div>
+            <button id="saveNotesBtn">Save Notes</button>
+            <button id="new-model">New</button>
+<!--            <button id="save-model">Save</button>
+            <button id="load-model">Load</button>
+            <button id="export-opml">Export OPML</button>
+            <button id="export-svg">Export SVG</button> -->
+        </div>
+        <div>
+            <button id="zoom-out">-</button>
+            <button id="zoom-in">+</button>
+        </div>
+    </div>
+    <div id="canvas-container" style="width: 100%; height: calc(100vh - 50px); overflow: auto;" class="no-select">
+        <div id="canvas" style="position: relative; transform-origin: top left;"></div>
+    </div>
+    <script>
+
+
+
+//NOTE CLASS
+class Note {
+    constructor(id, x, y, title = '', body = '', width = 180, height = 240, color = '#ffffc0', emphasized = false, shape = 'rounded') {
+        this.id = id;
+        this.x = x;
+        this.y = y;
+        this.title = title;
+        this.body = body;
+        this.width = width;
+        this.height = height;
+        this.color = color;
+        this.emphasized = emphasized;
+        this.shape = shape;
+        this.connections = [];        
+        this.isEditing = false;
+        this.lastInteractionTime = 0;
+    }
+
+    createDOM() {
+        const noteElement = document.createElement('div');
+        noteElement.className = 'note';
+        noteElement.id = `note-${this.id}`;
+        noteElement.style.left = `${this.x}px`;
+        noteElement.style.top = `${this.y}px`;
+        noteElement.style.width = `${this.width}px`;
+        noteElement.style.height = `${this.height}px`;
+        noteElement.style.backgroundColor = this.color;
+        noteElement.style.borderRadius = this.shape === 'rounded' ? '5px' : '0';
+        noteElement.style.borderWidth = this.emphasized ? '3px' : '1px';
+
+        const controls = document.createElement('div');
+        controls.className = 'note-controls';
+        controls.style.display = 'none';
+
+        const dragHandle = document.createElement('div');
+        dragHandle.className = 'note-drag-handle';
+        dragHandle.innerHTML = '&#8942;&#8942;&#8942;&#8942;&#8942;&#8942;&#8942;&#8942;&#8942;&#8942;&#8942;&#8942;&#8942;'; // Unicode for vertical ellipsis
+
+        const menuButton = document.createElement('span');
+        menuButton.className = 'note-menu';
+        menuButton.innerHTML = '☰';
+        menuButton.onclick = (e) => {
+            e.stopPropagation();
+            this.showMenu(e);
+        };
+
+        const deleteButton = document.createElement('span');
+        deleteButton.className = 'note-delete';
+        deleteButton.innerHTML = '✕';
+        deleteButton.onclick = (e) => {
+            e.stopPropagation();
+            this.delete();
+        };
+
+        controls.appendChild(dragHandle);
+        controls.appendChild(menuButton);
+        controls.appendChild(deleteButton);
+
+        noteElement.addEventListener('mouseover', () => {
+            controls.style.display = 'block';
+        });
+
+        noteElement.addEventListener('mouseout', () => {
+            controls.style.display = 'none';                  
+        });
+
+        const titleElement = document.createElement('div');
+        titleElement.className = 'note-title';
+        titleElement.contentEditable = true;
+        titleElement.innerText = this.title;
+        titleElement.onblur = () => {
+            this.title = titleElement.innerText;
+            app.saveState();
+        };
+
+        titleElement.onmouseover = () => {
+            // titleElement.style.width = this.width + 100 + 'px';
+            titleElement.style.overflow = 'visible';
+            titleElement.style.backgroundColor = this.color;
+            titleElement.style.zIndex = 10000;
+        };
+        titleElement.onmouseout = () => {
+            // titleElement.style.width = noteElement.style.width;
+            titleElement.style.overflow = 'hidden';
+        };
+
+        const bodyElement = document.createElement('div');
+        bodyElement.className = 'note-body';
+        bodyElement.contentEditable = true;
+        bodyElement.innerText = this.body;
+        bodyElement.style.height = `${this.height - 40}px`;
+        bodyElement.onblur = () => {
+            this.body = bodyElement.innerText;
+            app.saveState();
+        };
+
+        noteElement.appendChild(controls);
+        noteElement.appendChild(titleElement);
+        noteElement.appendChild(bodyElement);
+
+        titleElement.onmousedown = (e) => {
+            const currentTime = Date.now();
+            if (currentTime - this.lastInteractionTime > 200) {
+                this.startEditing('title');
+            }
+        };
+        bodyElement.onmousedown = (e) => {
+            const currentTime = Date.now();
+            if (currentTime - this.lastInteractionTime > 200) {
+                this.startEditing('body');
+            }
+        };
+        noteElement.onclick = (e) => this.handleNoteClick(e);
+
+        this.makeDraggable(noteElement, dragHandle);
+
+        return noteElement;
+    }
+
+    updateInteractionTime() {
+        this.lastInteractionTime = Date.now();
+    }
+
+    handleNoteClick(e) {
+        e.stopPropagation(); // Prevent creating a new note
+        const currentTime = Date.now();
+        if (currentTime - this.lastInteractionTime < 200) { // 200ms threshold
+            return; // Ignore the click if there was a recent interaction
+        }
+       if (!this.isEditing) {
+            this.startEditing();
+        }
+    }
+
+    startEditing(type) {
+        this.isEditing = true;
+        const noteElement = document.getElementById(`note-${this.id}`);
+        const element = noteElement.querySelector(type === 'title' ? '.note-title' : '.note-body');
+
+        element.contentEditable = true;
+        element.focus();
+
+        // Handle clicking outside to stop editing
+        const clickOutsideHandler = (event) => {
+            if (!noteElement.contains(event.target)) {
+                this.stopEditing(type);
+                document.removeEventListener('click', clickOutsideHandler);
+            }
+        };
+        setTimeout(() => {
+            document.addEventListener('click', clickOutsideHandler);
+        }, 0);
+    }
+
+    stopEditing(type) {
+        this.isEditing = false;
+        const noteElement = document.getElementById(`note-${this.id}`);
+        const element = noteElement ? noteElement.querySelector(type === 'title' ? '.note-title' : '.note-body') : null;
+        if (!element) return;
+
+        element.contentEditable = false;
+
+        if (type === 'title') {
+            this.title = element.innerText;
+        } else {
+            this.body = element.innerText;
+        }
+
+        // Remove the 'done editing' button
+        const doneButton = noteElement.querySelector('button');
+        if (doneButton) {
+            doneButton.remove();
+        }
+
+        app.saveState();
+    }
+
+    updateDOM() {
+        const element = document.getElementById(`note-${this.id}`);
+        if (element) {
+            element.style.backgroundColor = this.color;
+            element.style.borderRadius = this.shape === 'rounded' ? '5px' : '0';
+            element.style.borderWidth = this.emphasized ? '3px' : '1px';
+            element.style.width = `${this.width}px`;
+            element.style.height = `${this.height}px`;
+            element.querySelector('.note-body').style.height = `${this.height - 40}px`;
+        }
+        this.updateConnections(this.canvasRect);
+    }
+
+    makeDraggable(element, handle) {
+        let isDragging = false;
+        let startX, startY;
+        let originalX, originalY;
+
+        const onMouseMove = (e) => {
+            if (!isDragging) return;
+
+            const newX = e.clientX - startX;
+            const newY = e.clientY - startY;
+
+            this.x = newX;
+            this.y = newY;
+            element.style.left = `${this.x}px`;
+            element.style.top = `${this.y}px`;
+            
+            // Check for overlap with other notes
+            app.notes.forEach(note => {
+                if (note !== this) {
+                    const noteElement = document.getElementById(`note-${note.id}`);
+                    if (noteElement) {
+                        const rect = noteElement.getBoundingClientRect();
+                        if (e.clientX > rect.left && e.clientX < rect.right &&
+                            e.clientY > rect.top && e.clientY < rect.bottom) {
+                            note.highlight();
+                        } else {
+                            note.unhighlight();
+                        }
+                    }
+                }
+            });
+
+            // Update connections while dragging
+            this.updateConnections(app.canvasRect, false);
+            // Also update connections for connected notes
+            this.connections.forEach(conn => {
+                const otherNote = conn.startNote === this ? conn.endNote : conn.startNote;
+                otherNote.updateConnections(app.canvasRect, false);
+            });
+        };
+
+        const onMouseUp = (e) => {
+            if (!isDragging) return;
+            
+            isDragging = false;
+
+            // Check if dropped on another note
+            const droppedOnNote = app.notes.find(note => {
+                if (note !== this) {
+                    const noteElement = document.getElementById(`note-${note.id}`);
+                    if (noteElement) {
+                        const rect = noteElement.getBoundingClientRect();
+                        return e.clientX > rect.left && e.clientX < rect.right &&
+                            e.clientY > rect.top && e.clientY < rect.bottom;
+                    }
+                }
+                return false;
+            });
+
+            if (droppedOnNote) {
+                app.createConnection(this, droppedOnNote);
+                droppedOnNote.unhighlight();
+                
+                // Animate back to original position
+                element.style.transition = 'left 0.3s, top 0.3s';
+                element.style.left = `${originalX}px`;
+                element.style.top = `${originalY}px`;
+                
+                setTimeout(() => {
+                    element.style.transition = '';
+                    this.x = originalX;
+                    this.y = originalY;
+                    this.updateConnections(app.canvasRect, true);
+                    // Update connections for connected notes
+                    this.connections.forEach(conn => {
+                        const otherNote = conn.startNote === this ? conn.endNote : conn.startNote;
+                        otherNote.updateConnections(app.canvasRect, true);
+                    });
+                }, 300);
+            } else {
+                // Update position if not dropped on another note
+                this.x = parseInt(element.style.left);
+                this.y = parseInt(element.style.top);
+            }
+
+            // Unhighlight all notes
+            app.notes.forEach(note => note.unhighlight());
+
+            // Final update of connections
+            this.updateConnections(app.canvasRect, true);
+            // Update connections for connected notes
+            this.connections.forEach(conn => {
+                const otherNote = conn.startNote === this ? conn.endNote : conn.startNote;
+                otherNote.updateConnections(app.canvasRect, true);
+            });
+            app.saveState();
+
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        };
+
+        handle.onmousedown = (e) => {
+            if (this.isEditing) return;
+            isDragging = true;
+            startX = e.clientX - this.x;
+            startY = e.clientY - this.y;
+            originalX = this.x;
+            originalY = this.y;
+            e.preventDefault();
+
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        };
+    }
+
+    showMenu(event) {
+        event.stopPropagation();    
+        this.updateInteractionTime();
+        const menuElement = document.createElement('div');
+        menuElement.className = 'note-menu-popup';
+        menuElement.style.left = `${event.clientX}px`;
+        menuElement.style.top = `${event.clientY}px`;
+
+        // Color options
+        const colors = ['#ffffc0', '#c0ffc0', '#c0c0ff', '#ffc0c0', '#c0ffff'];
+        colors.forEach(color => {
+            const colorOption = document.createElement('span');
+            colorOption.className = 'color-option';
+            colorOption.style.backgroundColor = color;
+            colorOption.onclick = () => {
+                this.color = color;
+                this.updateDOM();
+                this.updateInteractionTime();
+                app.saveState();
+                menuElement.remove();
+            };
+            menuElement.appendChild(colorOption);
+        });
+
+        // Emphasis toggle
+        const emphasizeButton = document.createElement('button');
+        emphasizeButton.innerText = this.emphasized ? 'Remove Emphasis' : 'Emphasize';
+        emphasizeButton.onclick = () => {
+            this.emphasized = !this.emphasized;
+            this.updateDOM();
+            app.saveState();
+            menuElement.remove();
+        };
+        menuElement.appendChild(emphasizeButton);
+
+        // Shape toggle
+        const shapeButton = document.createElement('button');
+        shapeButton.innerText = this.shape === 'rounded' ? 'Square Corners' : 'Rounded Corners';
+        shapeButton.onclick = () => {
+            this.shape = this.shape === 'rounded' ? 'square' : 'rounded';
+            this.updateDOM();
+            app.saveState();
+            menuElement.remove();
+        };
+        menuElement.appendChild(shapeButton);
+
+        // Size control buttons
+        const sizeControlContainer = document.createElement('div');
+        sizeControlContainer.style.display = 'flex';
+        sizeControlContainer.style.justifyContent = 'space-between';
+        sizeControlContainer.style.marginTop = '10px';
+
+        const decreaseSizeButton = document.createElement('button');
+        decreaseSizeButton.innerText = '-';
+        decreaseSizeButton.onclick = () => {
+            this.width = Math.max(100, this.width - 20);
+            this.height = Math.max(100, this.height - 20);
+            this.updateDOM();
+            this.updateConnections(app.canvasRect);
+            app.saveState();
+        };
+
+        const resetSizeButton = document.createElement('button');
+            resetSizeButton.innerText = '=';
+            resetSizeButton.onclick = () => {
+                const zoomLevel = app.scale; // Use this.scale from QuickModelApp to get the current zoom level
+                this.width = 180 / zoomLevel;
+                this.height = 240 / zoomLevel;
+                this.updateDOM();
+                this.updateConnections(app.canvasRect);
+                app.saveState();
+            };
+        const increaseSizeButton = document.createElement('button');
+        increaseSizeButton.innerText = '+';
+        increaseSizeButton.onclick = () => {
+            this.width += 20;
+            this.height += 20;
+            this.updateDOM();
+            this.updateConnections(app.canvasRect);
+            app.saveState();
+        };
+
+        sizeControlContainer.appendChild(decreaseSizeButton);
+        sizeControlContainer.appendChild(resetSizeButton);
+        sizeControlContainer.appendChild(increaseSizeButton);
+        menuElement.appendChild(sizeControlContainer);
+
+        document.body.appendChild(menuElement);
+
+        // Close menu when clicking outside
+        document.onclick = (e) => {
+            if (!menuElement.contains(e.target)) {
+                menuElement.remove();
+                document.onclick = null;
+            }
+        };
+    }
+
+    delete() {
+        app.deleteNote(this.id);
+    }
+
+    updateConnections(canvasRect, animate = false) {
+        this.connections.forEach(conn => conn.update(canvasRect, animate));
+    }
+
+    //handle zooming
+
+    getDOMRect() {
+        const element = document.getElementById(`note-${this.id}`);
+        if (element) {
+            const rect = element.getBoundingClientRect();
+            return {
+                left: this.x,
+                top: this.y,
+                right: this.x + this.width,
+                bottom: this.y + this.height,
+                width: this.width,
+                height: this.height
+            };
+        }
+        return null;
+    }
+    getScale() {
+        const canvas = document.getElementById('canvas');
+        const transform = window.getComputedStyle(canvas).transform;
+        const matrix = new DOMMatrix(transform);
+        return matrix.a;
+    }
+
+    updatePosition(scale) {
+        const element = document.getElementById(`note-${this.id}`);
+        if (element) {
+            element.style.left = `${this.x}px`;
+            element.style.top = `${this.y}px`;
+            element.style.width = `${this.width}px`;
+            element.style.height = `${this.height}px`;
+        }
+        app.updateCanvasSize(); // Call this after updating the position
+    }
+    //highlighting for drag and drop
+
+    highlight() {
+        const element = document.getElementById(`note-${this.id}`);
+        if (element) {
+            element.classList.add('potential-connection');
+        }
+    }
+
+    unhighlight() {
+        const element = document.getElementById(`note-${this.id}`);
+        if (element) {
+            element.classList.remove('potential-connection');
+        }
+    }
+}
+
+// CONNECTION CLASS
+
+    class Connection {
+        constructor(startNote, endNote, type = 'line') {
+            this.startNote = startNote;
+            this.endNote = endNote;
+            this.type = type;
+            this.id = `connection-${startNote.id}-${endNote.id}`;
+            this.svgElement = null;
+        }
+
+        createDOM() {
+            if (!this.svgElement) {
+                this.svgElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                this.svgElement.classList.add('connection');
+                this.svgElement.id = this.id;
+                this.svgElement.style.position = 'absolute';
+                this.svgElement.style.pointerEvents = 'stroke'; 
+                this.svgElement.style.zIndex = '1';
+                
+                const lineElement = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                lineElement.classList.add('connection-line');
+                lineElement.setAttribute('stroke', 'black');
+                lineElement.setAttribute('stroke-width', '5');
+                lineElement.setAttribute('stroke-linecap', 'round');
+                lineElement.setAttribute('pointer-events', 'stroke');
+                this.svgElement.appendChild(lineElement);
+                
+                lineElement.onclick = (e) => {
+                    e.stopPropagation();
+                    this.showMenu(e);
+                };
+            }
+            this.update();
+            return this.svgElement;
+        }
+
+
+        update(canvasRect, animate = false) {
+            if (!this.svgElement || !canvasRect) return;
+
+            const startRect = this.startNote.getDOMRect();
+            const endRect = this.endNote.getDOMRect();
+
+            if (!startRect || !endRect) return;
+
+
+            const { x1, y1, x2, y2 } = this.calculateConnectionPoints(startRect, endRect);
+
+            const minX = Math.min(x1, x2);
+            const minY = Math.min(y1, y2);
+            const maxX = Math.max(x1, x2);
+            const maxY = Math.max(y1, y2);
+
+            this.svgElement.style.left = `${minX}px`;
+            this.svgElement.style.top = `${minY}px`;
+            this.svgElement.setAttribute('width', `${maxX - minX}px`);
+            this.svgElement.setAttribute('height', `${maxY - minY}px`);
+
+            const lineElement = this.svgElement.querySelector('line');
+            if (animate) {
+                lineElement.style.transition = 'x1 0.3s, y1 0.3s, x2 0.3s, y2 0.3s';
+            } else {
+                lineElement.style.transition = '';
+            }
+            lineElement.setAttribute('x1', x1 - minX);
+            lineElement.setAttribute('y1', y1 - minY);
+            lineElement.setAttribute('x2', x2 - minX);
+            lineElement.setAttribute('y2', y2 - minY);
+            lineElement.setAttribute('stroke-width', 5);
+            const scale = 1 / this.getScale(); 
+            lineElement.setAttribute('stroke-width', 5 * scale);
+
+            this.updateStyle(lineElement);
+        }
+
+        calculateConnectionPoints(startRect, endRect) {
+            const startCenter = {
+                x: startRect.left + startRect.width / 2,
+                y: startRect.top + startRect.height / 2
+            };
+            const endCenter = {
+                x: endRect.left + endRect.width / 2,
+                y: endRect.top + endRect.height / 2
+            };
+
+            const angle = Math.atan2(endCenter.y - startCenter.y, endCenter.x - startCenter.x);
+
+            let x1, y1, x2, y2;
+
+            if (Math.abs(Math.cos(angle)) > Math.abs(Math.sin(angle))) {
+                x1 = Math.cos(angle) > 0 ? startRect.right+10 : startRect.left; //start to the right
+                y1 = startCenter.y + Math.tan(angle) * (x1 - startCenter.x);
+                x2 = Math.cos(angle) > 0 ? endRect.left : endRect.right+10;
+                y2 = endCenter.y + Math.tan(angle) * (x2 - endCenter.x);
+            } else {
+                y1 = Math.sin(angle) > 0 ? startRect.bottom+10 : startRect.top;
+                x1 = startCenter.x + (y1 - startCenter.y) / Math.tan(angle);
+                y2 = Math.sin(angle) > 0 ? endRect.top : endRect.bottom+10;
+                x2 = endCenter.x + (y2 - endCenter.y) / Math.tan(angle);
+            }
+
+            return { x1, y1, x2, y2 };
+        }
+        getScale() {
+            return this.startNote.getScale();
+        }
+
+        getIntersectionPoint(start, end, rect) {
+            const dx = end.x - start.x;
+            const dy = end.y - start.y;
+
+            const left = { x: rect.left, y: start.y + dy * (rect.left - start.x) / dx };
+            const right = { x: rect.right, y: start.y + dy * (rect.right - start.x) / dx };
+            const top = { x: start.x + dx * (rect.top - start.y) / dy, y: rect.top };
+            const bottom = { x: start.x + dx * (rect.bottom - start.y) / dy, y: rect.bottom };
+
+            const intersections = [left, right, top, bottom].filter(point => 
+                point.x >= rect.left && point.x <= rect.right && point.y >= rect.top && point.y <= rect.bottom
+            );
+
+            // Find the intersection point closest to the end point
+            return intersections.reduce((closest, point) => {
+                const distToEnd = Math.hypot(end.x - point.x, end.y - point.y);
+                const closestDistToEnd = Math.hypot(end.x - closest.x, end.y - closest.y);
+                return distToEnd < closestDistToEnd ? point : closest;
+            });
+        }
+
+        updateStyle(lineElement) {
+            // Reset all attributes first
+            lineElement.setAttribute('marker-start', '');
+            lineElement.setAttribute('marker-end', '');
+            lineElement.setAttribute('stroke-dasharray', '');
+
+            switch (this.type) {
+                case 'arrow-start':
+                    lineElement.setAttribute('marker-start', 'url(#arrow-start)');
+                    break;
+                case 'arrow-end':
+                    lineElement.setAttribute('marker-end', 'url(#arrow)');
+                    break;
+                case 'arrow-both':
+                    lineElement.setAttribute('marker-start', 'url(#arrow-start)');
+                    lineElement.setAttribute('marker-end', 'url(#arrow)');
+                    break;
+                case 'crow-start':
+                    lineElement.setAttribute('marker-start', 'url(#crow-start)');
+                    break;
+                case 'crow-end':
+                    lineElement.setAttribute('marker-end', 'url(#crow)');
+                    break;
+                case 'crow-both':
+                    lineElement.setAttribute('marker-start', 'url(#crow-start)');
+                    lineElement.setAttribute('marker-end', 'url(#crow)');
+                    break;                
+                case 'dotted-arrow-start':
+                    lineElement.setAttribute('stroke-dasharray', '3,3');
+                    lineElement.setAttribute('marker-start', 'url(#arrow-start)');
+                    break;
+                case 'dotted-arrow-end':
+                    lineElement.setAttribute('stroke-dasharray', '3,3');
+                    lineElement.setAttribute('marker-end', 'url(#arrow)');
+                    break;
+                case 'dotted-arrow-both':
+                    lineElement.setAttribute('stroke-dasharray', '3,3');
+                    lineElement.setAttribute('marker-start', 'url(#arrow-start)');
+                    lineElement.setAttribute('marker-end', 'url(#arrow)');
+                    break;
+                case 'dotted-crow-start':
+                    lineElement.setAttribute('stroke-dasharray', '3,3');
+                    lineElement.setAttribute('marker-start', 'url(#crow-start)');
+                    break;
+                case 'dotted-crow-end':
+                    lineElement.setAttribute('stroke-dasharray', '3,3');
+                    lineElement.setAttribute('marker-end', 'url(#crow)');
+                    break;
+                case 'dotted-crow-both':
+                    lineElement.setAttribute('stroke-dasharray', '3,3');
+                    lineElement.setAttribute('marker-start', 'url(#crow-start)');
+                    lineElement.setAttribute('marker-end', 'url(#crow)');
+                    break;
+                case 'dotted':
+                    lineElement.setAttribute('stroke-dasharray', '3,3');
+                    break;
+                case 'dashed':
+                    lineElement.setAttribute('stroke-dasharray', '10,10');
+                    break;
+                case 'line':
+                default:
+                    // Do nothing, all attributes are already reset
+                    break;
+            }
+        }
+
+        showMenu(event) {
+            event.stopPropagation();
+            if (document.getElementsByClassName('connection-menu-popup').length > 0) {
+                Array.from(document.getElementsByClassName('connection-menu-popup')).forEach(menu => menu.remove());
+                return;
+            }
+            const menuElement = document.createElement('div');
+            menuElement.className = 'connection-menu-popup';
+            menuElement.style.position = 'absolute';
+            menuElement.style.left = `${event.clientX}px`;
+            menuElement.style.top = `${event.clientY}px`;
+            menuElement.style.backgroundColor = 'white';
+            menuElement.style.border = '1px solid black';
+            menuElement.style.padding = '5px';
+            menuElement.style.zIndex = '1000';
+
+            const options = [
+                { text: '──────────', value: 'line' },
+                { text: '<─────────', value: 'arrow-start' },
+                { text: '─────────>', value: 'arrow-end' },
+                { text: '<────────>', value: 'arrow-both' },
+                { text: '>─────────', value: 'crow-start' },
+                { text: '─────────<', value: 'crow-end' },
+                { text: '>────────<', value: 'crow-both' },
+                { text: '<∙∙∙∙∙∙∙∙∙', value: 'dotted-arrow-start' },
+                { text: '∙∙∙∙∙∙∙∙∙>', value: 'dotted-arrow-end' },
+                { text: '<∙∙∙∙∙∙∙∙∙>', value: 'dotted-arrow-both' },
+                { text: '>∙∙∙∙∙∙∙∙∙', value: 'dotted-crow-start' },
+                { text: '∙∙∙∙∙∙∙∙∙<', value: 'dotted-crow-end' },
+                { text: '>∙∙∙∙∙∙∙∙∙<', value: 'dotted-crow-both' },
+                { text: '∙∙∙∙∙∙∙∙∙∙', value: 'dotted' },
+                { text: '- - - - - - - - -', value: 'dashed' },
+                { text: 'Delete Connection', value: 'delete' }
+            ];
+
+            const select = document.createElement('select');
+            options.forEach(option => {
+                const optionElement = document.createElement('option');
+                optionElement.textContent = option.text;
+                optionElement.value = option.value;
+                select.appendChild(optionElement);
+            });
+
+            select.value = this.type;
+
+            select.onchange = () => {
+                if (select.value === 'delete') {
+                    this.delete();
+                } else {
+                    this.type = select.value;
+                    this.update();
+                    app.saveState();
+                    app.renderModel();
+                }
+                menuElement.remove();
+            };
+
+            menuElement.appendChild(select);
+            document.body.appendChild(menuElement);
+
+            // Close menu when clicking outside
+            document.onclick = (e) => {
+                if (!menuElement.contains(e.target)) {
+                    menuElement.remove();
+                    document.onclick = null;
+                }
+            };
+        }
+
+        delete() {
+            const svgElement = document.getElementById(this.id);
+            if (svgElement) {
+                svgElement.remove();
+            }
+            this.startNote.connections = this.startNote.connections.filter(conn => conn !== this);
+            this.endNote.connections = this.endNote.connections.filter(conn => conn !== this);
+            app.connections = app.connections.filter(conn => conn !== this);
+            app.saveState();
+        }
+    }
+
+//graphic element class
+
+        class GraphicElement {
+            constructor(id, x, y, width = 100, height = 100, label = 'New Element', color = 'transparent', borderStyle = 'solid', borderColor = 'black', emphasized = false, zIndex = 0, textPosition = 'middle') {
+                this.id = id;
+                this.x = x;
+                this.y = y;
+                this.width = width;
+                this.height = height;
+                this.label = label;
+                this.color = color;
+                this.borderStyle = borderStyle;
+                this.borderColor = borderColor;
+                this.emphasized = emphasized;
+                this.zIndex = zIndex;
+                this.textPosition = textPosition || 'middle';
+            }
+
+            createDOM() {
+                const element = document.createElement('div');
+                element.className = 'graphic-element';
+                element.id = `graphic-${this.id}`;
+                element.style.position = 'absolute';
+                element.style.left = `${this.x}px`;
+                element.style.top = `${this.y}px`;
+                element.style.width = `${this.width}px`;
+                element.style.height = `${this.height}px`;
+                element.style.backgroundColor = this.color;
+                element.style.border = this.emphasized ? '3px' : '1px';
+                element.style.borderStyle = this.borderStyle;
+                element.style.borderColor = this.borderColor;
+                element.style.zIndex = this.zIndex;
+
+                const label = document.createElement('div');
+                    label.className = 'graphic-label';
+                    label.contentEditable = true;
+                    label.innerHTML = this.label;
+                    label.style.position = 'absolute';
+                    label.style.left = '50%';
+                    label.style.transform = 'translateX(-50%)';
+                    
+                    // Set vertical position based on textPosition
+                    switch (this.textPosition) {
+                        case 'top':
+                            label.style.top = '10px';
+                            label.style.transform = 'translateX(-50%)';
+                            break;
+                        case 'bottom':
+                            label.style.bottom = '10px';
+                            label.style.transform = 'translateX(-50%)';
+                            break;
+                        case 'middle':
+                        default:
+                            label.style.top = '50%';
+                            label.style.transform = 'translate(-50%, -50%)';
+                            break;
+                    }
+
+                    label.style.textAlign = 'center';
+
+                label.addEventListener('blur', () => {
+                    this.label = label.innerText;
+                    app.saveState();
+                });
+
+                element.appendChild(label);
+                const controls = document.createElement('div');
+                controls.className = 'graphic-controls';
+                controls.style.position = 'absolute';
+                controls.style.top = '2px';
+                controls.style.right = '2px';
+                controls.style.display = 'none'; // Initially hidden
+
+                element.addEventListener('mouseover', () => {
+                    controls.style.display = 'block';
+                    const resizers = element.getElementsByClassName('resizer');
+                    for (let i = 0; i < resizers.length; i++) {
+                        resizers[i].style.display = 'block';
+                    }
+ 
+                });
+
+                element.addEventListener('mouseout', () => {
+                    controls.style.display = 'none';
+                    const resizers = element.getElementsByClassName('resizer');
+                    for (let i = 0; i < resizers.length; i++) {
+                        resizers[i].style.display = 'none';
+                    }                  
+                });
+
+                const menuButton = document.createElement('span');
+                menuButton.className = 'graphic-menu';
+                menuButton.innerHTML = '☰';
+                menuButton.onclick = (e) => {
+                    e.stopPropagation();
+                    this.showMenu(e);
+                };
+
+                const deleteButton = document.createElement('span');
+                deleteButton.className = 'graphic-delete';
+                deleteButton.innerHTML = '✕';
+                deleteButton.onclick = (e) => {
+                    e.stopPropagation();
+                    app.deleteGraphicElement(this.id);
+                };
+
+                controls.appendChild(menuButton);
+                controls.appendChild(deleteButton);
+                element.appendChild(controls);
+
+                this.makeDraggable(element);
+                this.makeResizable(element);
+
+                return element;
+            }
+
+            makeDraggable(element) {
+                let isDragging = false;
+                let startX, startY;
+
+                element.onmousedown = (e) => {
+                    if (e.target.className === 'graphic-label' || e.target.closest('.graphic-controls')) return;
+                    isDragging = true;
+                    startX = e.clientX - this.x;
+                    startY = e.clientY - this.y;
+                    e.preventDefault();
+                };
+
+                document.addEventListener('mousemove', (e) => {
+                    if (!isDragging) return;
+                    this.x = e.clientX - startX;
+                    this.y = e.clientY - startY;
+                    element.style.left = `${this.x}px`;
+                    element.style.top = `${this.y}px`;
+                });
+
+                document.addEventListener('mouseup', () => {
+                    if (isDragging) {
+                        isDragging = false;
+                        app.saveState();
+                    }
+                });
+            }
+
+            makeResizable(element) {
+                const resizer = document.createElement('div');
+                resizer.className = 'resizer';
+                resizer.style.width = '10px';
+                resizer.style.height = '10px';
+                resizer.style.background = 'blue';
+                resizer.style.position = 'absolute';
+                resizer.style.right = '0';
+                resizer.style.bottom = '0';
+                resizer.style.cursor = 'se-resize';
+
+                element.appendChild(resizer);
+
+                let isResizing = false;
+                let originalWidth, originalHeight, originalX, originalY;
+
+                resizer.onmousedown = (e) => {
+                    isResizing = true;
+                    originalWidth = this.width;
+                    originalHeight = this.height;
+                    originalX = e.clientX;
+                    originalY = e.clientY;
+                    e.stopPropagation();
+                };
+
+                document.addEventListener('mousemove', (e) => {
+                    if (!isResizing) return;
+                    const dx = e.clientX - originalX;
+                    const dy = e.clientY - originalY;
+                    this.width = Math.max(20, originalWidth + dx);
+                    this.height = Math.max(20, originalHeight + dy);
+                    element.style.width = `${this.width}px`;
+                    element.style.height = `${this.height}px`;
+                });
+
+                document.addEventListener('mouseup', () => {
+                    if (isResizing) {
+                        isResizing = false;
+                        this.updateDOM();
+                        app.saveState();
+                    }
+                });
+            }
+
+            showMenu(event) {
+                const menuElement = document.createElement('div');
+                menuElement.className = 'graphic-menu-popup';
+                menuElement.style.position = 'absolute';
+                menuElement.style.left = `${event.clientX}px`;
+                menuElement.style.top = `${event.clientY}px`;
+                menuElement.style.backgroundColor = 'white';
+                menuElement.style.border = '1px solid black';
+                menuElement.style.padding = '5px';
+                menuElement.style.zIndex = '1000';
+
+                const colors = ['transparent', 'white', '#ffffc0', '#c0ffc0', '#c0c0ff', '#ffc0c0', '#c0ffff', '#ffc0ff'];
+                colors.forEach(color => {
+                    const colorOption = document.createElement('span');
+                    colorOption.className = 'color-option';
+                    colorOption.style.backgroundColor = color;
+                    colorOption.style.width = '20px';
+                    colorOption.style.height = '20px';
+                    colorOption.style.display = 'inline-block';
+                    colorOption.style.margin = '2px';
+                    colorOption.style.border = '1px solid black';
+                    colorOption.onclick = () => {
+                        this.color = color;
+                        this.updateDOM();
+                        app.saveState();
+                        menuElement.remove();
+                    };
+                    menuElement.appendChild(colorOption);
+                });
+
+                const borderStyles = ['solid', 'dotted', 'none'];
+                const borderSelect = document.createElement('select');
+                borderStyles.forEach(style => {
+                    const option = document.createElement('option');
+                    option.value = style;
+                    option.text = style.charAt(0).toUpperCase() + style.slice(1);
+                    borderSelect.appendChild(option);
+                });
+                borderSelect.value = this.borderStyle;
+                borderSelect.onchange = () => {
+                    this.borderStyle = borderSelect.value;
+                    this.updateDOM();
+                    app.saveState();
+                };
+                menuElement.appendChild(borderSelect);
+
+                const emphasisCheckbox = document.createElement('input');
+                emphasisCheckbox.type = 'checkbox';
+                emphasisCheckbox.checked = this.emphasized;
+                emphasisCheckbox.onchange = () => {
+                    this.emphasized = emphasisCheckbox.checked;
+                    this.updateDOM();
+                    app.saveState();
+                };
+                menuElement.appendChild(emphasisCheckbox);
+                menuElement.appendChild(document.createTextNode('Emphasize'));
+
+                const textPositionContainer = document.createElement('div');
+                    textPositionContainer.style.marginTop = '5px';
+                    textPositionContainer.style.marginBottom = '5px';
+                    
+                    const textPositionLabel = document.createElement('span');
+                    textPositionLabel.textContent = 'Text Position: ';
+                    textPositionContainer.appendChild(textPositionLabel);
+
+                    const positions = ['top', 'middle', 'bottom'];
+                    const textPositionSelect = document.createElement('select');
+                    positions.forEach(position => {
+                        const option = document.createElement('option');
+                        option.value = position;
+                        option.text = position.charAt(0).toUpperCase() + position.slice(1);
+                        textPositionSelect.appendChild(option);
+                    });
+                    textPositionSelect.value = this.textPosition;
+                    textPositionSelect.onchange = () => {
+                        this.textPosition = textPositionSelect.value;
+                        this.updateDOM();
+                        app.saveState();
+                    };
+                    textPositionContainer.appendChild(textPositionSelect);
+                menuElement.appendChild(textPositionContainer);    
+
+                const bringToFrontButton = document.createElement('button');
+                bringToFrontButton.textContent = 'Bring to Front';
+                bringToFrontButton.onclick = () => {
+                    app.bringGraphicElementToFront(this.id);
+                    menuElement.remove();
+                };
+                menuElement.appendChild(bringToFrontButton);
+
+                const sendToBackButton = document.createElement('button');
+                sendToBackButton.textContent = 'Send to Back';
+                sendToBackButton.onclick = () => {
+                    app.sendGraphicElementToBack(this.id);
+                    menuElement.remove();
+                };
+                menuElement.appendChild(sendToBackButton);
+
+                document.body.appendChild(menuElement);
+
+                document.onclick = (e) => {
+                    if (!menuElement.contains(e.target)) {
+                        menuElement.remove();
+                        document.onclick = null;
+                    }
+                };
+            }
+
+            updateDOM() {
+                const element = document.getElementById(`graphic-${this.id}`);
+                if (element) {
+                    element.style.left = `${this.x}px`;
+                    element.style.top = `${this.y}px`;
+                    element.style.width = `${this.width}px`;
+                    element.style.height = `${this.height}px`;
+                    element.style.backgroundColor = this.color;
+                    element.style.borderStyle = this.borderStyle;
+                    element.style.borderWidth = this.emphasized ? '3px' : '1px';
+                    element.style.zIndex = this.zIndex;
+                    const label = element.querySelector('.graphic-label');
+                    if (label) {
+                        switch (this.textPosition) {
+                            case 'top':
+                                label.style.top = '10px';
+                                label.style.bottom = 'auto';
+                                label.style.transform = 'translateX(-50%)';
+                                break;
+                            case 'bottom':
+                                label.style.top = 'auto';
+                                label.style.bottom = '10px';
+                                label.style.transform = 'translateX(-50%)';
+                                break;
+                            case 'middle':
+                            default:
+                                label.style.top = '50%';
+                                label.style.bottom = 'auto';
+                                label.style.transform = 'translate(-50%, -50%)';
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+
+//QUICKMODELAPP CLASS
+        class QuickmodelApp {
+            constructor() {
+                this.notes = [];
+                this.connections = [];
+                this.nextNoteId = 1;
+                this.graphicElements = [];
+                this.nextGraphicId = 1;
+                this.scale = 1;
+                this.minCanvasWidth = window.innerWidth;
+                this.minCanvasHeight = window.innerHeight - 50; // Adjust for menu bar
+                this.canvas = document.getElementById('canvas');
+                this.canvasRect = this.canvas.getBoundingClientRect();
+                this.baseZIndex = -1000; // Starting z-index for graphic elements
+                this.noteZIndex = 1000; // z-index for notes
+                this.connectionZIndex = 1500; // z-index for connections
+                this.initEventListeners();
+                this.loadState();
+            }
+
+            initEventListeners() {
+                window.addEventListener('resize', () => {
+                    this.canvasRect = this.canvas.getBoundingClientRect();
+                    this.updateAllConnections();
+                });
+
+                this.canvas.ondblclick = (e) => this.handleCanvasDoubleClick(e);
+                this.canvas.onclick = (e) => this.handleCanvasClick(e);
+
+                // Add other event listeners here...
+            // Listen for messages from the main app
+                window.addEventListener("message", (event) => {
+                    if (event.data.type === "loadCourseData") {
+                        const courseData = event.data.data;
+                        // Load the course notes data into quickmap
+                        this.loadCourseNotes(courseData.courseNotes);
+                    }
+                    });
+
+                    // Call saveCourseNotes when the user saves the notes
+                document.getElementById("saveNotesBtn").addEventListener("click", () => {
+                    this.saveCourseNotes();
+                    });
+                const buttonActions = {
+                    'new-model': () => this.newModel(),
+                    'export-svg': () => this.exportSVG(),
+                    'zoom-in': () => this.zoom(1.1),
+                    'zoom-out': () => this.zoom(0.9),
+                    'save-model': () => this.saveModelToFile(),
+                    'load-model': () => this.loadModelFromFile()
+                };
+
+                Object.entries(buttonActions).forEach(([id, action]) => {
+                    const button = document.getElementById(id);
+                    if (button) {
+                        button.addEventListener('click', () => {
+                            console.log(`${id} clicked`);
+                            action();
+                        });
+                        console.log(`Event listener attached to '${id}'`);
+                    } else {
+                        console.error(`Button '${id}' not found when attaching event listener`);
+                    }
+                });
+            }
+
+            // Method to load course notes data into quickmap
+            loadCourseNotes(courseNotes) {
+                if (!courseNotes) return;
+
+                // Clear existing notes and connections
+                this.notes = [];
+                this.connections = [];
+                this.canvas.innerHTML = '';
+
+                // Load notes
+                courseNotes.notes.forEach(noteData => {
+                const note = new Note(
+                    noteData.id,
+                    noteData.x,
+                    noteData.y,
+                    noteData.title,
+                    noteData.body,
+                    noteData.width,
+                    noteData.height,
+                    noteData.color,
+                    noteData.emphasized,
+                    noteData.shape
+                );
+                this.notes.push(note);
+                });
+
+                // Load connections
+                courseNotes.connections.forEach(connData => {
+                const startNote = this.getNote(connData.startNoteId);
+                const endNote = this.getNote(connData.endNoteId);
+                if (startNote && endNote) {
+                    const connection = new Connection(startNote, endNote, connData.type);
+                    this.connections.push(connection);
+                    startNote.connections.push(connection);
+                    endNote.connections.push(connection);
+                }
+                });
+
+                // Set the next note ID
+                this.nextNoteId = courseNotes.nextNoteId;
+
+                // Set the scale
+                this.scale = courseNotes.scale || 1;
+                this.canvas.style.transform = `scale(${this.scale})`;
+
+                // Redraw the model
+                this.renderModel();
+                this.saveState();
+            }
+
+            // Method to save course notes data
+            saveCourseNotes() {
+                const courseNotes = {
+                notes: this.notes,
+                connections: this.connections,
+                nextNoteId: this.nextNoteId,
+                scale: this.scale
+                };
+                window.opener.postMessage({ type: "saveCourseNotes", data: courseNotes }, "*");
+            }
+
+            // Method to get course notes data from quickmap
+            getCourseNotesData() {
+                // Return the course notes data
+                return {};
+            }
+
+            updateAllConnections(animate = false) {
+                this.connections.forEach(connection => connection.update(this.canvasRect, animate));
+            }
+
+            handleCanvasDoubleClick(e) {
+                console.log('Canvas double-clicked');
+                const clickedNote = e.target.closest('.note');
+                const clickedConnection = e.target.closest('.connection');
+                const clickedGraphic = e.target.closest('.graphic-element');
+                
+                if (!clickedNote && !clickedConnection && !clickedGraphic) {
+                    const x = (e.clientX - this.canvasRect.left) / this.scale;
+                    const y = (e.clientY - this.canvasRect.top) / this.scale;
+                    if (e.altKey) {
+                        this.createGraphicElement(x, y);
+                    } else {
+                        this.createNote(x, y);
+                    }
+                }
+            }
+
+
+
+            handleCanvasClick(e) {
+                // Check if the click was on a connection
+                console.log('Canvas clicked');
+                const clickedConnection = e.target.closest('.connection');
+                if (clickedConnection) {
+                    // If clicked on a connection, do nothing (the connection's own click handler will handle it)
+                    return;
+                }
+
+                // Check if the click was on an existing note
+                const clickedNote = e.target.closest('.note');
+                if (clickedNote) {
+                    // If clicked on a note, do nothing (the note's own click handler will handle it)
+                    return;
+                }
+
+                // If not on a connection or existing note, we do nothing
+                // (Note creation is now handled by double-click)
+            }
+
+            updateCanvasSize() {
+                const maxX = Math.max(...this.notes.map(note => note.x + note.width));
+                const maxY = Math.max(...this.notes.map(note => note.y + note.height));
+                
+                const newWidth = Math.max(this.minCanvasWidth / this.scale, maxX + 100); // Add some padding
+                const newHeight = Math.max(this.minCanvasHeight / this.scale, maxY + 100); // Add some padding
+                
+                this.canvas.style.width = `${newWidth}px`;
+                this.canvas.style.height = `${newHeight}px`;
+                
+                this.initialCanvasWidth = Math.max(this.initialCanvasWidth, newWidth * this.scale);
+                this.initialCanvasHeight = Math.max(this.initialCanvasHeight, newHeight * this.scale);
+            }
+
+            createNote(x, y) {
+                const note = new Note(
+                    this.nextNoteId++, 
+                    x * this.scale, 
+                    y * this.scale, 
+                    '', 
+                    '', 
+                    180 / this.scale, // Adjust default width for current scale
+                    240 / this.scale, // Adjust default height for current scale
+                    '#ffffc0', 
+                    false, 
+                    'rounded'
+                );
+                this.notes.push(note);
+                const noteElement = note.createDOM();
+                noteElement.style.fontSize = `${14 / this.scale}px`;
+                this.canvas.appendChild(noteElement);
+                this.saveState();
+                this.updateCanvasSize();
+            }
+
+            deleteNote(id) {
+                const noteIndex = this.notes.findIndex(note => note.id === id);
+                if (noteIndex !== -1) {
+                    const note = this.notes[noteIndex];
+                    this.notes.splice(noteIndex, 1);
+                    this.connections = this.connections.filter(conn => 
+                        conn.startNote !== note && conn.endNote !== note);
+                    document.getElementById(`note-${id}`).remove();
+                    this.saveState();
+                }
+            }
+
+            getNote(id) {
+                return this.notes.find(note => note.id === id);
+            }
+            
+            createConnection(startNote, endNote) {
+                const existingConnection = this.connections.find(conn => 
+                    (conn.startNote === startNote && conn.endNote === endNote) ||
+                    (conn.startNote === endNote && conn.endNote === startNote)
+                );
+
+                if (existingConnection) {
+                    console.log('Connection already exists', startNote.id, endNote.id);
+                    return;
+                }
+
+                console.log('Creating new connection', startNote.id, endNote.id);
+                const connection = new Connection(startNote, endNote);
+                this.connections.push(connection);
+                startNote.connections.push(connection);
+                endNote.connections.push(connection);
+                const svgElement = connection.createDOM(this.canvasRect);
+                this.canvas.appendChild(svgElement);
+                //connection.update(this.canvasRect);
+
+                    // Add visual feedback
+                const endNoteElement = document.getElementById(`note-${endNote.id}`);
+                if (endNoteElement) {
+                    endNoteElement.classList.add('connected');
+                    setTimeout(() => {
+                        endNoteElement.classList.remove('connected');
+                    }, 500);
+                }
+                this.saveState();
+            }
+        
+            createGraphicElement(x, y) {
+                const graphicElement = new GraphicElement(this.nextGraphicId++, x, y);
+                this.graphicElements.push(graphicElement);
+                const geElement = graphicElement.createDOM();
+                geElement.style.fontSize = `${14 / this.scale}px`;
+                this.canvas.appendChild(geElement);
+                this.saveState();
+                this.updateCanvasSize();
+            }
+
+            bringGraphicElementToFront(id) {
+                const graphicElement = this.graphicElements.find(ge => ge.id === id);
+                if (graphicElement) {
+                    const maxZIndex = Math.max(...this.graphicElements.map(ge => ge.zIndex));
+                    graphicElement.zIndex = Math.max(maxZIndex + 1, this.baseZIndex);
+                    graphicElement.updateDOM();
+                    this.saveState();
+                }
+            }
+
+            sendGraphicElementToBack(id) {
+                const graphicElement = this.graphicElements.find(ge => ge.id === id);
+                if (graphicElement) {
+                    const minZIndex = Math.min(...this.graphicElements.map(ge => ge.zIndex));
+                    graphicElement.zIndex = Math.min(minZIndex - 1, this.baseZIndex);
+                    graphicElement.updateDOM();
+                    this.saveState();
+                }
+            }
+
+            deleteGraphicElement(id) {
+                const index = this.graphicElements.findIndex(ge => ge.id === id);
+                if (index !== -1) {
+                    this.graphicElements.splice(index, 1);
+                    const element = document.getElementById(`graphic-${id}`);
+                    if (element) {
+                        element.remove();
+                    }
+                    this.saveState();
+                }
+            }
+
+            getTopZIndex() {
+                return Math.max(
+                    ...this.notes.map(note => note.zIndex),
+                    ...this.graphicElements.map(ge => ge.zIndex),
+                    0
+                );
+            }
+
+            getBottomZIndex() {
+                return Math.min(
+                    ...this.notes.map(note => note.zIndex),
+                    ...this.graphicElements.map(ge => ge.zIndex),
+                    0
+                );
+            }
+
+
+            saveModelToFile() {
+                const data = {
+                    notes: this.notes.map(note => ({
+                        id: note.id,
+                        x: note.x,
+                        y: note.y,
+                        width: note.width,
+                        height: note.height,
+                        title: note.title,
+                        body: note.body,
+                        color: note.color,
+                        emphasized: note.emphasized,
+                        shape: note.shape
+                    })),
+                    connections: this.connections.map(conn => ({
+                        startNoteId: conn.startNote.id,
+                        endNoteId: conn.endNote.id,
+                        type: conn.type
+                    })),
+                    nextNoteId: this.nextNoteId
+                };
+
+                const jsonString = JSON.stringify(data, null, 2);
+                const blob = new Blob([jsonString], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+
+                const downloadLink = document.createElement('a');
+                downloadLink.href = url;
+                downloadLink.download = 'quickmodel_save.json';
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+                URL.revokeObjectURL(url);
+            }
+
+            loadModelFromFile() {
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.accept = '.json';
+
+                fileInput.onchange = (event) => {
+                    const file = event.target.files[0];
+                    const reader = new FileReader();
+
+                    reader.onload = (e) => {
+                        try {
+                            const data = JSON.parse(e.target.result);
+                            this.loadModelFromData(data);
+                        } catch (error) {
+                            console.error('Error parsing JSON:', error);
+                            alert('Error loading file. Please make sure it\'s a valid QuickModel save file.');
+                        }
+                    };
+
+                    reader.readAsText(file);
+                };
+
+                fileInput.click();
+            }
+
+            loadModelFromData(data) {
+                // Clear existing notes and connections
+                this.notes = [];
+                this.connections = [];
+
+                // Recreate notes
+                data.notes.forEach(noteData => {
+                    const note = new Note(
+                        noteData.id,
+                        noteData.x,
+                        noteData.y,
+                        noteData.title,
+                        noteData.body,
+                        noteData.width,
+                        noteData.height,
+                        noteData.color,
+                        noteData.emphasized,
+                        noteData.shape
+                    );
+                    this.notes.push(note);
+                });
+
+                // Recreate connections
+                data.connections.forEach(connData => {
+                    const startNote = this.getNote(connData.startNoteId);
+                    const endNote = this.getNote(connData.endNoteId);
+                    if (startNote && endNote) {
+                        const connection = new Connection(startNote, endNote, connData.type);
+                        this.connections.push(connection);
+                        startNote.connections.push(connection);
+                        endNote.connections.push(connection);
+                    }
+                });
+
+                // Set the next note ID
+                this.nextNoteId = data.nextNoteId;
+      
+                // Set the scale
+                this.scale = data.scale || 1;
+                    this.canvas.style.transform = `scale(${this.scale})`;
+
+
+                // Redraw the model
+                this.renderModel();
+                this.saveState();
+            }
+
+            newModel() {
+                if (confirm('Are you sure you want to create a new model? This will delete the current model.')) {
+                    this.notes = [];
+                    this.connections = [];
+                    this.graphicElements
+                    this.nextNoteId = 1;
+                    this.canvas.innerHTML = '';
+                    this.saveState();
+                }
+            }
+
+            saveModel() {
+                const data = JSON.stringify({
+                    notes: this.notes,
+                    connections: this.connections,
+                    graphicElements: this.graphicElements,
+                    nextGraphicId: this.nextGraphicId,
+                    nextNoteId: this.nextNoteId
+                });
+                const blob = new Blob([data], {type: 'application/json'});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'quickmodel.json';
+                a.click();
+            }
+
+            loadModel() {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.onchange = (e) => {
+                    const file = e.target.files[0];
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        const data = JSON.parse(event.target.result);
+                        this.notes = data.notes.map(n => Object.assign(new Note(), n));
+                        this.connections = data.connections.map(c => {
+                            const startNote = this.notes.find(n => n.id === c.startNote.id);
+                            const endNote = this.notes.find(n => n.id === c.endNote.id);
+                            return new Connection(startNote, endNote);
+                        });
+                        this.nextNoteId = data.nextNoteId;
+                        this.renderModel();
+                        this.saveState();
+                    };
+                    reader.readAsText(file);
+                };
+                input.click();
+            }
+
+            exportOPML() {
+                // Implement OPML export
+            }
+
+            exportSVG() {
+                 // Calculate the bounding box of all notes
+                const bounds = this.notes.reduce((acc, note) => {
+                    acc.minX = Math.min(acc.minX, note.x);
+                    acc.minY = Math.min(acc.minY, note.y);
+                    acc.maxX = Math.max(acc.maxX, note.x + note.width);
+                    acc.maxY = Math.max(acc.maxY, note.y + note.height);
+                    return acc;
+                }, { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity });
+
+                const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                svg.setAttribute('width', bounds.maxX - bounds.minX);
+                svg.setAttribute('height', bounds.maxY - bounds.minY);
+                svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+                svg.setAttribute('viewBox', `${bounds.minX} ${bounds.minY} ${bounds.maxX - bounds.minX} ${bounds.maxY - bounds.minY}`);
+
+                // Add a white background
+                const background = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                background.setAttribute('x', bounds.minX);
+                background.setAttribute('y', bounds.minY);
+                background.setAttribute('width', bounds.maxX - bounds.minX);
+                background.setAttribute('height', bounds.maxY - bounds.minY);
+                background.setAttribute('fill', 'white');
+                svg.appendChild(background);
+
+                // Add notes to the SVG
+                this.notes.forEach(note => {
+                    const noteGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                    
+                    const noteRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                    noteRect.setAttribute('x', note.x);
+                    noteRect.setAttribute('y', note.y);
+                    noteRect.setAttribute('width', note.width);
+                    noteRect.setAttribute('height', note.height);
+                    noteRect.setAttribute('fill', note.color);
+                    noteRect.setAttribute('stroke', 'black');
+                    noteRect.setAttribute('stroke-width', note.emphasized ? '3' : '1');
+                    noteRect.setAttribute('rx', note.shape === 'rounded' ? '5' : '0');
+                    noteRect.setAttribute('ry', note.shape === 'rounded' ? '5' : '0');
+                    
+                    const titleText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    titleText.setAttribute('x', parseInt(note.x) + 5);
+                    titleText.setAttribute('y', parseInt(note.y) + 20);
+                    titleText.setAttribute('font-weight', 'bold');
+                    titleText.textContent = note.title;
+                    
+                    const bodyText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    bodyText.setAttribute('x', parseInt(note.x) + 5);
+                    bodyText.setAttribute('y', parseInt(note.y) + 40);
+                    bodyText.textContent = note.body;
+                    
+                    noteGroup.appendChild(noteRect);
+                    noteGroup.appendChild(titleText);
+                    noteGroup.appendChild(bodyText);
+                    svg.appendChild(noteGroup);
+                });
+
+                // Add connections to the SVG
+                this.connections.forEach(conn => {
+                    const startNote = this.getNote(conn.startNote.id);
+                    const endNote = this.getNote(conn.endNote.id);
+
+                    if (startNote && endNote) {
+                        const { x1, y1, x2, y2 } = this.calculateConnectionPoints(startNote, endNote);
+
+                        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                        line.setAttribute('x1', x1);
+                        line.setAttribute('y1', y1);
+                        line.setAttribute('x2', x2);
+                        line.setAttribute('y2', y2);
+                        line.setAttribute('stroke', 'black');
+                        line.setAttribute('stroke-width', '2');
+
+                        // Apply connection style
+                        switch (conn.type) {
+                            case 'dotted':
+                                line.setAttribute('stroke-dasharray', '3,3');
+                                break;
+                            case 'dashed':
+                                line.setAttribute('stroke-dasharray', '10,10');
+                                break;
+                            case 'arrow-start':
+                            case 'arrow-end':
+                            case 'arrow-both':
+                            case 'crow-start':
+                            case 'crow-end':
+                            case 'crow-both':
+                                // Add markers for arrows and crow's feet
+                                this.addMarkers(svg, line, conn.type, x1, y1, x2, y2);
+                                break;
+                        }
+
+                        svg.appendChild(line);
+                    }
+                });
+
+                // Convert SVG to a string
+                const serializer = new XMLSerializer();
+                let source = serializer.serializeToString(svg);
+
+                // Add XML declaration
+                source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
+
+                // Convert the XML string to a Blob
+                const svgBlob = new Blob([source], {type: 'image/svg+xml;charset=utf-8'});
+                const svgUrl = URL.createObjectURL(svgBlob);
+
+                // Create a link and trigger the download
+                const downloadLink = document.createElement('a');
+                downloadLink.href = svgUrl;
+                downloadLink.download = 'quickmodel_export.svg';
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+            }
+            calculateConnectionPoints(startNote, endNote) {
+                const startCenter = {
+                    x: startNote.x + startNote.width / 2,
+                    y: startNote.y + startNote.height / 2
+                };
+                const endCenter = {
+                    x: endNote.x + endNote.width / 2,
+                    y: endNote.y + endNote.height / 2
+                };
+
+                // Calculate the angle between the centers
+                const angle = Math.atan2(endCenter.y - startCenter.y, endCenter.x - startCenter.x);
+
+                // Calculate the points where the line intersects the note rectangles
+                const x1 = startCenter.x + Math.cos(angle) * (startNote.width / 2);
+                const y1 = startCenter.y + Math.sin(angle) * (startNote.height / 2);
+                const x2 = endCenter.x - Math.cos(angle) * (endNote.width / 2);
+                const y2 = endCenter.y - Math.sin(angle) * (endNote.height / 2);
+
+                return { x1, y1, x2, y2 };
+            }
+            addMarkers(svg, line, type, startX, startY, endX, endY) {
+                const defs = svg.querySelector('defs') || svg.insertBefore(document.createElementNS('http://www.w3.org/2000/svg', 'defs'), svg.firstChild);
+                
+                const arrowMarker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+                arrowMarker.setAttribute('id', 'arrow');
+                arrowMarker.setAttribute('viewBox', '0 0 10 10');
+                arrowMarker.setAttribute('refX', '5');
+                arrowMarker.setAttribute('refY', '5');
+                arrowMarker.setAttribute('markerWidth', '6');
+                arrowMarker.setAttribute('markerHeight', '6');
+                arrowMarker.setAttribute('orient', 'auto-start-reverse');
+                
+                const arrowPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                arrowPath.setAttribute('d', 'M 0 0 L 10 5 L 0 10 z');
+                arrowMarker.appendChild(arrowPath);
+                
+                defs.appendChild(arrowMarker);
+                
+                const crowMarker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+                crowMarker.setAttribute('id', 'crow');
+                crowMarker.setAttribute('viewBox', '0 0 10 10');
+                crowMarker.setAttribute('refX', '5');
+                crowMarker.setAttribute('refY', '5');
+                crowMarker.setAttribute('markerWidth', '6');
+                crowMarker.setAttribute('markerHeight', '6');
+                crowMarker.setAttribute('orient', 'auto-start-reverse');
+                
+                const crowPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                crowPath.setAttribute('d', 'M 0 0 L 10 5 L 0 10');
+                crowPath.setAttribute('fill', 'none');
+                crowPath.setAttribute('stroke', 'black');
+                crowMarker.appendChild(crowPath);
+                
+                defs.appendChild(crowMarker);
+                
+                switch (type) {
+                    case 'arrow-start':
+                        line.setAttribute('marker-start', 'url(#arrow)');
+                        break;
+                    case 'arrow-end':
+                        line.setAttribute('marker-end', 'url(#arrow)');
+                        break;
+                    case 'arrow-both':
+                        line.setAttribute('marker-start', 'url(#arrow)');
+                        line.setAttribute('marker-end', 'url(#arrow)');
+                        break;
+                    case 'crow-start':
+                        line.setAttribute('marker-start', 'url(#crow)');
+                        break;
+                    case 'crow-end':
+                        line.setAttribute('marker-end', 'url(#crow)');
+                        break;
+                    case 'crow-both':
+                        line.setAttribute('marker-start', 'url(#crow)');
+                        line.setAttribute('marker-end', 'url(#crow)');
+                        break;
+                }
+            }
+            
+            zoom(factor) {
+                const oldScale = this.scale;
+                this.scale /= factor; // Invert the factor
+                this.scale = Math.max(0.1, Math.min(5, this.scale));
+
+                const scaleChange = this.scale / oldScale;
+
+                // Update canvas size
+                const newWidth = Math.max(this.minCanvasWidth / this.scale, this.initialCanvasWidth);
+                const newHeight = Math.max(this.minCanvasHeight / this.scale, this.initialCanvasHeight);
+                this.canvas.style.width = `${newWidth}px`;
+                this.canvas.style.height = `${newHeight}px`;
+
+                // Update notes
+                this.notes.forEach(note => {
+                    const element = document.getElementById(`note-${note.id}`);
+                    if (element) {
+                        note.x /= scaleChange;
+                        note.y /= scaleChange;
+                        note.width /= scaleChange;
+                        note.height /= scaleChange;
+                        element.style.left = `${note.x}px`;
+                        element.style.top = `${note.y}px`;
+                        element.style.width = `${note.width}px`;
+                        element.style.height = `${note.height}px`;
+                        element.style.fontSize = `${14 / this.scale}px`;
+                    }
+                });
+
+                this.graphicElements.forEach(ge => {
+                    const element = document.getElementById(`graphic-${ge.id}`);
+                    if (element) {
+                        ge.x *= oldScale / this.scale;
+                        ge.y *= oldScale / this.scale;
+                        ge.width *= oldScale / this.scale;
+                        ge.height *= oldScale / this.scale;
+                        ge.updateDOM();
+                        element.style.fontSize = `${14 / this.scale}px`;
+                    }
+                });
+
+                // Force a reflow
+                this.canvas.offsetHeight;
+
+                // Update connections
+                const canvasRect = this.canvas.getBoundingClientRect();
+                this.connections.forEach(conn => conn.update(canvasRect));
+
+                this.saveState();
+            }
+
+            renderModel() {
+                // Clear the canvas
+                while (this.canvas.firstChild) {
+                    this.canvas.removeChild(this.canvas.firstChild);
+                }
+
+                // Render notes
+                this.notes.forEach(note => {
+                    const noteElement = note.createDOM();
+                    noteElement.style.fontSize = `${14 / this.scale}px`;
+                    this.canvas.appendChild(noteElement);
+                });
+
+                // Render connections
+                this.connections.forEach(connection => {
+                    const svgElement = connection.createDOM();
+                    this.canvas.appendChild(svgElement);
+                });
+                this.graphicElements.forEach(ge => {
+                    const geElement = ge.createDOM();
+                    geElement.style.fontSize = `${14 / this.scale}px`;
+                    this.canvas.appendChild(geElement);
+                });
+
+                // Update connections
+                const canvasRect = this.canvas.getBoundingClientRect();
+                this.connections.forEach(conn => conn.update(canvasRect, true));
+            }
+
+
+            saveState() {
+                const state = {
+                    notes: this.notes.map(note => {
+                        if (note && typeof note === 'object') {
+                            return {
+                                id: note.id,
+                                x: note.x,
+                                y: note.y,
+                                width: note.width,
+                                height: note.height,
+                                title: note.title,
+                                body: note.body,
+                                color: note.color,
+                                emphasized: note.emphasized,
+                                shape: note.shape,
+                                zIndex: note.zIndex || 0
+                            };
+                        }
+                        return null;
+                    }).filter(note => note !== null),
+                    connections: this.connections.map(conn => {
+                        if (conn && typeof conn === 'object' && conn.startNote && conn.endNote) {
+                            return {
+                                startNoteId: conn.startNote.id,
+                                endNoteId: conn.endNote.id,
+                                type: conn.type
+                            };
+                        }
+                        return null;
+                    }).filter(conn => conn !== null),
+                    graphicElements: this.graphicElements.map(ge => {
+                        if (ge && typeof ge === 'object') {
+                            return {
+                                id: ge.id,
+                                x: ge.x,
+                                y: ge.y,
+                                width: ge.width,
+                                height: ge.height,
+                                label: ge.label,
+                                color: ge.color,
+                                borderStyle: ge.borderStyle,
+                                borderColor: ge.borderColor,
+                                emphasized: ge.emphasized,
+                                zIndex: ge.zIndex,
+                                textPosition: ge.textPosition
+                            };
+                        }
+                        return null;
+                    }).filter(ge => ge !== null),
+                    nextNoteId: this.nextNoteId,
+                    nextGraphicId: this.nextGraphicId,
+                    scale: this.scale
+                };
+
+                localStorage.setItem('quickmodelState', JSON.stringify(state));
+            }
+
+            loadState() {
+                const savedState = localStorage.getItem('quickmodelState');
+                if (savedState) {
+                    const state = JSON.parse(savedState);
+                    this.notes = state.notes.map(noteData => new Note(
+                        noteData.id,
+                        noteData.x,
+                        noteData.y,
+                        noteData.title,
+                        noteData.body,
+                        noteData.width,
+                        noteData.height,
+                        noteData.color,
+                        noteData.emphasized,
+                        noteData.shape
+                    ));
+                    this.connections = state.connections.map(connData => {
+                        const startNote = this.notes.find(note => note.id === connData.startNoteId);
+                        const endNote = this.notes.find(note => note.id === connData.endNoteId);
+                        return new Connection(startNote, endNote, connData.type);
+                    });
+                    this.graphicElements = state.graphicElements.map(geData => new GraphicElement(
+                        geData.id,
+                        geData.x,
+                        geData.y,
+                        geData.width,
+                        geData.height,
+                        geData.label,
+                        geData.color,
+                        geData.borderStyle,
+                        geData.borderColor,
+                        geData.emphasized,
+                        geData.zIndex,
+                        geData.textPosition || 'middle' 
+                    ));
+                    this.nextGraphicId = state.nextGraphicId;
+                    this.nextNoteId = state.nextNoteId;
+                    this.scale = state.scale;
+
+                    // Rebuild connections on notes
+                    this.notes.forEach(note => {
+                        note.connections = this.connections.filter(conn => 
+                            conn.startNote === note || conn.endNote === note
+                        );
+                    });
+
+                    this.renderModel();
+                }
+            }
+
+   
+        }
+
+        let app;
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Initializing QuickmodelApp');
+            app = new QuickmodelApp();
+            console.log('QuickmodelApp initialized');
+            
+            // After initialization, update connections if needed
+            if (app.updateAllConnections) {
+                app.updateAllConnections();
+            } else {
+                console.warn('updateAllConnections method not found on app');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -8,6 +8,10 @@
 
 */
 
+//const { get } = require("http");
+
+//const { get } = require("http");
+
 (function () {
   "use strict";
 
@@ -544,6 +548,52 @@
     ],
   };
 
+  function loadJsonFromUri(uri) {
+    return fetch(uri)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
+      .then(data => {
+        saveCourse(data);
+        updateUI();
+        alert("Course data loaded successfully!");
+      })
+      .catch(error => {
+        console.error("Error loading JSON from URI:", error);
+        alert("Error loading course data. Please check the URI and try again.");
+      });
+  }
+
+// popup for course notes
+
+
+  const courseNotesBtn = document.getElementById("courseNotesBtn");
+  let popup;
+  
+  courseNotesBtn.addEventListener("click", () => {
+    popup = window.open("quickmap.html", "Course Notes", "width=800,height=600");
+    popup.focus();
+  
+    // Send courseData to the popup when it loads
+    popup.addEventListener("load", () => {
+      popup.postMessage({ type: "loadCourseData", data: courseData }, "*");
+    });
+  });
+  
+  // Listen for messages from the popup
+  window.addEventListener("message", (event) => {
+    if (event.data.type === "saveCourseNotes") {
+      // Save the course notes data with courseData
+      courseData.courseNotes = event.data.data;
+      saveCourse(courseData);
+      updateUI();
+    }
+  });
+
+
   function getActivityTypes() {
     return Object.keys(activityTypes);
   }
@@ -976,7 +1026,22 @@
     } catch (error) {
       console.error("Error saving course map:", error);
     }
+    try {
+      document.getElementById("generateCourseCartridge").addEventListener('click', async () => {
+            
+        try {
+            document.getElementById("status").textContent = 'Generating course cartridge...';
+            const generator = new CartridgeGenerator(getCourseData());
 
+            await generator.generateCartridge(getCourseData());
+            document.getElementById("status").textContent = '';
+        } catch (err) {
+            document.getElementById("status").textContent = 'Error generating cartridge: ' + err.message + ' (line ' + err.lineNumber + ')';
+        }
+      });
+    } catch (error) {
+      console.error("Error generating cartridge:", error);
+    }  
     try {
       document
         .getElementById("generateMarkingScheme")
@@ -1597,6 +1662,8 @@
         deliveryModel: document.getElementById("deliveryModel").value || "",
         lab: document.getElementById("lab").value || "",
         labType: document.getElementById("labType").value || "",
+        dueDate: document.getElementById("dueDate").value || "", 
+
       },
     };
 
@@ -2040,6 +2107,9 @@
       courseData.course.corequisites || "";
     document.getElementById("consulted").value =
       courseData.course.consulted || "";
+    document.getElementById("dueDate").value =
+      courseData.course.dueDate || ""; // Populate dueDate field
+    
 
     // Populate checkboxes
     document.getElementById("challengeable").checked =
@@ -2443,6 +2513,7 @@
       <p><strong>Total Development Hours:</strong> ${formatTimeForDisplay(
         totalDevTime
       )}</p>
+      <p><strong>Due Date:</strong> ${courseData.course.dueDate}</p>
       <p><strong>Sum of weightings for assessments:</strong> ${totalWeighting}%</p>
       <div id="unassessedOutcomes"></div>
       <div id="activityTypePieChart"></div>
@@ -3361,6 +3432,9 @@ function handleImportJson(filePath) {
       <ul>
         ${courseData.course.teamMembers.map(member => `<li>${member.memberName} - ${member.role}</li>`).join('')}
       </ul>
+      <p><strong>Due for editing:</strong> ${
+      courseData.course.dueDate
+      }</p>
       <p><strong>Effective Date:</strong> ${
       reportData.course.effectiveDate
       }</p>
@@ -4022,7 +4096,251 @@ function handleImportJson(filePath) {
     return reportHtml;
   }
 
-  
+  // Cartridge Generator - creates common cartridge files for a course
+  class CartridgeGenerator {
+    constructor() {
+        this.courseData = null;
+        this.zip = new JSZip();
+    }
+
+    async generateCartridge(courseData) {
+        this.courseData = courseData;
+        console.log (this.courseData);  
+        await this.createManifest();
+        await this.createAssignments();
+        await this.createQuizzes();
+        await this.createContentPages();
+        
+        const blob = await this.zip.generateAsync({type: 'blob'});
+        saveAs(blob, `${this.courseData.course.code.trim()}_cartridge.imscc`);
+    }
+
+    async createManifest() {
+        const manifest = `<?xml version="1.0" encoding="UTF-8"?>
+<manifest identifier="course_${this.courseData.course.code.trim()}"
+xmlns="http://www.imsglobal.org/xsd/imsccv1p1/imscp_v1p1"
+xmlns:lom="http://ltsc.ieee.org/xsd/imsccv1p1/LOM/resource"
+xmlns:lomimscc="http://ltsc.ieee.org/xsd/imsccv1p1/LOM/manifest"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://www.imsglobal.org/xsd/imsccv1p1/imscp_v1p1 http://www.imsglobal.org/profile/cc/ccv1p1/ccv1p1_imscp_v1p2_v1p0.xsd http://ltsc.ieee.org/xsd/imsccv1p1/LOM/resource http://www.imsglobal.org/profile/cc/ccv1p1/LOM/ccv1p1_lomresource_v1p0.xsd http://ltsc.ieee.org/xsd/imsccv1p1/LOM/manifest http://www.imsglobal.org/profile/cc/ccv1p1/LOM/ccv1p1_lommanifest_v1p0.xsd">
+<metadata>
+<schema>IMS Common Cartridge</schema>
+<schemaversion>1.1.0</schemaversion>
+<lomimscc:lom>
+    <lomimscc:general>
+        <lomimscc:title>
+            <lomimscc:string>${this.courseData.course.name}</lomimscc:string>
+        </lomimscc:title>
+        <lomimscc:description>
+            <lomimscc:string>${this.courseData.course.description}</lomimscc:string>
+        </lomimscc:description>
+    </lomimscc:general>
+</lomimscc:lom>
+</metadata>
+<organizations>
+<organization identifier="O_1" structure="rooted-hierarchy">
+    ${this.generateOrganizationItems()}
+</organization>
+</organizations>
+<resources>
+${this.generateResourceItems()}
+</resources>
+</manifest>`;
+
+        this.zip.file('imsmanifest.xml', manifest);
+    }
+
+    generateOrganizationItems() {
+        return this.courseData.units.map(unit => {
+            const activities = this.courseData.activities.filter(a => a.unitId === unit.id);
+            const activityItems = activities.map(activity => {
+                const isQuiz = activity.title.toLowerCase().includes('quiz');
+                const isAssignment = activity.isAssessed && !isQuiz;
+                return `<item identifier="I_${activity.id}" identifierref="R_${activity.id}">
+                    <title>${activity.title}</title>
+                </item>`;
+            }).join('\n');
+
+            return `<item identifier="U_${unit.id}">
+                <title>${unit.title}</title>
+                ${activityItems}
+            </item>`;
+        }).join('\n');
+    }
+
+    generateResourceItems() {
+        return this.courseData.activities.map(activity => {
+            const isQuiz = activity.title.toLowerCase().includes('quiz');
+            const isAssignment = activity.isAssessed && !isQuiz;
+            let type;
+            let fileHref;
+            let dependencies = '';
+            
+            if (isQuiz) {
+                type = 'imsqti_xmlv1p2/imscc_xmlv1p1/assessment';
+                fileHref = `${activity.id}/assessment.xml`;
+                dependencies = `
+                    <dependency identifierref="R_QTI_${activity.id}"/>`;
+            } else if (isAssignment) {
+                type = 'assignment_xmlv1p0';
+                fileHref = `${activity.id}/assignment.xml`;
+            } else {
+                type = 'webcontent';
+                fileHref = `${activity.id}/index.html`;
+            }
+
+            let resource = `<resource identifier="R_${activity.id}" type="${type}">${dependencies}
+                <file href="${fileHref}"/>
+            </resource>`;
+
+            // Add QTI metadata resource for quizzes
+            if (isQuiz) {
+                resource += `
+                <resource identifier="R_QTI_${activity.id}" type="associatedcontent/imscc_xmlv1p1/learning-application-resource">
+                    <file href="${activity.id}/assessment_meta.xml"/>
+                </resource>`;
+            }
+
+            return resource;
+        }).join('\n');
+    }
+
+    async createAssignments() {
+        const assignments = this.courseData.activities.filter(a => 
+            a.isAssessed && !a.title.toLowerCase().includes('quiz'));
+
+        for (const assignment of assignments) {
+            const assignmentXml = `<?xml version="1.0" encoding="UTF-8"?>
+<assignment 
+xmlns="http://www.imsglobal.org/xsd/imscc_extensions/assignment"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.imsglobal.org/xsd/imscc_extensions/assignment http://www.imsglobal.org/profile/cc/cc_extensions/cc_extresource_assignmentv1p0_v1p0.xsd"
+identifier="${assignment.id}">
+<title>${assignment.title}</title>
+<text texttype="text/html">${assignment.description || ''}</text>
+<instructor_text texttype="text/plain"></instructor_text>
+<gradable points_possible="${assignment.weighting || 100}">true</gradable>
+<submission_formats>
+<format>text/plain</format>
+<format>text/html</format>
+</submission_formats>
+<extensions>
+<assignment_instructions>${assignment.description || ''}</assignment_instructions>
+<allow_file_attachment>true</allow_file_attachment>
+<grade_type>points</grade_type>
+</extensions>
+</assignment>`;
+
+            this.zip.file(`${assignment.id}/assignment.xml`, assignmentXml);
+        }
+    }
+
+    async createQuizzes() {
+        const quizzes = this.courseData.activities.filter(a => 
+            a.isAssessed && a.title.toLowerCase().includes('quiz'));
+
+        for (const quiz of quizzes) {
+            const quizXml = `<?xml version="1.0" encoding="UTF-8"?>
+<questestinterop xmlns="http://www.imsglobal.org/xsd/ims_qtiasiv1p2">
+<assessment ident="A_${quiz.id}" title="${quiz.title}">
+<qtimetadata>
+    <qtimetadatafield>
+        <fieldlabel>qmd_timelimit</fieldlabel>
+        <fieldentry>0</fieldentry>
+    </qtimetadatafield>
+    <qtimetadatafield>
+        <fieldlabel>cc_maxattempts</fieldlabel>
+        <fieldentry>1</fieldentry>
+    </qtimetadatafield>
+</qtimetadata>
+<section ident="S_${quiz.id}">
+    <item ident="QUE_1" title="Sample Question">
+        <itemmetadata>
+            <qtimetadata>
+                <qtimetadatafield>
+                    <fieldlabel>question_type</fieldlabel>
+                    <fieldentry>multiple_choice_question</fieldentry>
+                </qtimetadatafield>
+            </qtimetadata>
+        </itemmetadata>
+        <presentation>
+            <material>
+                <mattext texttype="text/html">Sample question text</mattext>
+            </material>
+            <response_lid ident="response1" rcardinality="Single">
+                <render_choice>
+                    <response_label ident="1">
+                        <material>
+                            <mattext texttype="text/html">Option 1</mattext>
+                        </material>
+                    </response_label>
+                    <response_label ident="2">
+                        <material>
+                            <mattext texttype="text/html">Option 2</mattext>
+                        </material>
+                    </response_label>
+                </render_choice>
+            </response_lid>
+        </presentation>
+        <resprocessing>
+            <outcomes>
+                <decvar maxvalue="100" minvalue="0" varname="SCORE" vartype="Decimal"/>
+            </outcomes>
+            <respcondition>
+                <conditionvar>
+                    <varequal respident="response1">1</varequal>
+                </conditionvar>
+                <setvar action="Set" varname="SCORE">100</setvar>
+            </respcondition>
+        </resprocessing>
+    </item>
+</section>
+</assessment>
+</questestinterop>`;
+
+            const metadataXml = `<?xml version="1.0" encoding="UTF-8"?>
+<questestinterop xmlns="http://www.imsglobal.org/xsd/ims_qtiasiv1p2">
+<assessment ident="A_${quiz.id}" title="${quiz.title}">
+<qtimetadata>
+    <qtimetadatafield>
+        <fieldlabel>qmd_timelimit</fieldlabel>
+        <fieldentry>0</fieldentry>
+    </qtimetadatafield>
+    <qtimetadatafield>
+        <fieldlabel>cc_maxattempts</fieldlabel>
+        <fieldentry>1</fieldentry>
+    </qtimetadatafield>
+</qtimetadata>
+</assessment>
+</questestinterop>`;
+
+            this.zip.file(`${quiz.id}/assessment.xml`, quizXml);
+            this.zip.file(`${quiz.id}/assessment_meta.xml`, metadataXml);
+        }
+    }
+
+    async createContentPages() {
+        const contentActivities = this.courseData.activities.filter(a => 
+            !a.isAssessed || (a.isAssessed && !a.title.toLowerCase().includes('quiz')));
+
+        for (const activity of contentActivities) {
+            const contentHtml = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>${activity.title}</title>
+</head>
+<body>
+<h1>${activity.title}</h1>
+${activity.description || ''}
+</body>
+</html>`;
+
+            this.zip.file(`${activity.id}/index.html`, contentHtml);
+        }
+    }
+}
+
   
 // file management functions
 let fileData = {
@@ -4310,7 +4628,18 @@ function removeFile(index) {
     initializeUI();
     setupEventListeners();
   
-    if (params.tutorial) {
+    if (params.uri) {
+      loadJsonFromUri(params.uri)
+        .then(() => {
+          // Remove the "uri" parameter from the URL
+          const url = new URL(window.location);
+          url.searchParams.delete("uri");
+          window.history.replaceState({}, document.title, url.toString());
+        })
+        .catch((error) => {
+          console.error("Error loading JSON:", error);
+        });
+    } else if (params.tutorial) {
       saveCourse(tutorialData);
       updateUI();
       alert("Tutorial data loaded successfully!");

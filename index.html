@@ -12,6 +12,9 @@
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.0.4/pako.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip-utils/0.1.0/jszip-utils.min.js"></script>
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 </head>
 <body>
@@ -36,16 +39,19 @@
                     <a href="#" id="exportJson" title="Export course to JSON file">Save</a>
                     <a href="#" id="importJson" title="Import course from JSON file">Load (overwrite all data)</a>
                     <a href="#" id="mergeJson" title="Merge course from JSON file retaining existing information">Merge (retaining current data) </a>
-
+                    <a href="#" id="generateCourseCartridge" title="Export  a course cartridge for LMS import">Export to course cartridge</a>
                 </div>
             </div>
 
 
             <button id="clearBtn" title="Clear all data">Clear</button>
+            <!-- experimental note system-->
+            <button id="courseNotesBtn" style="display:none">Course Notes</button>
             <button id="helpButton" title="Help" onclick="window.location.href='help.html'">?</button>
             <button id="tutorialButton" title="Tutorial" class="hidden" onclick="window.location.href='index.html?tutorial=true'">Tutorial</button>
 
         </nav>
+        <div id="status"></div>
     </header>
     <div id="unit-nav">     
         <button id="newUnitBtn" title="Create a new unit">New Unit</button>
@@ -160,6 +166,8 @@
             </div>
             <button type="button" id="addMemberButton">Add Member</button>
 
+            <label for ="dueDate">Date due to submit for editing:</label>
+            <input type="date" id="dueDate" name="dueDate">
 
             <h4>Production information</h4>
             <label for="faculty">Faculty:</label>
@@ -216,6 +224,9 @@
 
             <label for="labType">Lab Type:</label>
             <input type="text" id="labType" name="labType">
+
+
+            
 
             <!-- File Management Panel -->
             <div id="fileManagementPanel" style="display:none">
