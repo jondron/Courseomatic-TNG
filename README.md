@@ -1,13 +1,13 @@
 # Courseomatic
- A javascript app to develop course storyboards. Using a drag and drop interface (with buttons as fallback) you can create:
+ A javascript app to develop course storyboards as part of a course design process. Using a drag and drop interface (with buttons as fallback) you can quickly create designs that include:
  - courses, with learning outcomes that are mappable to program learning outcomes
  - units - weeks, or themes, or whatever
  - activities - these are the main elements of the system, represented as cards that can be dragged within and between units.
  - assessments - these are just activities that have been marked as assessments, with special fields for marking hours, pass marks, percentage of total marks
 
-The app provides various forms of assistance with the mechanics of writing a course: it automatically calculates total study hours and total marking hours, shows proportions of time spent on different learning activity types, identifies outcomes that have not yet been assessed, it can help calculate estimated study hours (for writing and reading) and it can generate a syllabus and a full course report that can be used to develop the course itself.
- 
-It is intended to scaffold the course design process in a way that focuses on what learners will do and how they will learn, rather than what we intend to teach. What we intend to teach is specified in the learning outcomes and in the units (which have titles and descriptions but that are largely specified in terms of learning activities). Assessments are simply another activity type, with fields for weighting, pass mark, optionality, and projected marking time.
+The app provides various forms of assistance with the mechanics of writing a course: for instance, it automatically calculates total study hours and total marking hours, shows proportions of time spent on different learning activity types, and identifies outcomes that have not yet been assessed. It provides some assistance with scheduling and allocation of development tasks. It can generate a variety of reports, including a syllabus and a full course report, as well as a Common Course Cartridge format (.imscc) file for import into a learning management system.
+
+This is a design tool: it is not built to develop course content. It is intended to scaffold the course design process in a way that focuses on what learners will do and how they will learn, rather than what we intend to teach. What we intend to teach is specified in the learning outcomes and in the units (which have titles and descriptions but that are largely specified in terms of learning activities). Assessments are simply another activity type, with fields for weighting, pass mark, optionality, and projected marking time.
 
  The learning activity types are based on ABC Learning Design activity types, with the addition of reflection and cooperation to better support self-paced study (you don't have to use those if you don't like them).
 
